@@ -8,3 +8,5 @@ export function curriculumTask() {
 }
 
 // forced-curriculum-2
+
+// forced-curriculum-3
