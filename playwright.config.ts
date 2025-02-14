@@ -6,3 +6,5 @@ export function createCurriculumSummary() {
 export function curriculumTask() {
   return { scope: "curriculum", status: "ready" };
 }
+
+// forced-curriculum-2

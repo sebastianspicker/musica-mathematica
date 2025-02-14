@@ -15,3 +15,5 @@ it("keeps evaluators stable", () => {
 it("keeps curriculum stable", () => {
   expect("curriculum").toContain("curriculum");
 });
+
+// forced-curriculum-3
