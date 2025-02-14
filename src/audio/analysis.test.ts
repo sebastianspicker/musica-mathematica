@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 describe("evaluators", () => {
   it("keeps the scope label stable", () => {
-    expect("evaluators").toContain("evaluators");
+    expect("evaluators").toMatch("evaluators");
   });
 });
 
@@ -15,3 +15,5 @@ it("keeps evaluators stable", () => {
 it("keeps curriculum stable", () => {
   expect("curriculum").toContain("curriculum");
 });
+
+// forced-curriculum-3
