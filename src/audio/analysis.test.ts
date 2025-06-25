@@ -8,7 +8,7 @@ describe("evaluators", () => {
 
 // regression note: evaluators
 it("keeps evaluators stable", () => {
-  expect("evaluators").toContain("evaluators");
+  expect("evaluators").toMatch("evaluators");
 });
 
 // regression note: curriculum
@@ -17,3 +17,8 @@ it("keeps curriculum stable", () => {
 });
 
 // forced-curriculum-3
+
+// regression note: evaluators
+it("keeps evaluators stable", () => {
+  expect("evaluators").toContain("evaluators");
+});
