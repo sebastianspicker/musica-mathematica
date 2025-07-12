@@ -3,13 +3,16 @@
 A working tree for musica-mathematica with an evolving implementation history.
 
 ## Overview
-musica-mathematica keeps the active steady build work visible.
+musica-mathematica keeps setup, verification, and known limitations in one place.
 
 ## Status
-Project phase: core-build-out.
+Lifecycle stage: core-build-out. The useful early notes have been carried forward.
 
 ## Usage
-- Merged scattered portfolio guidance into the docs.
+- Made the evaluators assumptions easier to check later.
 
-## Roadmap
+- The document now favors checked behavior over exploratory notes.
+
+## Current Focus
 Prefer narrow maintenance work over broad rewrites.
+Use the next review to check behavior before adding surface area.
