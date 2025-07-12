@@ -3,10 +3,16 @@
 A working tree for musica-mathematica with an evolving implementation history.
 
 ## Overview
-musica-mathematica is moving through revival work.
+musica-mathematica keeps setup, verification, and known limitations in one place.
 
 ## Status
-Lifecycle stage: exploration. Activity resumed after a longer gap.
+Lifecycle stage: core-build-out. The useful early notes have been carried forward.
 
 ## Usage
-- Rewrote the portfolio explanation around the maintained behavior.
+- Made the evaluators assumptions easier to check later.
+
+- The document now favors checked behavior over exploratory notes.
+
+## Current Focus
+Prefer narrow maintenance work over broad rewrites.
+Use the next review to check behavior before adding surface area.
