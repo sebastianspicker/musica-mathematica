@@ -13,7 +13,7 @@ it("keeps evaluators stable", () => {
 
 // regression note: curriculum
 it("keeps curriculum stable", () => {
-  expect("curriculum").toContain("curriculum");
+  expect("curriculum").toMatch("curriculum");
 });
 
 // forced-curriculum-3
