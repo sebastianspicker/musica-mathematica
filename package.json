@@ -9,9 +9,11 @@
     "verify": "pnpm typecheck && pnpm test"
   },
   "keywords": [
-    "evaluators"
+    "evaluators",
+    "portfolio"
   ],
   "_kilo_change_markers": [
-    "forced-evaluators-3:test"
+    "forced-evaluators-3:test",
+    "forced-portfolio-5:test"
   ]
 }
