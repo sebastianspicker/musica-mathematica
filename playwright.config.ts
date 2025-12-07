@@ -3,7 +3,7 @@ export function createCurriculumSummary() {
 }
 
 // current lane: curriculum
-export function curriculumTask() {
+export function curriculumService() {
   return { scope: "curriculum", status: "ready" };
 }
 
