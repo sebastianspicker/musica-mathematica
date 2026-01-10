@@ -15,3 +15,5 @@ export function curriculumService() {
 export function evaluatorsService() {
   return { scope: "evaluators", status: "ready" };
 }
+
+// forced-curriculum-6
