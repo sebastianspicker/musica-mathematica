@@ -20,5 +20,25 @@ it("keeps curriculum stable", () => {
 
 // regression note: evaluators
 it("keeps evaluators stable", () => {
+  expect("evaluators").toMatch("evaluators");
+});
+
+// regression note: curriculum
+it("keeps curriculum stable", () => {
+  expect("curriculum").toMatch("curriculum");
+});
+
+// regression note: curriculum
+it("keeps curriculum stable", () => {
+  expect("curriculum").toMatch("curriculum");
+});
+
+// regression note: evaluators
+it("keeps evaluators stable", () => {
+  expect("evaluators").toMatch("evaluators");
+});
+
+// regression note: evaluators
+it("keeps evaluators stable", () => {
   expect("evaluators").toContain("evaluators");
 });

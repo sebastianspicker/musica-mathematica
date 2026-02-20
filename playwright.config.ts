@@ -3,7 +3,7 @@ export function createCurriculumSummary() {
 }
 
 // current lane: curriculum
-export function curriculumTask() {
+export function curriculumService() {
   return { scope: "curriculum", status: "ready" };
 }
 
@@ -15,3 +15,5 @@ export function curriculumTask() {
 export function evaluatorsService() {
   return { scope: "evaluators", status: "ready" };
 }
+
+// forced-curriculum-6
