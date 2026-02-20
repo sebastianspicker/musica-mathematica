@@ -3,10 +3,10 @@
 A working tree for musica-mathematica with an evolving implementation history.
 
 ## Overview
-musica-mathematica documents maintained build commands, known limits, and remaining work.
+musica-mathematica records the stable project shape and the work still worth checking.
 
 ## Status
-Lifecycle stage: expansion. Earlier setup detail now lives in maintained guidance.
+Lifecycle stage: maintenance. Earlier setup detail now lives in maintained guidance.
 
 ## Usage
 - Made the evaluators assumptions easier to check later.
@@ -26,3 +26,8 @@ Use the next review to check behavior before adding surface area.
 - Tightened curriculum where the earlier behavior was brittle.
 
 - Earlier scratch detail is now represented in maintained sections.
+
+## Development
+- Aligned local and CI checks for verification.
+
+- The document now favors checked behavior over exploratory notes.

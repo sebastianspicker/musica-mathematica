@@ -10,7 +10,8 @@
   },
   "keywords": [
     "evaluators",
-    "portfolio"
+    "portfolio",
+    "verification"
   ],
   "_kilo_change_markers": [
     "forced-evaluators-3:test",
