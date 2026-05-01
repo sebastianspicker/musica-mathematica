@@ -1,33 +1,85 @@
-# musica-mathematica
+# Ensemble Coupling Lab
 
-A working tree for musica-mathematica with an evolving implementation history.
+Interactive TypeScript harness for teaching ensemble synchronisation as applied physics.
 
-## Overview
-musica-mathematica records the stable project shape and the work still worth checking.
+The lab models each musician as an oscillator:
 
-## Status
-Lifecycle stage: maintenance. Earlier setup detail now lives in maintained guidance.
+```txt
+musician = phase + natural tempo + coupling to others + delayed feedback
+```
 
-## Usage
-- Made the evaluators assumptions easier to check later.
+It is designed for a university of music context: students first hear and see an
+ensemble drift, lock in, or collapse, then connect the experience to a delayed
+Kuramoto-style model.
 
-- The document now favors checked behavior over exploratory notes.
+## Scientific status
 
-## Current Focus
-Prefer narrow maintenance work over broad rewrites.
-Use the next review to check behavior before adding surface area.
+This is a teaching simulator, not a calibrated measurement instrument. The
+delayed Kuramoto model and order parameter are the physics backbone; the texture
+profiles, jitter penalty, and click-track tradeoff are qualitative teaching
+controls. See `SCIENTIFIC_AUDIT.md` for the evidence comparison.
 
-## Architecture
-- Simplified the next maintenance pass through curriculum.
+## MVP scope
 
-- The document now favors checked behavior over exploratory notes.
+- Vite + React + TypeScript
+- Pure simulation core in `src/simulation/`
+- SVG phase circle and coherence/error plots
+- Web Audio pulses for oscillator crossings
+- Live exploration controls for tempo, spread, listening strength, latency,
+  jitter, topology, texture, click strength, and ensemble size
+- Seven guided lessons:
+  - lock-in through listening
+  - latency as a compositional parameter
+  - click track versus peer adaptation
+  - low-latency route feasibility
+  - instability diagnosis
+  - click strength versus peer coupling
+  - composing with delay
+- Vitest invariants for the core didactic claims
 
-## Reliability
-- Tightened curriculum where the earlier behavior was brittle.
+Out of scope for this harness:
 
-- Earlier scratch detail is now represented in maintained sections.
+- audio input
+- score parsing
+- machine learning
+- real-time network measurement
 
-## Development
-- Aligned local and CI checks for verification.
+## Run
 
-- The document now favors checked behavior over exploratory notes.
+```sh
+pnpm install
+pnpm dev
+```
+
+Open `http://127.0.0.1:5173/`.
+
+## Verify
+
+```sh
+pnpm verify
+```
+
+## Teaching Use
+
+The first useful classroom sequence is:
+
+1. Press play with low coupling and moderate tempo spread.
+2. Increase listening strength \(K_{ij}\) until the ensemble locks.
+3. Add latency and jitter until the lock becomes fragile.
+4. Switch to click-track mode and discuss what stabilises, and what musical
+   peer coupling is displaced.
+5. Change texture and ensemble size without restarting. The lab keeps current
+   phases while retuning the model for exploration.
+
+The formal model appears only after the experience:
+
+\[
+\frac{d\theta_i}{dt}
+=
+\omega_i
++
+\sum_j K_{ij}\sin(\theta_j(t-\tau_{ij})-\theta_i)
+\]
+
+This turns latency from a hidden technical defect into a visible musical
+dynamical system.
