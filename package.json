@@ -12,7 +12,8 @@
     "evaluators",
     "portfolio",
     "verification",
-    "packaging"
+    "packaging",
+    "release"
   ],
   "_kilo_change_markers": [
     "forced-evaluators-3:test",
