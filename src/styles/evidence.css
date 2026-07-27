@@ -1,0 +1,321 @@
+/* Evidence panel, rail, comparison table */
+
+.mm-comparison-table {
+  background: var(--mm-canvas);
+  border: 1px solid var(--mm-line);
+  border-radius: var(--mm-radius);
+  min-width: 0;
+  padding: 18px;
+}
+
+.mm-comparison-table--empty {
+  border-style: dashed;
+  min-height: 104px;
+}
+
+.mm-comparison-table--empty h2 {
+  font-family: var(--mm-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-transform: none;
+}
+
+.mm-comparison-table--empty p {
+  color: var(--mm-muted);
+  font-size: 0.76rem;
+  margin: 8px 0 0;
+}
+
+.mm-comparison-table__heading {
+  align-items: baseline;
+  display: flex;
+  gap: var(--mm-space-3);
+  justify-content: space-between;
+}
+
+.mm-comparison-table__heading h2 {
+  font-family: var(--mm-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mm-comparison-table__heading p {
+  color: var(--mm-muted);
+  font-size: 0.72rem;
+  margin: 0;
+  text-align: right;
+}
+
+.mm-comparison-summary {
+  border: 1px solid var(--mm-line);
+  border-radius: var(--mm-radius-sm);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: var(--mm-space-4);
+  overflow: hidden;
+}
+
+.mm-comparison-summary > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 14px;
+}
+
+.mm-comparison-summary > div + div {
+  border-left: 1px solid var(--mm-line);
+}
+
+.mm-comparison-summary span {
+  color: var(--mm-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mm-comparison-summary strong {
+  font-family: var(--mm-display);
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+
+.mm-comparison-summary small {
+  color: var(--mm-muted);
+  font-size: 0.66rem;
+  line-height: 1.35;
+}
+
+.mm-comparison-summary__change {
+  background: var(--mm-blue-soft);
+}
+
+.mm-comparison-table__details {
+  border-top: 1px solid var(--mm-line);
+  margin-top: var(--mm-space-4);
+  padding-top: var(--mm-space-3);
+}
+
+.mm-comparison-table__details > summary {
+  color: var(--mm-blue);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.mm-comparison-table__scroll {
+  overflow-x: auto;
+}
+
+.mm-comparison-table__changed {
+  background: var(--mm-orange-soft);
+}
+
+.mm-comparison-table__boundary {
+  border-left: 3px solid var(--mm-teal);
+  color: var(--mm-teal);
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin: var(--mm-space-4) 0 0;
+  padding-left: 8px;
+}
+
+.mm-evidence-detail {
+  border-bottom: 1px solid var(--mm-line);
+  margin: 14px 0 0;
+}
+
+.mm-evidence-detail > summary {
+  color: var(--mm-blue);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 12px 2px;
+}
+
+.mm-evidence-panel {
+  background: var(--mm-canvas);
+  border: 1px solid var(--mm-line);
+  border-radius: var(--mm-radius);
+  margin-bottom: var(--mm-space-4);
+  padding: 20px;
+}
+
+.mm-evidence-panel__heading {
+  align-items: baseline;
+  border-bottom: 1px solid var(--mm-line);
+  display: flex;
+  gap: var(--mm-space-3);
+  justify-content: space-between;
+  padding-bottom: 10px;
+}
+
+.mm-evidence-panel__heading h2 {
+  font-family: var(--mm-display);
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.mm-evidence-panel__heading span {
+  color: var(--mm-muted);
+  font-size: 0.68rem;
+}
+
+.mm-evidence-panel__empty {
+  background: var(--mm-surface);
+  border: 1px dashed var(--mm-line-strong);
+  color: var(--mm-muted);
+  font-size: 0.76rem;
+  padding: var(--mm-space-4);
+}
+
+.mm-evidence-panel__claims {
+  display: grid;
+  gap: 0 var(--mm-space-6);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mm-evidence-claim {
+  border-bottom: 1px solid var(--mm-line);
+  padding: var(--mm-space-4) 0;
+}
+
+/* Claim kind as monospaced chip, not rainbow badge */
+.mm-evidence-claim__kind,
+.mm-claim-tag {
+  background: var(--mm-blue-soft);
+  border: 1px solid var(--mm-primary-mid);
+  border-radius: 999px;
+  color: var(--mm-blue-deep);
+  display: inline-block;
+  font-family: var(--mm-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+
+.mm-evidence-claim h3 {
+  font-family: var(--mm-display);
+  font-size: 1rem;
+  line-height: 1.35;
+  margin: 8px 0;
+}
+
+.mm-evidence-claim p,
+.mm-evidence-claim dl,
+.mm-evidence-claim details {
+  font-size: 0.73rem;
+  line-height: 1.45;
+}
+
+.mm-evidence-claim dl > div {
+  display: grid;
+  gap: var(--mm-space-2);
+  grid-template-columns: 112px 1fr;
+  padding: 4px 0;
+}
+
+.mm-evidence-claim dt {
+  font-weight: 700;
+}
+
+.mm-evidence-claim dd {
+  margin: 0;
+}
+
+.mm-evidence-panel__sources {
+  margin-top: var(--mm-space-5);
+}
+
+.mm-evidence-panel__sources h3 {
+  font-family: var(--mm-display);
+  margin: 0 0 var(--mm-space-2);
+}
+
+.mm-evidence-panel__sources ul {
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+  padding-left: 18px;
+}
+
+.mm-evidence-panel__sources li + li {
+  margin-top: var(--mm-space-2);
+}
+
+.mm-evidence-panel__sources small {
+  color: var(--mm-muted);
+  display: block;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.mm-evidence-rail {
+  background: var(--mm-surface);
+  border-top: 1px solid var(--mm-line);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 22px;
+  padding: 0 28px;
+}
+
+.mm-evidence-rail::before {
+  color: var(--mm-muted);
+  content: "Method & evidence";
+  font-size: 0.66rem;
+  font-weight: 700;
+  grid-column: 1 / -1;
+  letter-spacing: 0.09em;
+  padding: 14px 0 5px;
+  text-transform: uppercase;
+}
+
+.mm-evidence-rail__item {
+  align-items: start;
+  border-right: 1px solid var(--mm-line);
+  display: grid;
+  gap: 4px 10px;
+  grid-template-columns: 28px 1fr;
+  min-height: 100px;
+  padding: 18px 22px 20px 0;
+  text-align: left;
+}
+
+.mm-evidence-rail__item + .mm-evidence-rail__item {
+  padding-left: 22px;
+}
+
+.mm-evidence-rail__item:last-child {
+  border-right: 0;
+}
+
+.mm-evidence-rail__item .mm-icon {
+  color: var(--mm-blue);
+  grid-row: 1 / 3;
+  height: 21px;
+  width: 21px;
+}
+
+.mm-evidence-rail__item--forbidden .mm-icon {
+  color: var(--mm-orange);
+}
+
+.mm-evidence-rail__item strong {
+  color: var(--mm-ink);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mm-evidence-rail__item p {
+  color: var(--mm-muted);
+  font-family: var(--mm-display);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  margin: 0;
+}

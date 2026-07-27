@@ -1,255 +1,261 @@
-# Scientific Audit: Ensemble Coupling Lab
+# Scientific Audit: Musica Mathematica
 
-Date: 2026-04-29
+Date: 2026-07-17
+Status: unvalidated teaching workbench with explicit model, measurement, and
+evidence boundaries
 
-## Executive Verdict
+## Verdict
 
-VERDICT: PARTIAL
+Musica Mathematica implements a structured undergraduate inquiry workbench for
+mathematical representations of music. It provides reproducible calculations,
+deterministic teaching models, bounded local signal features, and questions for
+comparing those representations with listening and performing.
 
-The lab is scientifically plausible as a didactic coupled-oscillator simulator. The delayed Kuramoto framing, phase-circle display, coherence metric, and qualitative latency lessons are defensible.
+The project has not been evaluated in a classroom study. It is not a calibrated
+acoustic or timing instrument, a definitive transcription system, a diagnostic
+tool, or evidence that a student, performer, ensemble, or teaching intervention
+is good, accurate, stable, or successful. Unit, integration, and browser tests
+can establish software behavior; they cannot establish pedagogical efficacy,
+perceptual validity, or ecological validity.
 
-The main limitation is calibration. Several numbers and labels currently read more empirical than they are:
+## Claim taxonomy
 
-- The "critical delay" / "latency budget" is an idealized model budget, not an experimentally validated performance threshold.
-- The texture multipliers, jitter penalty, and peer-agency score are pedagogical heuristics.
-- The "20-30 ms one-way comfort region" statement is directionally reasonable for tight synchronous NMP, but too narrow if presented as a general scientific boundary.
-- The Cologne-Prague / HfMT LoLa-MVTP scenario needs either public measurement metadata or weaker wording as an illustrative local case.
+The application assigns each claim exactly one of the following seven kinds.
 
-No critical scientific contradiction was found in the core idea. The app should remain usable, but the UI and documentation should explicitly separate theory-backed claims from heuristic teaching parameters.
+| Claim kind | Project meaning | Forbidden promotion |
+| --- | --- | --- |
+| `definition-or-theorem` | A mathematical identity follows from the displayed definitions for inputs inside their stated domain. | The identity predicts perception, preference, culture, or performance. |
+| `computed-model-result` | The stated deterministic algorithm produced the value from the recorded inputs, seed, duration, and method. | The value is an observation of musicians, a room, or a network. |
+| `measured-observation` | A local algorithm produced a descriptive feature from one bounded browser-audio segment. | The feature is calibrated SPL, clinical or diagnostic evidence, or a stable performer trait. |
+| `transcription-hypothesis` | A lightweight estimator ranked possible tempo, meter, pitch, or chord labels. | The first label is ground truth or a complete polyphonic score. |
+| `empirical-literature` | A study informs a question within its sampled population, task, material, and method. | The publication validates this app or makes its result universal. |
+| `heuristic` | An explicitly identified proxy, multiplier, score, or interpretation band supports comparison. | The proxy is a validated perceptual, musical-quality, or deployment scale. |
+| `recommendation` | The interface proposes another inquiry, listening, or rehearsal action. | The action is proven optimal or improves learning by itself. |
 
-## Evidence Standard
+This taxonomy is an inference-control mechanism. It does not make a weak model
+stronger; it makes the weakness visible.
 
-This audit treats peer-reviewed articles, DOI records, PubMed/PMC records, and publisher pages as evidence. Blog posts are background only. The simulation must stand on its own without relying on external blog context.
+## Ensemble model
 
-Claim status labels:
+### Canonical reference form
 
-- Supported: directly backed by scientific literature or a standard mathematical definition.
-- Partially supported: consistent with evidence, but current wording or scope is too broad.
-- Pedagogical heuristic: useful for teaching, but not calibrated or validated as a scientific metric.
-- Overstated: likely true in some contexts, but phrased too generally.
-- Unsupported: no adequate evidence found for the claim as currently stated.
-
-## Claim Matrix
-
-| App surface | Current claim or behavior | Status | Evidence comparison | Required correction |
-| --- | --- | --- | --- | --- |
-| `FormalModel.tsx` | Ensemble timing can be modeled as delayed Kuramoto coupling: `d theta_i / dt = omega_i + sum_j K_ij sin(theta_j(t - tau_ij) - theta_i)`. | Supported | Strogatz reviews the Kuramoto model as coupled limit-cycle oscillators with natural frequency distributions and synchronization onset. Yeung and Strogatz extend it to time-delayed interactions. | Keep. Add one sentence that this is a phase-only abstraction, not a complete musician model. |
-| `coherence()` | `r` is the magnitude of the mean phase vector. | Supported | This is the standard Kuramoto order parameter form. | Keep. |
-| `criticalDelaySeconds()` | `pi / (2 * omega)` is displayed as "critical delay" / "latency budget". | Partially supported | Delayed Kuramoto theory supports delay-dependent stability boundaries. The specific quarter-cycle budget is a simplified phase-margin rule and ignores coupling strength, frequency distribution, topology, adaptation, and task. | Rename or explain as "idealized model budget"; do not imply empirical threshold. |
-| `MetricsPanel.tsx` | Faster tempi tolerate less delay because the same delay occupies more of the beat. | Supported | Directly follows from delay as phase lag: phase lag scales with angular frequency. Empirical NMP studies also show tempo/task dependence. | Keep. |
-| `MetricsPanel.tsx` | Tight rhythmic playing is near a 20-30 ms one-way comfort region. | Partially supported / Overstated | Literature often targets very low latency for synchronous NMP, but controlled studies show task-dependent ranges: Chafe et al. tested 3-78 ms and found distinct regimes; Bartlette et al. found strong degradation at and above 100 ms; Tsioutas/Xylomenos report some musicians maintaining steady tempo at 40 ms one-way in real NMP settings. | Reword as "often targeted around 20-30 ms for tight synchronous material, but empirical tolerance varies by task, tempo, instrumentation, and adaptation." |
-| `textureProfile()` | Drone, rubato, call-response, pulse, dense rhythm change latency budget, coupling salience, click usefulness, and jitter penalty by fixed multipliers. | Pedagogical heuristic | Literature supports that musical task, rhythmic density, timbre, tempo, and interaction role affect delay tolerance. The exact multipliers in the app are not evidence-calibrated. | Label multipliers as qualitative teaching parameters; avoid implying measured thresholds. |
-| `feedbackReliability()` | Jitter reduces feedback reliability and can be worse than stable delay. | Partially supported | NMP engineering reviews identify capture, buffering, packet delay, and network variation as important. Variable delay can force buffering and destabilize feedback. The exact penalty formula is arbitrary. | Keep qualitative claim; label the formula as a heuristic instability penalty. |
-| `peerAgency()` | Peer agency equals `K / (K + clickStrength)`. | Pedagogical heuristic | External forcing by a click can improve timing precision but changes the coordination task. The app's percentage is not a validated agency metric. | Rename as "peer-coupling share" or add "didactic proxy". |
-| Topologies | Everyone-hears-everyone, leader-follower, sections, and click track model interaction structures. | Partially supported | Group synchrony literature stresses roles, group size, and emergent structures; NMP routing can shape interaction. The app simplifies acoustic, visual, attentional, and spatial cues. | Keep as simplified interaction graphs. |
-| Lesson 4 | Cologne-Prague near 7.5 ms one-way is used as a feasibility scenario. | Unsupported as public scientific evidence | The value may be a local measurement, but the app does not include measurement method, date, path, equipment, or variance. | Present as "example low-latency route" unless measurement metadata is documented. |
-| `TheorySection.tsx` | "HfMT LoLa/MVTP latency measurements" are included as evidence context. | Partially supported / needs provenance | LoLa-style systems are documented in the NMP literature, but the local HfMT measurement claim needs reproducible context. | Add provenance or make the local reference explicitly illustrative. |
-| `rehearsalSuggestions()` | Slow tempo, simplify density, add leader/sections/click, or compose with delay. | Partially supported | These are practical extrapolations consistent with synchronization and NMP evidence, but they are not automatic prescriptions validated by the simulator. | Keep as suggestions, not diagnoses. |
-
-## Findings
-
-### High: "Critical Delay" Can Be Misread as an Empirical Limit
-
-The code computes:
+A common delayed networked Kuramoto form is:
 
 ```text
-criticalDelaySeconds = pi / (2 * omega)
+d theta_i / dt = omega_i
+               + (K / d_i) sum_j A_ji sin(theta_j(t - tau_ji) - theta_i(t))
 ```
 
-Because `omega = 2 pi * BPM / 60`, this is:
+Here `theta_i` is oscillator phase, `omega_i` is natural angular frequency,
+`A_ji` defines the interaction graph, `d_i` is an incoming-degree
+normalization, `K` is coupling strength, and `tau_ji` is delay. This equation is
+a mathematical reference family, not a literal theory of everything musicians
+hear, intend, or do.
+
+### Implemented equation
+
+For oscillator `i`, the lesson evaluator runs eight model seconds with the
+simulation function's default `0.01 s` integration step. The lower-level
+function also accepts an explicit deterministic step size, while the exported
+fixed-step driver uses `0.01 s`:
 
 ```text
-criticalDelaySeconds = 15 / BPM
+d theta_i / dt = omega_i
+  + [m_peer(texture) * rho_jitter / sqrt(d_i)]
+      sum_(j -> i) K_ji sin(wrap(theta_j(t - tau_eff,ji(t)) - theta_i(t)))
+  + C * m_click(texture)
+      sin(wrap(Omega_click * t - theta_i(t)))
 ```
 
-Examples:
+The implementation therefore differs materially from the canonical reference:
 
-| Tempo | Model budget before texture multiplier |
-| --- | ---: |
-| 60 BPM | 250 ms |
-| 90 BPM | 167 ms |
-| 120 BPM | 125 ms |
-| 180 BPM | 83 ms |
+- it normalizes the incoming peer term by `sqrt(d_i)`, not by `d_i` or `N`;
+- topology sets `K_ji`: all-to-all, leader–follower, or paired sections, with
+  cross-section edges multiplied by `0.35`;
+- repertoire texture changes natural-tempo spread, peer coupling, click
+  coupling, the illustrative latency budget, and jitter reliability;
+- effective delay adds deterministic, smoothly interpolated pseudo-jitter in
+  `25 ms` control frames and clamps delay at zero;
+- jitter also applies a separate heuristic reliability multiplier; and
+- external click forcing is a separate sinusoidal term, not another peer.
 
-This is useful as a phase-margin teaching device: a fixed physical delay consumes more phase at higher tempo. However, delayed Kuramoto stability is not controlled by tempo alone. Coupling strength, natural-frequency spread, topology, distribution shape, and delay structure all matter.
+The texture multipliers are published below because they are part of the
+implemented result, but they are heuristics, not measurements fitted to
+performer or repertoire data.
 
-Scientific comparison:
+| Texture | Tempo spread | Peer | Click | Latency budget | Jitter penalty |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| pulse | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| drone | 0.45 | 0.45 | 0.25 | 1.80 | 0.50 |
+| call–response | 0.75 | 0.70 | 0.60 | 1.35 | 0.70 |
+| rubato | 0.55 | 0.65 | 0.25 | 1.45 | 0.80 |
+| dense rhythm | 1.25 | 1.20 | 1.25 | 0.62 | 1.70 |
 
-- Yeung and Strogatz show that delayed Kuramoto systems have delay-dependent stability boundaries and additional dynamical regimes, including bistability and time-dependent order parameters.
-- Empirical NMP studies do not give a single critical delay. Chafe et al. manipulated 3-78 ms one-way delays and found distinct interaction regimes. Bartlette et al. tested 0-200 ms and reported strong degradation at and above 100 ms for their Mozart duet tasks. Tsioutas/Xylomenos evidence suggests some musicians can maintain steady tempo at 40 ms one-way in specific real NMP settings.
-
-Correction:
-
-- Keep the calculation.
-- Treat it as an "idealized phase budget" or "model latency budget".
-- Avoid using "critical" unless the UI explicitly says it is not an empirical safety threshold.
-
-### High: The 20-30 ms Statement Needs Narrower Scope
-
-The current sentence says:
+For configured jitter `j` and delay `tau`, the reliability term is:
 
 ```text
-Empirical networked-performance work places tight rhythmic playing near a
-20-30 ms one-way comfort region...
+rho_jitter = max(0.08,
+                 1 - [j / max(tau, 0.01)]
+                     * 1.35 * m_jitterPenalty(texture))
 ```
 
-This is broadly plausible for strict synchronous performance targets, but too compressed.
+This deliberately compounds effective-delay variation with a reliability
+penalty. It is useful for a stress-test lesson, but it is not an empirical model
+of a specific audio codec, network, nervous system, or rehearsal.
 
-Evidence comparison:
+### Ensemble observables
 
-- Chafe et al. report that delays both below and above a natural ensemble-distance envelope create characteristic dynamics, and longer delays lead to lagging, deceleration, and deterioration.
-- Bartlette et al. found that performances were strongly affected at and above 100 ms, but their tested set includes several lower delay values and the outcome depended on musical strategy.
-- Tsioutas/Xylomenos and later NMP work emphasize high variance across participants, instruments, tempo, and musical material.
-- Rottondi et al. explicitly frame latency tolerance as a psycho-perceptual and technological problem, not a single universal threshold.
+- The order parameter `r = |N^-1 sum_j exp(i theta_j)|` measures phase
+  concentration inside this model. `r = 1` is phase alignment, not musical
+  quality.
+- Circular phase spread is the root-mean-square shortest angular distance from
+  the model mean phase.
+- `phaseSpreadEquivalentMs` divides simulated angular spread by the current
+  mean natural angular frequency. It is a period-equivalent conversion, not a
+  measured onset error or route latency.
+- Leader-to-follower lag and section coherences are graph-specific computed
+  values and appear only when their graph makes them meaningful.
+- Peer-coupling share is `K / (K + C)` after non-negative clamping. It describes
+  configured strengths, not the fraction of human attention assigned to peers.
 
-Correction:
+The illustrative phase budget begins with `pi / (2 omega)`, equivalent to
+`15 / BPM` seconds, and multiplies it by the texture budget above. The labels
+are `plausible` below a delay/budget ratio of `0.55`, `fragile` from `0.55`, and
+`unstable` from `0.85`. These bands are transparent teaching heuristics. They
+must not be quoted as universal mouth-to-ear limits or deployment acceptance
+criteria.
 
-Use wording like:
+### Omitted phenomena
 
-```text
-For tight synchronous rhythmic material, NMP systems often target roughly
-20-30 ms one-way latency. Empirical tolerance is task-dependent: tempo,
-instrument attack, texture, monitoring, musician strategy, and jitter can
-move the practical boundary substantially.
-```
+The phase-only model omits score hierarchy, expressive timing, onset shape,
+instrument attack, room acoustics, visual and bodily cues, attention,
+prediction, expertise, social roles, individual adaptation rules, hearing and
+monitoring differences, packet loss, codec behavior, audio quality, and
+audiovisual skew. Those omissions are central when transferring a model result
+to joint music making.
 
-### Medium: Texture Multipliers Are Didactic, Not Calibrated
+## Other mathematical domains
 
-The app gives each texture fixed multipliers for tempo spread, peer coupling, click strength, latency budget, and jitter penalty.
+The remaining seven domains also separate exact mathematics from musical
+interpretation:
 
-This is pedagogically coherent:
+- BPM/period conversion, greatest common divisors, least common multiples,
+  wrapped phase, logarithmic cents, modular pitch classes, seeded probability,
+  Markov transitions, entropy, and quantiles are exact only under their stated
+  definitions.
+- Euclidean patterns, onset autocorrelation, discrete spectra, Tonnetz paths,
+  voice-leading assignment distances, equal-division approximation, partial
+  coincidence, roughness, resonance, and spectral-centroid trajectories are
+  selected representations. None is a complete account of rhythm, harmony,
+  tuning, consonance, timbre, or form.
+- Seeded sequences make chance lessons reproducible; a finite realization is
+  not the same thing as its generating distribution.
+- Median inter-onset interval is a transparent tempo estimator that can fail
+  under subdivisions, missing events, tempo change, expressive timing, and
+  onset-detector error.
+- Signed event differences, median, and interquartile range preserve direction
+  and spread. The app intentionally defines no target, score, grade, accuracy
+  class, or better/worse label.
 
-- Dense rhythmic material depends strongly on simultaneous attacks.
-- Drone and rubato material can tolerate looser simultaneity.
-- Call-response material can transform delay into musical structure.
+## Local audio and measurement status
 
-But the exact multipliers are not supported as measured constants.
+Microphone and file inputs are optional and browser-local. Microphone frames
+move through a credit-bounded `AudioWorklet` and local Web Worker path. Bounded
+file selections transfer directly to a local Web Worker. Raw PCM is transient
+in both paths and is not written to the learning portfolio or app export. Queue
+overflow, stale frames, and sequence gaps are surfaced rather than hidden.
+File and microphone limits, settings, and data flow are documented in
+[LOCAL_AUDIO_METHOD.md](docs/LOCAL_AUDIO_METHOD.md).
 
-Correction:
+All audio-derived values are `uncalibrated`:
 
-- Keep the multipliers for exploration.
-- Add an explicit statement in the theory or controls: "Texture profiles are qualitative teaching presets, not measured latency-tolerance curves."
-- In tests, continue checking relative ordering rather than numerical truth.
+- dBFS describes digital amplitude relative to full scale; it is not sound
+  pressure level;
+- the noise-floor value is a low-percentile block-RMS estimate, not a calibrated
+  room-noise measurement;
+- clipping and silence indicators depend on explicit numerical thresholds;
+- YIN pitch is a monophonic periodicity estimate with confidence, not a note
+  oracle;
+- spectral flux proposes onsets; autocorrelation proposes tempo; repeated
+  accent agreement proposes meter; and chroma-template similarity proposes up
+  to three major, minor, or no-chord labels;
+- no full polyphonic transcription, source separation, score alignment, SPL
+  calibration, or latency calibration is implemented.
 
-### Medium: Jitter Claim Is Directionally Correct But Formula Is Arbitrary
+Recorded audio is marked non-deterministic. Only the Recorded-Onset Hypotheses
+lesson admits audio-derived A/B snapshots, and only when a fresh analysis changes
+one exposed analysis setting while source and frame settings remain constant.
+Chord and time-varying-timbre audio views are observation appendices rather than
+causal portfolio comparisons.
 
-The current model treats jitter in two ways:
+The W3C specifications define browser interfaces and browser constraint
+behavior. They do not validate this project's feature algorithms or musical
+interpretations.
 
-- `effectiveDelaySeconds()` adds deterministic frame-to-frame delay variation.
-- `feedbackReliability()` reduces coupling effectiveness based on jitter/latency ratio.
+## Pedagogical status and research rationale
 
-Scientific comparison:
+The plan–experiment–compare–explain–perform–transfer workflow, layered lesson
+sequence, explicit source cards, and requirement to state inference limits are
+evidence-informed design decisions. The cited work motivates those decisions as
+follows:
 
-- NMP technology literature supports cumulative delay accounting across capture, buffering, network, and playback.
-- Variable delay is harmful because real systems either expose timing variation or add buffering to smooth it.
-- The app's specific penalty `1 - jitterRatio * 1.35 * profile.jitterPenaltyMultiplier` is not a measured relationship.
+- [Zhu et al. (2025)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12637912/)
+  evaluated a structured flipped module in one undergraduate music-theory
+  context. Its quasi-experimental result supports investigating aligned
+  preparation, collaboration, and reflection; it does not establish that this
+  workbench will reproduce those outcomes.
+- [Wang et al. (2025)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12734040/)
+  reviewed 31 metacognition and self-regulated-learning intervention studies in
+  music, with seven in its meta-analysis. Its plan–practice–reflection framing
+  motivates explicit prediction, comparison, and reflection, while its study
+  heterogeneity argues against assuming a universal effect.
+- [Azaryahu, Ariel, and Leikin (2024)](https://www.nature.com/articles/s41599-024-03631-z)
+  reported qualitative perspectives from 16 music, mathematics, and education
+  experts. Their emphasis on structure, representation, creativity, and
+  disciplinary expertise supports an integrated curriculum; the small,
+  context-specific interview study is not an efficacy trial.
+- [Jacoby et al. (2024)](https://www.nature.com/articles/s41562-023-01800-9)
+  found both common small-integer-ratio structure and substantial variation in
+  rhythm priors across 39 participant groups in 15 countries. That result
+  motivates showing alternatives and resisting a single culturally universal
+  meter interpretation.
+- [Marjieh et al. (2024)](https://www.nature.com/articles/s41467-024-45812-z)
+  showed in large-scale behavioral studies that timbral manipulations can
+  reshape consonance preferences. It motivates the timbre–consonance lesson but
+  does not calibrate the app's partial-coincidence or roughness proxies.
+- [Snyder, Gordon, and Hannon (2024)](https://www.nature.com/articles/s44159-024-00315-y)
+  review behavioral, neural, oscillator, and predictive accounts of rhythm,
+  beat, and metre. The coexistence of distinct models motivates comparing
+  representations rather than presenting one onset vector as perception.
+- [Frederick (2023/2024)](https://doi.org/10.1093/mts/mtad017) constructs an
+  abstract diatonic voice-leading transformation space and interprets it as an
+  instrumental space. It provides music-theory context for geometric and
+  transformational inquiry, not validation of this app's simplified graph or
+  assignment metric.
+- [Demos and Palmer (2023)](https://doi.org/10.1016/j.tics.2023.05.005) connect
+  nonlinear and social dynamics in musical group synchrony. Their argument for
+  emergent group properties cautions against reducing ensemble interaction to
+  independent pairwise phase links.
+- [Abalde et al. (2024)](https://doi.org/10.1016/j.neubiorev.2024.105816) frame
+  joint music making around coordination together with knowledge, goals,
+  strategies, and social factors. Those components mark important omissions
+  from the simulator.
+- The [W3C Web Audio API](https://www.w3.org/TR/webaudio/) specifies the
+  `AudioWorklet` processing interface used by the capture path, and
+  [W3C Media Capture and Streams](https://www.w3.org/TR/mediacapture-streams/)
+  specifies permission, tracks, constraints, and reported settings used by the
+  microphone path.
 
-Correction:
+Publication metadata and findings were checked on 2026-07-24. Research evolves;
+instructors should re-check sources before treating this list as a current
+literature review.
 
-- Keep "jitter is an instability risk".
-- Label the penalty as a heuristic that turns variable delay into degraded feedback.
+## Responsible teaching use
 
-### Medium: Peer Agency Is a Useful Proxy, Not a Scientific Metric
-
-`peerAgency = K / (K + clickTrackStrength)` is easy to understand and works well pedagogically.
-
-Scientific comparison:
-
-- Click tracks and metronomes can increase timing regularity by providing external temporal structure.
-- Musical agency, attention, expressive microtiming, leadership, and adaptation are not reducible to this scalar.
-
-Correction:
-
-- Rename to "peer-coupling share" if the UI should be scientifically conservative.
-- If "agency" remains, add "didactic proxy" in the explanatory text.
-
-### Medium: Topology Is Scientifically Plausible But Simplified
-
-The app topologies map well to teaching:
-
-- all-to-all: peer listening
-- leader-follower: asymmetric timing authority
-- sections: local subgroup coupling
-- click-track: external forcing
-
-Scientific comparison:
-
-- Group synchrony literature supports the importance of roles, group size, and emergent structures.
-- Real ensembles also use visual cueing, spatial acoustics, score hierarchy, individual adaptation strategies, room reflections, and instrument-specific attack times.
-
-Correction:
-
-- Keep topologies as graph abstractions.
-- Avoid implying that they capture the full ensemble situation.
-
-### Low: Cologne-Prague Scenario Needs Provenance
-
-The 7.5 ms one-way latency scenario is valuable for HfMT teaching, but it is not scientifically auditable from the app alone.
-
-Correction options:
-
-- Add measurement metadata: date, route, endpoints, tool, sample size, one-way vs round-trip method, median, p95, jitter.
-- Or reword as a hypothetical: "Example low-latency route near 7.5 ms one-way."
-
-### Low: Infrastructure Claim Is Good But Should Stay Operational
-
-The theory section says that routing, campus hops, firewall inspection, buffer policy, documentation, support, and governance determine whether a rehearsal is playable.
-
-This is a strong operational point and fits NMP practice. The scientific claim should stay modest:
-
-- Supported: end-to-end delay is cumulative and depends on system architecture.
-- Supported: buffering and network behavior matter.
-- Operational, not strictly scientific: documentation/support/governance determine whether a session works "on a real Tuesday afternoon."
-
-Correction:
-
-- Keep it, but frame it as operational reliability rather than physics.
-
-## Positive Findings
-
-The app gets several important ideas right:
-
-- Experience-first structure is appropriate for a didactic physics/music tool.
-- The phase circle is a clear visualization of the Kuramoto order parameter.
-- The formal equation appears after exploration, which matches the intended pedagogical scaffold.
-- Tempo, delay, jitter, topology, click strength, and texture are the right control families.
-- The lesson structure maps well to practical NMP decisions: slow down, simplify texture, add structure, change routing, or compose with delay.
-
-## Recommended Follow-Up Fixes
-
-These are documentation/UI fixes, not simulator rewrites:
-
-1. Rename "Latency budget" explanatory text to "Model latency budget" or "Idealized phase budget".
-2. Add one sentence near the formula: "This is a phase-only model; the texture, jitter, and agency parameters are qualitative teaching controls."
-3. Reword the empirical latency paragraph to avoid a universal 20-30 ms boundary.
-4. Add provenance or hypothetical wording for the Cologne-Prague 7.5 ms lesson.
-5. Rename "Peer agency" to "Peer-coupling share" or label it explicitly as a proxy.
-6. Add a small bibliography/source note inside the app or a linked `SCIENTIFIC_NOTES.md` if the tool is used in class.
-
-## Evidence Notes
-
-### Kuramoto and Delayed Coupling
-
-- Strogatz, S. H. (2000). "From Kuramoto to Crawford: exploring the onset of synchronization in populations of coupled oscillators." Physica D: Nonlinear Phenomena, 143(1-4), 1-20. https://doi.org/10.1016/S0167-2789(00)00094-4
-- Yeung, M. K. S., & Strogatz, S. H. (1999). "Time Delay in the Kuramoto Model of Coupled Oscillators." Physical Review Letters, 82, 648-651. https://doi.org/10.1103/PhysRevLett.82.648
-- Neda, Z., Ravasz, E., Vicsek, T., Brechet, Y., & Barabasi, A. L. (2000). "Physics of the rhythmic applause." Physical Review E, 61, 6987-6992. https://doi.org/10.1103/PhysRevE.61.6987
-
-### Networked Music Performance and Latency
-
-- Chafe, C., Caceres, J.-P., & Gurevich, M. (2010). "Effect of temporal separation on synchronization in rhythmic performance." Perception, 39(7), 982-992. https://doi.org/10.1068/p6465
-- Bartlette, C., Headlam, D., Bocko, M. F., & Velikic, G. (2006). "Effect of network latency on interactive musical performance." Music Perception, 24(1), 49-62. https://doi.org/10.1525/mp.2006.24.1.49
-- Driessen, P. F., Darcie, T. E., & Pillay, B. (2011). "The Effects of Network Delay on Tempo in Musical Performance." Computer Music Journal, 35(1), 76-89. https://doi.org/10.1162/COMJ_a_00041
-- Rottondi, C., Chafe, C., Allocchio, C., & Sarti, A. (2016). "An Overview on Networked Music Performance Technologies." IEEE Access, 4, 8823-8843. https://doi.org/10.1109/ACCESS.2016.2628440
-- Drioli, C., Allocchio, C., & Buso, N. (2013). "Networked Performances and Natural Interaction via LOLA: Low Latency High Quality A/V Streaming System." Lecture Notes in Computer Science. https://doi.org/10.1007/978-3-642-40050-6_21
-- Tsioutas, K., Xylomenos, G., & Doumanis, I. (2021). "An Empirical Evaluation of QoME for NMP." NTMS 2021. https://doi.org/10.1109/NTMS49979.2021.9432657
-- Tsioutas, K., & Xylomenos, G. (2021). "On the Impact of Audio Characteristics to the Quality of Musicians' Experience in Network Music Performance." Journal of the Audio Engineering Society, 69(12), 914-923. https://doi.org/10.17743/jaes.2021.0041
-- Tsioutas, K., & Xylomenos, G. (2022). "Assessing the Effects of Delay to NMP via Audio Analysis." SN Computer Science, 4, 126. https://doi.org/10.1007/s42979-022-01555-6
-
-### Musical Synchrony, Group Roles, and Phase Measures
-
-- Demos, A. P., & Palmer, C. (2023). "Social and nonlinear dynamics unite: musical group synchrony." Trends in Cognitive Sciences, 27(11), 1008-1018. https://doi.org/10.1016/j.tics.2023.05.005
-- Lindenberger, U., Li, S.-C., Gruber, W., & Muller, V. (2009). "Brains swinging in concert: cortical phase synchronization while playing guitar." BMC Neuroscience, 10, 22. https://doi.org/10.1186/1471-2202-10-22
-
-## Bottom Line
-
-The current simulator is a strong teaching harness, not a validated scientific instrument. That is acceptable if the app says so clearly. The next scientific-hardening pass should focus on wording and provenance, not on adding more features.
+Use a result to ask a better question: which variables were held constant,
+which representation generated the display, what source or method supports the
+claim, and what listening, score study, performance, or external measurement
+could challenge it? Retain musical and cultural judgment. Do not use the app's
+portfolio as an automatic grade or its outputs as evidence of accreditation,
+classroom effectiveness, performer ability, ensemble quality, or network
+readiness.

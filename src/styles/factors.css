@@ -1,0 +1,140 @@
+/* Factor inspector + workflow inspector stack */
+
+.mm-inspector-stack {
+  background: transparent;
+  border-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 0;
+}
+
+.mm-factor-inspector {
+  background: var(--mm-canvas);
+  border: 1px solid var(--mm-line);
+  border-radius: var(--mm-radius-lg);
+  padding: 16px;
+}
+
+.mm-factor-inspector__heading {
+  align-items: center;
+  border-bottom: 1px solid var(--mm-line);
+  display: flex;
+  gap: var(--mm-space-3);
+  justify-content: space-between;
+  padding-bottom: 10px;
+}
+
+.mm-factor-inspector__heading span {
+  color: var(--mm-faint);
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.mm-factor-inspector__heading h2 {
+  font-family: var(--mm-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* Brass lock chip for locked state text */
+.mm-factor-inspector__heading strong {
+  color: var(--mm-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  max-width: 160px;
+  text-align: right;
+}
+
+.mm-factor-inspector__lock,
+.mm-factor-inspector__heading strong.mm-factor-inspector__lock {
+  background: var(--mm-orange-soft);
+  border: 1px solid oklch(0.9 0.04 65);
+  border-radius: 999px;
+  color: var(--mm-orange-deep);
+  font-size: 0.68rem;
+  font-weight: 600;
+  max-width: 160px;
+  padding: 3px 8px;
+  text-align: center;
+}
+
+.mm-factor-inspector fieldset {
+  border: 0;
+  margin: 13px 0 0;
+  padding: 0;
+}
+
+.mm-factor-inspector fieldset:disabled {
+  opacity: 0.55;
+}
+
+.mm-factor-inspector legend {
+  color: var(--mm-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  padding: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.mm-factor-inspector__source label,
+.mm-factor-control > label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--mm-ink-soft);
+}
+
+.mm-factor-inspector select,
+.mm-factor-inspector input[type="number"] {
+  width: 100%;
+}
+
+.mm-factor-inspector__source > p,
+.mm-factor-control > p {
+  color: var(--mm-faint);
+  font-size: 0.7rem;
+  line-height: 1.35;
+  margin: 5px 0 0;
+}
+
+.mm-factor-control {
+  border-top: 1px solid var(--mm-line);
+  padding: 10px 0;
+}
+
+.mm-factor-control__number {
+  align-items: center;
+  display: grid;
+  gap: 7px;
+  grid-template-columns: 1fr auto;
+}
+
+.mm-factor-control__number span {
+  color: var(--mm-muted);
+  font-family: var(--mm-mono);
+  font-size: 0.7rem;
+}
+
+.mm-factor-control--toggle label {
+  align-items: center;
+  display: flex;
+  gap: var(--mm-space-2);
+}
+
+.mm-inspector-action {
+  margin-top: 0;
+}
+
+.mm-inspector-action .mm-primary-action {
+  width: 100%;
+}

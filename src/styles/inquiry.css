@@ -1,0 +1,214 @@
+/* Inquiry panel, stage ribbon, stage cards, primary action */
+
+.mm-inquiry {
+  background: var(--mm-canvas);
+  border: 1px solid var(--mm-line);
+  border-radius: var(--mm-radius-lg);
+  padding: 16px;
+}
+
+.mm-inquiry-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mm-inquiry-header p,
+.mm-inquiry-header__eyebrow {
+  color: var(--mm-faint);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin: 0 0 2px;
+  text-transform: uppercase;
+}
+
+.mm-inquiry-header h2,
+.mm-inquiry-header__title {
+  color: var(--mm-ink);
+  font-family: var(--mm-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-transform: none;
+}
+
+.mm-inquiry-header button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--mm-muted);
+  font-size: 0.7rem;
+  min-height: 32px;
+  padding: 0 4px;
+  text-decoration: underline;
+}
+
+.mm-inquiry-header button:hover {
+  background: var(--mm-surface);
+  color: var(--mm-ink);
+}
+
+/* Stage progress as horizontal ribbon of thin bars
+   Supports: ol.mm-stage-progress li (legacy) and .mm-stage-ribbon spans */
+.mm-stage-progress,
+.mm-stage-ribbon {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.mm-stage-progress li,
+.mm-stage-ribbon > span,
+.mm-stage-ribbon__seg {
+  background: var(--mm-line);
+  border: 0;
+  border-radius: 99px;
+  height: 4px;
+  min-width: 0;
+  position: relative;
+}
+
+/* Keep stage labels available to assistive technology. */
+.mm-stage-progress li > span:first-child {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.mm-stage-progress li.complete,
+.mm-stage-ribbon > span.done,
+.mm-stage-ribbon > span.complete,
+.mm-stage-ribbon__seg--complete {
+  background: var(--mm-primary-mid);
+}
+
+.mm-stage-progress li.current,
+.mm-stage-ribbon > span.now,
+.mm-stage-ribbon > span.current,
+.mm-stage-ribbon__seg--current {
+  background: var(--mm-blue);
+  box-shadow: 0 0 0 2px oklch(0.4 0.09 145 / 0.18);
+}
+
+.mm-stage-ribbon__seg--upcoming {
+  background: var(--mm-line);
+}
+
+.mm-inquiry-message,
+.mm-comparison-readiness {
+  background: var(--mm-surface);
+  border: 1px solid var(--mm-line);
+  border-radius: var(--mm-radius-sm);
+  color: var(--mm-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin: 0 0 14px;
+  padding: 8px 10px;
+}
+
+.mm-stage-card {
+  max-width: none;
+}
+
+.mm-stage-card h3 {
+  font-family: var(--mm-display);
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0 0 8px;
+}
+
+.mm-stage-card p {
+  color: var(--mm-ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0 0 12px;
+}
+
+.mm-stage-card label {
+  display: grid;
+  gap: var(--mm-space-2);
+}
+
+.mm-stage-card label > span {
+  color: var(--mm-ink-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.mm-stage-card textarea {
+  min-height: 116px;
+}
+
+.mm-stage-card button {
+  margin-top: var(--mm-space-3);
+}
+
+/* Primary CTA: solid moss fill, white text */
+.mm-primary-action {
+  background: var(--mm-blue);
+  border-color: var(--mm-blue);
+  color: white;
+  font-weight: 650;
+  min-height: 44px;
+}
+
+.mm-primary-action:hover {
+  background: var(--mm-blue-deep);
+  border-color: var(--mm-blue-deep);
+  color: white;
+}
+
+.mm-primary-action:disabled {
+  background: var(--mm-surface-strong);
+  border-color: var(--mm-line);
+  color: var(--mm-faint);
+}
+
+.mm-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mm-space-2);
+}
+
+.mm-stage-card--complete {
+  border-left: 3px solid var(--mm-teal);
+  padding-left: var(--mm-space-4);
+}
+
+.mm-stage-card--complete dl {
+  margin: var(--mm-space-4) 0 0;
+}
+
+.mm-stage-card--complete dl > div {
+  border-top: 1px solid var(--mm-line);
+  padding: 10px 0;
+}
+
+.mm-stage-card--complete dt {
+  color: var(--mm-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mm-stage-card--complete dd {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

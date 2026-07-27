@@ -1,13 +1,42 @@
-const TAU = Math.PI * 2;
+import { assertValidEnsembleConfig, textureProfile } from "./ensembleConfig";
+import {
+  clickTrackPull,
+  delayedOscillatorPhase,
+  effectiveDelaySeconds,
+  feedbackReliability,
+  trimHistory,
+} from "./ensembleRuntime";
+import {
+  bpmToRadPerSecond,
+  circularDifference,
+  initialPhaseFor,
+  nearlyEqual,
+  normalizePhase,
+} from "./ensembleMath";
+import {
+  assertFiniteNonNegative,
+  assertFinitePositive,
+  assertValidCouplingEdges,
+} from "./ensembleValidation";
+import type {
+  EnsembleConfig,
+} from "./ensembleConfig";
 
-export type Topology = "all-to-all" | "leader-follower" | "sections" | "click-track";
+export { ensembleConfigBounds, textureProfile } from "./ensembleConfig";
+export type {
+  EnsembleConfig,
+  RepertoireTexture,
+  TextureProfile,
+  Topology,
+} from "./ensembleConfig";
 
-export type RepertoireTexture =
-  | "pulse"
-  | "drone"
-  | "call-response"
-  | "rubato"
-  | "dense-rhythm";
+const FIXED_STEP_EPSILON_SECONDS = 1e-10;
+
+/**
+ * Integration interval used by the browser simulation loop. Rendering may be
+ * irregular, but model integration always advances in these fixed increments.
+ */
+export const fixedSimulationStepSeconds = 0.01;
 
 export type Oscillator = {
   phase: number;
@@ -26,30 +55,19 @@ export type EnsembleState = {
   oscillators: Oscillator[];
 };
 
-export type EnsembleConfig = {
-  musicianCount: number;
-  tempoBpm: number;
-  tempoSpreadBpm: number;
-  couplingStrength: number;
-  latencySeconds: number;
-  jitterSeconds: number;
-  topology: Topology;
-  repertoireTexture: RepertoireTexture;
-  clickTrackStrength: number;
-};
-
-export type TextureProfile = {
-  tempoSpreadMultiplier: number;
-  peerCouplingMultiplier: number;
-  clickTrackMultiplier: number;
-  latencyBudgetMultiplier: number;
-  jitterPenaltyMultiplier: number;
-};
-
 export type EnsembleMetrics = {
   coherence: number;
   phaseSpread: number;
-  timingErrorMs: number;
+  /**
+   * Phase spread expressed as the period-equivalent time at the ensemble's
+   * current mean natural frequency. It is a model-derived conversion, not a
+   * measured onset or network timing error.
+   */
+  phaseSpreadEquivalentMs: number;
+  /** Positive values mean the leader is ahead of the mean follower phase. */
+  leaderToFollowerPhaseLagMs: number | null;
+  /** Consecutive two-player section coherences; null outside sections mode. */
+  sectionCoherences: readonly number[] | null;
   peerCouplingShare: number;
   modelLatencyBudgetSeconds: number;
 };
@@ -67,97 +85,58 @@ export type SimulationResult = {
   finalMetrics: EnsembleMetrics;
 };
 
-export function normalizePhase(phase: number): number {
-  const wrapped = phase % TAU;
-  return wrapped < 0 ? wrapped + TAU : wrapped;
-}
+/** State retained between render frames by the fixed-step browser driver. */
+export type FixedStepSimulation = {
+  state: EnsembleState;
+  history: EnsembleState[];
+  accumulatorSeconds: number;
+};
 
-export function circularDifference(from: number, to: number): number {
-  return Math.atan2(Math.sin(to - from), Math.cos(to - from));
-}
+type SimulationProgress = {
+  state: EnsembleState;
+  history: EnsembleState[];
+  samples: SimulationSample[];
+  nextSampleTime: number;
+};
 
-export function bpmToRadPerSecond(tempoBpm: number): number {
-  return (tempoBpm / 60) * TAU;
-}
+type AdvanceSimulationInput = Readonly<{
+  progress: SimulationProgress;
+  config: EnsembleConfig;
+  edges: readonly CouplingEdge[];
+  stepSeconds: number;
+  canonicalTime: number;
+  sampleInterval: number;
+}>;
 
-export function textureProfile(texture: RepertoireTexture): TextureProfile {
-  switch (texture) {
-    case "drone":
-      return {
-        tempoSpreadMultiplier: 0.45,
-        peerCouplingMultiplier: 0.45,
-        clickTrackMultiplier: 0.25,
-        latencyBudgetMultiplier: 1.8,
-        jitterPenaltyMultiplier: 0.5,
-      };
-    case "call-response":
-      return {
-        tempoSpreadMultiplier: 0.75,
-        peerCouplingMultiplier: 0.7,
-        clickTrackMultiplier: 0.6,
-        latencyBudgetMultiplier: 1.35,
-        jitterPenaltyMultiplier: 0.7,
-      };
-    case "rubato":
-      return {
-        tempoSpreadMultiplier: 0.55,
-        peerCouplingMultiplier: 0.65,
-        clickTrackMultiplier: 0.25,
-        latencyBudgetMultiplier: 1.45,
-        jitterPenaltyMultiplier: 0.8,
-      };
-    case "dense-rhythm":
-      return {
-        tempoSpreadMultiplier: 1.25,
-        peerCouplingMultiplier: 1.2,
-        clickTrackMultiplier: 1.25,
-        latencyBudgetMultiplier: 0.62,
-        jitterPenaltyMultiplier: 1.7,
-      };
-    case "pulse":
-      return {
-        tempoSpreadMultiplier: 1,
-        peerCouplingMultiplier: 1,
-        clickTrackMultiplier: 1,
-        latencyBudgetMultiplier: 1,
-        jitterPenaltyMultiplier: 1,
-      };
-  }
-}
-
-export function coherence(oscillators: readonly Oscillator[]): number {
+function coherence(oscillators: readonly Oscillator[]): number {
   if (oscillators.length === 0) {
     return 0;
   }
 
-  const sum = oscillators.reduce(
-    (acc, oscillator) => ({
-      x: acc.x + Math.cos(oscillator.phase),
-      y: acc.y + Math.sin(oscillator.phase),
-    }),
-    { x: 0, y: 0 },
-  );
-
+  const sum = phaseVectorSum(oscillators);
   return Math.hypot(sum.x, sum.y) / oscillators.length;
 }
 
-export function meanPhase(oscillators: readonly Oscillator[]): number {
+function meanPhase(oscillators: readonly Oscillator[]): number {
   if (oscillators.length === 0) {
     return 0;
   }
 
-  const sum = oscillators.reduce(
+  const sum = phaseVectorSum(oscillators);
+  return normalizePhase(Math.atan2(sum.y, sum.x));
+}
+
+function phaseVectorSum(oscillators: readonly Oscillator[]): { x: number; y: number } {
+  return oscillators.reduce(
     (acc, oscillator) => ({
       x: acc.x + Math.cos(oscillator.phase),
       y: acc.y + Math.sin(oscillator.phase),
     }),
     { x: 0, y: 0 },
   );
-
-  return normalizePhase(Math.atan2(sum.y, sum.x));
 }
 
-export function phaseSpread(oscillators: readonly Oscillator[]): number {
+function phaseSpread(oscillators: readonly Oscillator[]): number {
   const center = meanPhase(oscillators);
   const squaredError = oscillators.reduce((sum, oscillator) => {
     const error = circularDifference(center, oscillator.phase);
@@ -167,11 +146,12 @@ export function phaseSpread(oscillators: readonly Oscillator[]): number {
   return Math.sqrt(squaredError / Math.max(oscillators.length, 1));
 }
 
-export function idealizedPhaseBudgetSeconds(tempoBpm: number): number {
+function idealizedPhaseBudgetSeconds(tempoBpm: number): number {
   return Math.PI / (2 * bpmToRadPerSecond(tempoBpm));
 }
 
 export function modelLatencyBudgetSeconds(config: EnsembleConfig): number {
+  assertValidEnsembleConfig(config);
   return idealizedPhaseBudgetSeconds(config.tempoBpm) *
     textureProfile(config.repertoireTexture).latencyBudgetMultiplier;
 }
@@ -180,6 +160,7 @@ export function modelLatencyBudgetRatio(
   config: EnsembleConfig,
   metrics: Pick<EnsembleMetrics, "modelLatencyBudgetSeconds">,
 ): number {
+  assertValidEnsembleConfig(config);
   return config.latencySeconds / Math.max(metrics.modelLatencyBudgetSeconds, 0.001);
 }
 
@@ -198,6 +179,7 @@ export function modelLatencyBudgetStatus(
 }
 
 export function peerCouplingShare(config: EnsembleConfig): number {
+  assertValidEnsembleConfig(config);
   const peer = Math.max(0, config.couplingStrength);
   const click = Math.max(0, config.clickTrackStrength);
   if (peer + click === 0) {
@@ -207,7 +189,7 @@ export function peerCouplingShare(config: EnsembleConfig): number {
   return peer / (peer + click);
 }
 
-export function timingErrorMs(state: EnsembleState): number {
+function phaseSpreadEquivalentMs(state: EnsembleState): number {
   const averageOmega =
     state.oscillators.reduce((sum, oscillator) => sum + oscillator.omega, 0) /
     Math.max(state.oscillators.length, 1);
@@ -215,18 +197,52 @@ export function timingErrorMs(state: EnsembleState): number {
   return (spread / Math.max(averageOmega, 0.001)) * 1000;
 }
 
+function leaderToFollowerPhaseLagMs(
+  state: EnsembleState,
+  config: EnsembleConfig,
+): number | null {
+  if (config.topology !== "leader-follower" || state.oscillators.length < 2) {
+    return null;
+  }
+
+  const [leader, ...followers] = state.oscillators;
+  if (!leader) {
+    return null;
+  }
+
+  const followerPhase = meanPhase(followers);
+  const leaderAheadPhase = circularDifference(followerPhase, leader.phase);
+  return (leaderAheadPhase / Math.max(leader.omega, 0.001)) * 1000;
+}
+
+function sectionCoherences(state: EnsembleState, config: EnsembleConfig): readonly number[] | null {
+  if (config.topology !== "sections") {
+    return null;
+  }
+
+  const values: number[] = [];
+  for (let start = 0; start < state.oscillators.length; start += 2) {
+    values.push(coherence(state.oscillators.slice(start, start + 2)));
+  }
+  return values;
+}
+
 export function metricsFor(state: EnsembleState, config: EnsembleConfig): EnsembleMetrics {
+  assertValidEnsembleConfig(config);
   return {
     coherence: coherence(state.oscillators),
     phaseSpread: phaseSpread(state.oscillators),
-    timingErrorMs: timingErrorMs(state),
+    phaseSpreadEquivalentMs: phaseSpreadEquivalentMs(state),
+    leaderToFollowerPhaseLagMs: leaderToFollowerPhaseLagMs(state, config),
+    sectionCoherences: sectionCoherences(state, config),
     peerCouplingShare: peerCouplingShare(config),
     modelLatencyBudgetSeconds: modelLatencyBudgetSeconds(config),
   };
 }
 
 export function createInitialState(config: EnsembleConfig): EnsembleState {
-  const count = Math.max(1, config.musicianCount);
+  assertValidEnsembleConfig(config);
+  const count = config.musicianCount;
 
   const oscillators = Array.from({ length: count }, (_, index) => {
     return {
@@ -241,7 +257,8 @@ export function createInitialState(config: EnsembleConfig): EnsembleState {
   };
 }
 
-export function naturalOmegaFor(index: number, count: number, config: EnsembleConfig): number {
+function naturalOmegaFor(index: number, count: number, config: EnsembleConfig): number {
+  assertValidEnsembleConfig(config);
   const centered = count <= 1 ? 0 : (index / (count - 1) - 0.5) * 2;
   const profile = textureProfile(config.repertoireTexture);
   const spreadOmega = bpmToRadPerSecond(config.tempoSpreadBpm * profile.tempoSpreadMultiplier);
@@ -249,7 +266,8 @@ export function naturalOmegaFor(index: number, count: number, config: EnsembleCo
 }
 
 export function retuneState(state: EnsembleState, config: EnsembleConfig): EnsembleState {
-  const count = Math.max(1, config.musicianCount);
+  assertValidEnsembleConfig(config);
+  const count = config.musicianCount;
   const oscillators = Array.from({ length: count }, (_, index) => {
     const existing = state.oscillators[index];
     return {
@@ -265,6 +283,9 @@ export function retuneState(state: EnsembleState, config: EnsembleConfig): Ensem
 }
 
 export function configsEqual(left: EnsembleConfig, right: EnsembleConfig): boolean {
+  assertValidEnsembleConfig(left);
+  assertValidEnsembleConfig(right);
+
   return (
     nearlyEqual(left.musicianCount, right.musicianCount) &&
     nearlyEqual(left.tempoBpm, right.tempoBpm) &&
@@ -279,12 +300,9 @@ export function configsEqual(left: EnsembleConfig, right: EnsembleConfig): boole
 }
 
 export function createCouplingEdges(config: EnsembleConfig): CouplingEdge[] {
-  const count = Math.max(1, config.musicianCount);
+  assertValidEnsembleConfig(config);
+  const count = config.musicianCount;
   const edges: CouplingEdge[] = [];
-
-  if (config.topology === "click-track") {
-    return edges;
-  }
 
   if (config.topology === "leader-follower") {
     for (let to = 1; to < count; to += 1) {
@@ -327,10 +345,11 @@ export function stepEnsemble(
   history: readonly EnsembleState[],
   dtSeconds: number,
 ): EnsembleState {
+  assertValidEnsembleConfig(config);
+  assertValidCouplingEdges(edges, state.oscillators.length);
   const profile = textureProfile(config.repertoireTexture);
-  const effectiveEdges = edges.filter((edge) => edge.to < state.oscillators.length);
   const nextOscillators = state.oscillators.map((oscillator, index) => {
-    const incoming = effectiveEdges.filter((edge) => edge.to === index);
+    const incoming = edges.filter((edge) => edge.to === index);
     const peerPull = incoming.reduce((sum, edge) => {
       const delay = effectiveDelaySeconds(edge, config, state.time);
       const delayedPhase = delayedOscillatorPhase(history, state, edge.from, state.time - delay);
@@ -360,141 +379,115 @@ export function stepEnsemble(
   };
 }
 
+/**
+ * Advances a simulation by elapsed wall-clock time without coupling numerical
+ * integration to render-frame duration. The remaining fractional interval is
+ * retained for the next call.
+ */
+export function advanceFixedStepSimulation(
+  simulation: FixedStepSimulation,
+  config: EnsembleConfig,
+  elapsedSeconds: number,
+): FixedStepSimulation {
+  assertValidEnsembleConfig(config);
+  assertFiniteNonNegative("elapsedSeconds", elapsedSeconds);
+  assertFiniteNonNegative("accumulatorSeconds", simulation.accumulatorSeconds);
+
+  const edges = createCouplingEdges(config);
+  const history = [...simulation.history];
+  let state = simulation.state;
+  let accumulatorSeconds = simulation.accumulatorSeconds + elapsedSeconds;
+
+  while (accumulatorSeconds + FIXED_STEP_EPSILON_SECONDS >= fixedSimulationStepSeconds) {
+    history.push(state);
+    trimHistory(history, Math.max(1, config.latencySeconds + config.jitterSeconds + 0.5));
+    state = stepEnsemble(state, config, edges, history, fixedSimulationStepSeconds);
+    accumulatorSeconds -= fixedSimulationStepSeconds;
+  }
+
+  return {
+    state,
+    history,
+    accumulatorSeconds:
+      accumulatorSeconds < FIXED_STEP_EPSILON_SECONDS ? 0 : accumulatorSeconds,
+  };
+}
+
+function advanceSimulationStep(input: AdvanceSimulationInput): SimulationProgress {
+  const { progress, config, edges, stepSeconds, canonicalTime, sampleInterval } = input;
+  progress.history.push(progress.state);
+  trimHistory(
+    progress.history,
+    Math.max(1, config.latencySeconds + config.jitterSeconds + 0.5),
+  );
+  const advanced = stepEnsemble(
+    progress.state,
+    config,
+    edges,
+    progress.history,
+    stepSeconds,
+  );
+  const state = { ...advanced, time: canonicalTime };
+  let nextSampleTime = progress.nextSampleTime;
+
+  if (state.time + FIXED_STEP_EPSILON_SECONDS >= nextSampleTime) {
+    progress.samples.push({ state, metrics: metricsFor(state, config) });
+    while (nextSampleTime <= state.time + FIXED_STEP_EPSILON_SECONDS) {
+      nextSampleTime += sampleInterval;
+    }
+  }
+
+  return { ...progress, state, nextSampleTime };
+}
+
 export function simulateEnsemble(
   config: EnsembleConfig,
   durationSeconds: number,
   dtSeconds = 0.01,
 ): SimulationResult {
+  assertValidEnsembleConfig(config);
   assertFiniteNonNegative("durationSeconds", durationSeconds);
   assertFinitePositive("dtSeconds", dtSeconds);
 
   const edges = createCouplingEdges(config);
-  const samples: SimulationSample[] = [];
-  const history: EnsembleState[] = [];
-  let state = createInitialState(config);
   const sampleInterval = 0.1;
-  let nextSampleTime = 0;
-
-  while (state.time < durationSeconds) {
-    history.push(state);
-    trimHistory(history, Math.max(1, config.latencySeconds + config.jitterSeconds + 0.5));
-    state = stepEnsemble(state, config, edges, history, dtSeconds);
-
-    if (state.time >= nextSampleTime) {
-      samples.push({
-        state,
-        metrics: metricsFor(state, config),
-      });
-      nextSampleTime += sampleInterval;
-    }
-  }
-
-  return {
-    samples,
-    finalState: state,
-    finalMetrics: metricsFor(state, config),
+  let progress: SimulationProgress = {
+    state: createInitialState(config),
+    history: [],
+    samples: [],
+    nextSampleTime: 0,
   };
-}
-
-function delayedOscillatorPhase(
-  history: readonly EnsembleState[],
-  fallback: EnsembleState,
-  oscillatorIndex: number,
-  targetTime: number,
-): number {
-  if (targetTime <= 0 || history.length === 0) {
-    return fallback.oscillators[oscillatorIndex]?.phase ?? 0;
-  }
-
-  let candidate = history[0] ?? fallback;
-  for (const entry of history) {
-    if (entry.time > targetTime) {
-      break;
-    }
-    candidate = entry;
-  }
-
-  return candidate.oscillators[oscillatorIndex]?.phase ?? fallback.oscillators[0]?.phase ?? 0;
-}
-
-function clickTrackPull(time: number, phase: number, config: EnsembleConfig): number {
-  if (config.clickTrackStrength <= 0) {
-    return 0;
-  }
-
-  const profile = textureProfile(config.repertoireTexture);
-  const clickPhase = normalizePhase(bpmToRadPerSecond(config.tempoBpm) * time);
-  return (
-    config.clickTrackStrength *
-    profile.clickTrackMultiplier *
-    Math.sin(circularDifference(phase, clickPhase))
+  const fullStepCount = Math.floor(
+    (durationSeconds + FIXED_STEP_EPSILON_SECONDS) / dtSeconds,
   );
-}
 
-function effectiveDelaySeconds(
-  edge: CouplingEdge,
-  config: EnsembleConfig,
-  time: number,
-): number {
-  if (config.jitterSeconds <= 0) {
-    return edge.delaySeconds;
+  for (let stepIndex = 0; stepIndex < fullStepCount; stepIndex += 1) {
+    progress = advanceSimulationStep({
+      progress,
+      config,
+      edges,
+      stepSeconds: dtSeconds,
+      canonicalTime: Math.min(durationSeconds, (stepIndex + 1) * dtSeconds),
+      sampleInterval,
+    });
   }
 
-  const frameSeconds = 0.025;
-  const frame = Math.floor(time / frameSeconds);
-  const blend = time / frameSeconds - frame;
-  const previous = deterministicNoise(edge.from, edge.to, frame);
-  const next = deterministicNoise(edge.from, edge.to, frame + 1);
-  const smoothBlend = blend * blend * (3 - 2 * blend);
-  const jitter = previous + (next - previous) * smoothBlend;
-  return Math.max(0, edge.delaySeconds + jitter * config.jitterSeconds);
-}
-
-function feedbackReliability(config: EnsembleConfig): number {
-  if (config.jitterSeconds <= 0) {
-    return 1;
+  const remainderSeconds = durationSeconds - fullStepCount * dtSeconds;
+  if (remainderSeconds > FIXED_STEP_EPSILON_SECONDS) {
+    progress = advanceSimulationStep({
+      progress,
+      config,
+      edges,
+      stepSeconds: remainderSeconds,
+      canonicalTime: durationSeconds,
+      sampleInterval,
+    });
   }
 
-  const profile = textureProfile(config.repertoireTexture);
-  const jitterRatio = config.jitterSeconds / Math.max(config.latencySeconds, 0.01);
-  return Math.max(0.08, 1 - jitterRatio * 1.35 * profile.jitterPenaltyMultiplier);
-}
-
-function trimHistory(history: EnsembleState[], keepSeconds: number): void {
-  const latest = history[history.length - 1];
-  if (!latest) {
-    return;
-  }
-
-  const cutoff = latest.time - keepSeconds;
-  while (history.length > 2 && history[0]?.time !== undefined && history[0].time < cutoff) {
-    history.shift();
-  }
-}
-
-function assertFiniteNonNegative(name: string, value: number): void {
-  if (!Number.isFinite(value) || value < 0) {
-    throw new RangeError(`${name} must be a finite non-negative number.`);
-  }
-}
-
-function assertFinitePositive(name: string, value: number): void {
-  if (!Number.isFinite(value) || value <= 0) {
-    throw new RangeError(`${name} must be a finite positive number.`);
-  }
-}
-
-function deterministicNoise(from: number, to: number, frame: number): number {
-  const seed = (from + 1) * 12.9898 + (to + 1) * 78.233 + (frame + 1) * 37.719;
-  const sine = Math.sin(seed) * 43758.5453;
-  return (sine - Math.floor(sine)) * 2 - 1;
-}
-
-function initialPhaseFor(index: number, count: number): number {
-  const imperfectCircle = (TAU * index) / count + 0.41 * Math.sin((index + 1) * 1.73);
-  return normalizePhase(imperfectCircle);
-}
-
-function nearlyEqual(left: number, right: number): boolean {
-  return Math.abs(left - right) < 1e-9;
+  const finalMetrics = metricsFor(progress.state, config);
+  return {
+    samples: progress.samples,
+    finalState: progress.state,
+    finalMetrics,
+  };
 }

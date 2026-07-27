@@ -1,0 +1,266 @@
+/* Workbench layout, lesson brief, analysis stage, transport, band */
+
+.mm-workbench {
+  background:
+    radial-gradient(1200px 400px at 20% -10%, oklch(0.96 0.02 145 / 0.55), transparent 60%),
+    var(--mm-canvas);
+  display: block;
+  min-width: 0;
+}
+
+.mm-workbench__content {
+  min-width: 0;
+  padding: 22px 28px 0;
+}
+
+#mm-current-task:focus-visible {
+  outline: 3px solid oklch(0.4 0.09 145 / 0.28);
+  outline-offset: 4px;
+}
+
+.mm-lesson-brief {
+  align-items: start;
+  border-bottom: 1px solid var(--mm-line);
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 0;
+  padding: 4px 2px 16px;
+}
+
+.mm-lesson-brief__identity {
+  align-self: start;
+  min-width: 0;
+}
+
+.mm-lesson-brief__crumb {
+  color: var(--mm-faint);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.mm-lesson-brief h1 {
+  color: var(--mm-ink);
+  font-family: var(--mm-display);
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.mm-lesson-brief__question {
+  color: var(--mm-ink-soft);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 10px 0 0;
+  max-width: 52ch;
+}
+
+/* Equation plate: surface inset card */
+.mm-lesson-brief__equation {
+  align-self: start;
+  background: var(--mm-surface-subtle);
+  border: 1px solid var(--mm-line);
+  border-radius: var(--mm-radius);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.8);
+  max-width: 240px;
+  min-width: 200px;
+  padding: 14px 16px;
+}
+
+.mm-lesson-brief__equation-label {
+  color: var(--mm-faint);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.mm-lesson-brief__equation code {
+  color: var(--mm-ink);
+  display: block;
+  font-family: var(--mm-display);
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.mm-lesson-brief__equation p {
+  color: var(--mm-muted);
+  font-family: var(--mm-ui);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  margin: 8px 0 0;
+}
+
+.mm-workbench-grid {
+  align-items: start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, var(--mm-workflow));
+  min-height: 0;
+}
+
+.mm-analysis-stage {
+  background: transparent;
+  border-right: 1px solid var(--mm-line);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 720px;
+  min-width: 0;
+  padding: 18px 24px 24px;
+}
+
+.mm-transport {
+  align-items: center;
+  background: transparent;
+  border-top: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 2px;
+}
+
+.mm-transport button:first-child:not(:disabled) {
+  background: var(--mm-blue);
+  border-color: var(--mm-blue);
+  color: white;
+}
+
+.mm-transport button:first-child:not(:disabled):hover {
+  background: var(--mm-blue-deep);
+  border-color: var(--mm-blue-deep);
+  color: white;
+}
+
+.mm-transport .mm-icon {
+  height: 16px;
+  width: 16px;
+}
+
+.mm-transport-time {
+  border-left: 1px solid var(--mm-line);
+  display: grid;
+  font-size: 0.75rem;
+  gap: 1px;
+  margin-left: auto;
+  padding-left: 12px;
+}
+
+.mm-transport-time span {
+  color: var(--mm-faint);
+  text-transform: uppercase;
+}
+
+.mm-transport-time strong,
+.mm-transport-time {
+  color: var(--mm-muted);
+  font-family: var(--mm-mono);
+  font-weight: 500;
+}
+
+.mm-compact-toggle,
+.mm-volume-control {
+  align-items: center;
+  color: var(--mm-ink-soft);
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 500;
+  gap: 6px;
+}
+
+.mm-volume-control input {
+  max-width: 80px;
+}
+
+.mm-audio-message {
+  background: var(--mm-orange-soft);
+  border: 1px solid oklch(0.88 0.04 65);
+  border-radius: var(--mm-radius);
+  color: var(--mm-ink-soft);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  margin: 0;
+  padding: 10px 14px;
+}
+
+.mm-workflow-panel {
+  align-self: start;
+  background: var(--mm-surface);
+  border-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  padding: 16px 16px 24px;
+  position: sticky;
+  top: calc(var(--mm-header-h) + 12px);
+}
+
+.mm-workbench-band {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.42fr);
+  margin-top: 0;
+  padding: 0 4px;
+}
+
+.mm-interpretation-boundary {
+  align-items: start;
+  background: var(--mm-orange-soft);
+  border: 1px solid oklch(0.88 0.04 65);
+  border-radius: var(--mm-radius);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto 1fr;
+  min-width: 0;
+  padding: 12px 14px;
+}
+
+.mm-interpretation-boundary__mark {
+  align-items: center;
+  border: 1.5px solid var(--mm-orange);
+  border-radius: 50%;
+  color: var(--mm-orange-deep);
+  display: flex;
+  font-family: var(--mm-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.mm-interpretation-boundary__mark .mm-icon {
+  height: 16px;
+  width: 16px;
+}
+
+.mm-interpretation-boundary h2 {
+  color: var(--mm-orange-deep);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0 0 3px;
+  text-transform: uppercase;
+}
+
+.mm-interpretation-boundary p {
+  color: var(--mm-ink-soft);
+  font-family: var(--mm-ui);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 70ch;
+}

@@ -2,9 +2,15 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import "katex/dist/katex.min.css";
-import "./styles.css";
+import "./styles/index.css";
 
-createRoot(document.getElementById("root") as HTMLElement).render(
+const rootElement = document.getElementById("root");
+
+if (!rootElement) {
+  throw new Error("Missing #root element for Musica Mathematica.");
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <App />
   </StrictMode>,
