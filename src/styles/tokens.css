@@ -1,0 +1,80 @@
+/* Application design tokens in OKLCH.
+   Keep --mm-* names for component compatibility. */
+
+:root {
+  --mm-canvas: oklch(1 0 0);
+  --mm-surface: oklch(0.985 0.006 145);
+  --mm-surface-subtle: oklch(0.978 0.008 145);
+  --mm-surface-strong: oklch(0.965 0.01 145);
+  --mm-ink: oklch(0.22 0.025 250);
+  --mm-ink-soft: oklch(0.38 0.02 250);
+  --mm-muted: oklch(0.5 0.015 250);
+  --mm-faint: oklch(0.62 0.012 250);
+  --mm-line: oklch(0.9 0.01 145);
+  --mm-line-strong: oklch(0.82 0.015 145);
+
+  /* Primary palette. --mm-blue* aliases remain compatibility surfaces. */
+  --mm-blue: oklch(0.4 0.09 145);
+  --mm-blue-deep: oklch(0.32 0.08 145);
+  --mm-blue-soft: oklch(0.96 0.02 145);
+  --mm-primary: var(--mm-blue);
+  --mm-primary-deep: var(--mm-blue-deep);
+  --mm-primary-soft: var(--mm-blue-soft);
+  --mm-primary-mid: oklch(0.88 0.04 145);
+
+  /* Caution palette. */
+  --mm-orange: oklch(0.55 0.12 55);
+  --mm-orange-deep: oklch(0.42 0.1 50);
+  --mm-orange-soft: oklch(0.96 0.025 70);
+  --mm-brass: var(--mm-orange);
+  --mm-brass-deep: var(--mm-orange-deep);
+  --mm-brass-soft: var(--mm-orange-soft);
+  --mm-caution: oklch(0.55 0.1 45);
+
+  /* Local status */
+  --mm-teal: oklch(0.45 0.08 200);
+  --mm-teal-soft: oklch(0.96 0.02 200);
+
+  --mm-danger: oklch(0.45 0.12 25);
+  --mm-danger-soft: oklch(0.96 0.02 25);
+
+  /* Series moss family (not rainbow) */
+  --mm-series-0: oklch(0.4 0.09 145);
+  --mm-series-1: oklch(0.52 0.08 150);
+  --mm-series-2: oklch(0.45 0.08 200);
+  --mm-series-3: oklch(0.35 0.06 160);
+
+  /* Self-hosted faces in public/fonts under CSP font-src 'self'. */
+  --mm-display: "Source Serif 4", "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+  --mm-ui: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mm-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --mm-radius-sm: 4px;
+  --mm-radius: 8px;
+  --mm-radius-lg: 12px;
+
+  --mm-shadow-plate:
+    0 1px 0 var(--mm-line),
+    0 8px 24px -12px oklch(0.22 0.02 250 / 0.12);
+
+  --mm-space-1: 4px;
+  --mm-space-2: 8px;
+  --mm-space-3: 12px;
+  --mm-space-4: 16px;
+  --mm-space-5: 20px;
+  --mm-space-6: 24px;
+  --mm-space-8: 32px;
+
+  --mm-rail: 248px;
+  --mm-workflow: 320px;
+  --mm-header-h: 60px;
+
+  color: var(--mm-ink);
+  background: var(--mm-canvas);
+  font-family: var(--mm-ui);
+  font-size: 15px;
+  line-height: 1.45;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}

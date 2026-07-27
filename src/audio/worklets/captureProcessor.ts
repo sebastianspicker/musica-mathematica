@@ -1,0 +1,78 @@
+import type { WorkletAttachMessage, WorkletCreditMessage, WorkerFrameMessage } from "../workerProtocol";
+
+declare const sampleRate: number;
+declare abstract class AudioWorkletProcessor {
+  readonly port: MessagePort;
+  constructor(options?: AudioWorkletNodeOptions);
+  abstract process(inputs: Float32Array[][], outputs: Float32Array[][], parameters: Record<string, Float32Array>): boolean;
+}
+declare function registerProcessor(name: string, processorCtor: new (options: AudioWorkletNodeOptions) => AudioWorkletProcessor): void;
+
+const PROCESSOR_NAME = "musica-mathematica-capture";
+
+class CaptureProcessor extends AudioWorkletProcessor {
+  private readonly frameSize: 2048 | 4096;
+  private readonly hopSize: number;
+  private readonly ring: Float32Array;
+  private outputPort: MessagePort | null = null;
+  private ringIndex = 0;
+  private sampleCount = 0;
+  private sequence = 0;
+  private credits = 0;
+  private droppedFrames = 0;
+
+  constructor(options: AudioWorkletNodeOptions) {
+    super(options);
+    const requestedFrameSize = options.processorOptions?.frameSize;
+    this.frameSize = requestedFrameSize === 4096 ? 4096 : 2048;
+    this.hopSize = this.frameSize / 2;
+    this.ring = new Float32Array(this.frameSize);
+    this.port.onmessage = (event: MessageEvent<WorkletAttachMessage>) => {
+      if (event.data.type !== "attach-output") return;
+      this.outputPort = event.data.port;
+      this.outputPort.onmessage = (creditEvent: MessageEvent<WorkletCreditMessage>) => {
+        if (creditEvent.data.type === "credits" && Number.isSafeInteger(creditEvent.data.count)) {
+          this.credits += Math.max(0, creditEvent.data.count);
+        }
+      };
+      this.outputPort.start();
+    };
+  }
+
+  process(inputs: Float32Array[][]): boolean {
+    const channel = inputs[0]?.[0];
+    if (!channel) return true;
+    for (let index = 0; index < channel.length; index += 1) {
+      this.ring[this.ringIndex] = channel[index];
+      this.ringIndex = (this.ringIndex + 1) % this.frameSize;
+      this.sampleCount += 1;
+      if (this.sampleCount < this.frameSize || (this.sampleCount - this.frameSize) % this.hopSize !== 0) continue;
+      const sequence = this.sequence;
+      this.sequence += 1;
+      if (!this.outputPort || this.credits <= 0) {
+        this.droppedFrames += 1;
+        continue;
+      }
+      const samples = new Float32Array(this.frameSize);
+      for (let frameIndex = 0; frameIndex < this.frameSize; frameIndex += 1) {
+        samples[frameIndex] = this.ring[(this.ringIndex + frameIndex) % this.frameSize];
+      }
+      const message: WorkerFrameMessage = {
+        type: "audio-frame",
+        frame: {
+          sequence,
+          startSample: this.sampleCount - this.frameSize,
+          sampleRateHz: sampleRate,
+          samples,
+          droppedBefore: this.droppedFrames,
+        },
+      };
+      this.outputPort.postMessage(message, [samples.buffer]);
+      this.credits -= 1;
+      this.droppedFrames = 0;
+    }
+    return true;
+  }
+}
+
+registerProcessor(PROCESSOR_NAME, CaptureProcessor);

@@ -1,16 +1,25 @@
 import { describe, expect, it } from "vitest";
 import {
   type EnsembleConfig,
-  bpmToRadPerSecond,
+  type FixedStepSimulation,
+  advanceFixedStepSimulation,
   configsEqual,
+  createCouplingEdges,
   createInitialState,
+  metricsFor,
+  modelLatencyBudgetRatio,
   modelLatencyBudgetSeconds,
   modelLatencyBudgetStatus,
   peerCouplingShare,
   retuneState,
   simulateEnsemble,
+  stepEnsemble,
 } from "./ensemble";
 import { defaultConfig } from "./presets";
+
+function bpmToRadPerSecond(tempoBpm: number): number {
+  return (tempoBpm / 60) * Math.PI * 2;
+}
 
 function run(config: Partial<EnsembleConfig>, seconds = 18): number {
   return simulateEnsemble({ ...defaultConfig, ...config }, seconds).finalMetrics.coherence;
@@ -20,6 +29,23 @@ function omegaSpan(config: EnsembleConfig): number {
   const state = createInitialState(config);
   const omegas = state.oscillators.map((oscillator) => oscillator.omega);
   return Math.max(...omegas) - Math.min(...omegas);
+}
+
+function advanceAcrossFrameChunks(
+  config: EnsembleConfig,
+  frameChunksSeconds: readonly number[],
+): FixedStepSimulation {
+  const initialSimulation: FixedStepSimulation = {
+    state: createInitialState(config),
+    history: [],
+    accumulatorSeconds: 0,
+  };
+
+  return frameChunksSeconds.reduce(
+    (simulation, elapsedSeconds) =>
+      advanceFixedStepSimulation(simulation, config, elapsedSeconds),
+    initialSimulation,
+  );
 }
 
 describe("ensemble simulation invariants", () => {
@@ -100,6 +126,98 @@ describe("ensemble simulation invariants", () => {
 
     expect(click.coherence).toBeGreaterThan(noClick.coherence + 0.2);
     expect(peerCouplingShare(clickConfig)).toBeLessThan(peerCouplingShare(noClickConfig));
+  });
+
+  it("keeps peer coupling active when a click track adds external forcing", () => {
+    const config: EnsembleConfig = {
+      ...defaultConfig,
+      musicianCount: 3,
+      topology: "click-track",
+      couplingStrength: 1.2,
+      clickTrackStrength: 1.8,
+    };
+
+    const edges = createCouplingEdges(config);
+
+    expect(edges).toHaveLength(6);
+    expect(edges.every((edge) => edge.strength === config.couplingStrength)).toBe(true);
+    expect(peerCouplingShare(config)).toBeCloseTo(0.4);
+  });
+
+  it("produces the same golden trace regardless of render-frame chunking", () => {
+    const config: EnsembleConfig = {
+      ...defaultConfig,
+      tempoBpm: 118,
+      tempoSpreadBpm: 9,
+      couplingStrength: 1.25,
+      latencySeconds: 0.04,
+      jitterSeconds: 0.012,
+      topology: "click-track",
+      clickTrackStrength: 1.6,
+    };
+    const oneFrame = advanceAcrossFrameChunks(config, [0.1]);
+    const unevenFrames = advanceAcrossFrameChunks(config, [0.017, 0.041, 0.009, 0.033]);
+
+    const trace = (simulation: typeof oneFrame) => ({
+      time: simulation.state.time,
+      accumulatorSeconds: simulation.accumulatorSeconds,
+      phases: simulation.state.oscillators.map((oscillator) => oscillator.phase),
+      historyTimes: simulation.history.map((entry) => entry.time),
+    });
+
+    expect(trace(unevenFrames)).toEqual(trace(oneFrame));
+    expect(trace(oneFrame)).toEqual({
+      time: 0.09999999999999999,
+      accumulatorSeconds: 0,
+      phases: [
+        1.503128093205347,
+        1.7407022019563638,
+        2.2622870908572823,
+        3.7279854204281806,
+        4.73353141224523,
+        4.950090318592354,
+        6.011571838644364,
+        1.0058252620982182,
+      ],
+      historyTimes: [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.060000000000000005, 0.07, 0.08, 0.09],
+    });
+  });
+
+  it("keeps empty oscillator metrics finite", () => {
+    const metrics = metricsFor({ time: 0, oscillators: [] }, defaultConfig);
+
+    expect(metrics.coherence).toBe(0);
+    expect(metrics.phaseSpread).toBe(0);
+    expect(metrics.phaseSpreadEquivalentMs).toBe(0);
+    expect(metrics.leaderToFollowerPhaseLagMs).toBeNull();
+    expect(metrics.sectionCoherences).toBeNull();
+  });
+
+  it("reports role-aware metrics only for the topology that defines them", () => {
+    const state = {
+      time: 0,
+      oscillators: [
+        { phase: Math.PI / 2, omega: bpmToRadPerSecond(120) },
+        { phase: 0, omega: bpmToRadPerSecond(120) },
+        { phase: 0, omega: bpmToRadPerSecond(120) },
+        { phase: Math.PI, omega: bpmToRadPerSecond(120) },
+      ],
+    };
+
+    const leaderFollower = metricsFor(state, {
+      ...defaultConfig,
+      topology: "leader-follower",
+    });
+    const sections = metricsFor(state, { ...defaultConfig, topology: "sections" });
+    const allToAll = metricsFor(state, { ...defaultConfig, topology: "all-to-all" });
+
+    expect(leaderFollower.leaderToFollowerPhaseLagMs).toBeCloseTo(125);
+    expect(leaderFollower.sectionCoherences).toBeNull();
+    expect(sections.leaderToFollowerPhaseLagMs).toBeNull();
+    expect(sections.sectionCoherences?.[0]).toBeCloseTo(Math.SQRT1_2);
+    expect(sections.sectionCoherences?.[1]).toBeCloseTo(0);
+    expect(allToAll.leaderToFollowerPhaseLagMs).toBeNull();
+    expect(allToAll.sectionCoherences).toBeNull();
   });
 
   it("initial state keeps the requested musician count", () => {
@@ -240,5 +358,167 @@ describe("ensemble simulation invariants", () => {
   it("rejects non-finite or negative simulation durations", () => {
     expect(() => simulateEnsemble(defaultConfig, Number.POSITIVE_INFINITY)).toThrow(RangeError);
     expect(() => simulateEnsemble(defaultConfig, -1)).toThrow(RangeError);
+  });
+
+  it("accepts model config values at the supported UI boundaries", () => {
+    const minConfig: EnsembleConfig = {
+      musicianCount: 2,
+      tempoBpm: 50,
+      tempoSpreadBpm: 0,
+      couplingStrength: 0,
+      latencySeconds: 0,
+      jitterSeconds: 0,
+      topology: "all-to-all",
+      repertoireTexture: "pulse",
+      clickTrackStrength: 0,
+    };
+    const maxConfig: EnsembleConfig = {
+      musicianCount: 16,
+      tempoBpm: 180,
+      tempoSpreadBpm: 24,
+      couplingStrength: 3,
+      latencySeconds: 0.18,
+      jitterSeconds: 0.06,
+      topology: "click-track",
+      repertoireTexture: "dense-rhythm",
+      clickTrackStrength: 3,
+    };
+
+    expect(createInitialState(minConfig).oscillators).toHaveLength(2);
+    expect(createInitialState(maxConfig).oscillators).toHaveLength(16);
+    expect(() => simulateEnsemble(minConfig, 0.02)).not.toThrow();
+    expect(() => simulateEnsemble(maxConfig, 0.02)).not.toThrow();
+  });
+
+  it("rejects invalid model config boundaries before simulation", () => {
+    const invalidConfigs: Partial<EnsembleConfig>[] = [
+      { musicianCount: 1 },
+      { musicianCount: 2.5 },
+      { musicianCount: Number.NaN },
+      { tempoBpm: 0 },
+      { tempoBpm: Number.POSITIVE_INFINITY },
+      { tempoSpreadBpm: -0.5 },
+      { couplingStrength: -0.1 },
+      { latencySeconds: -0.001 },
+      { jitterSeconds: -0.001 },
+      { clickTrackStrength: -0.1 },
+      { topology: "mesh" as EnsembleConfig["topology"] },
+      { repertoireTexture: "noise" as EnsembleConfig["repertoireTexture"] },
+    ];
+
+    for (const patch of invalidConfigs) {
+      expect(() => createInitialState({ ...defaultConfig, ...patch })).toThrow(RangeError);
+      expect(() => simulateEnsemble({ ...defaultConfig, ...patch }, 0.02)).toThrow(RangeError);
+    }
+  });
+
+  it("rejects invalid configs across public model helpers", () => {
+    const invalidConfig = { ...defaultConfig, tempoBpm: 0 };
+    const validState = createInitialState(defaultConfig);
+    const validEdges = createCouplingEdges(defaultConfig);
+    const metrics = { modelLatencyBudgetSeconds: 1 };
+
+    expect(() => createCouplingEdges(invalidConfig)).toThrow(RangeError);
+    expect(() => retuneState(validState, invalidConfig)).toThrow(RangeError);
+    expect(() => modelLatencyBudgetSeconds(invalidConfig)).toThrow(RangeError);
+    expect(() => modelLatencyBudgetRatio(invalidConfig, metrics)).toThrow(RangeError);
+    expect(() => modelLatencyBudgetStatus(invalidConfig, metrics)).toThrow(RangeError);
+    expect(() => peerCouplingShare(invalidConfig)).toThrow(RangeError);
+    expect(() => metricsFor(validState, invalidConfig)).toThrow(RangeError);
+    expect(() => stepEnsemble(validState, invalidConfig, validEdges, [], 0.01)).toThrow(
+      RangeError,
+    );
+  });
+
+  it("rejects malformed delayed-coupling edge endpoints", () => {
+    const state = createInitialState({ ...defaultConfig, musicianCount: 2 });
+    const malformedEdges = [
+      { from: -1, to: 0, strength: 1, delaySeconds: 0.01 },
+      { from: 2, to: 0, strength: 1, delaySeconds: 0.01 },
+      { from: 0, to: -1, strength: 1, delaySeconds: 0.01 },
+      { from: 0, to: 2, strength: 1, delaySeconds: 0.01 },
+    ];
+
+    for (const edge of malformedEdges) {
+      expect(() =>
+        stepEnsemble(state, { ...defaultConfig, musicianCount: 2 }, [edge], [state], 0.01),
+      ).toThrow(RangeError);
+    }
+  });
+
+  it("uses the current source oscillator for intended early delayed-coupling startup", () => {
+    const config: EnsembleConfig = {
+      ...defaultConfig,
+      musicianCount: 2,
+      tempoSpreadBpm: 0,
+      couplingStrength: 1,
+      latencySeconds: 0.1,
+      jitterSeconds: 0,
+      clickTrackStrength: 0,
+    };
+    const state = {
+      time: 0,
+      oscillators: [
+        { phase: 0, omega: 0 },
+        { phase: Math.PI / 2, omega: 0 },
+      ],
+    };
+    const edge = { from: 1, to: 0, strength: 1, delaySeconds: 0.1 };
+
+    const nextFromEmptyHistory = stepEnsemble(state, config, [edge], [], 0.01);
+    const nextFromBeforeZero = stepEnsemble(
+      { ...state, time: 0.05 },
+      config,
+      [edge],
+      [state],
+      0.01,
+    );
+
+    expect(nextFromEmptyHistory.oscillators[0]?.phase).toBeGreaterThan(0);
+    expect(nextFromBeforeZero.oscillators[0]?.phase).toBeGreaterThan(0);
+  });
+
+  it("rejects mismatched delayed-coupling history instead of falling back to oscillator zero", () => {
+    const config: EnsembleConfig = {
+      ...defaultConfig,
+      musicianCount: 2,
+      tempoSpreadBpm: 0,
+      couplingStrength: 1,
+      latencySeconds: 0.05,
+      jitterSeconds: 0,
+      clickTrackStrength: 0,
+    };
+    const state = {
+      time: 1,
+      oscillators: [
+        { phase: 0, omega: 0 },
+        { phase: Math.PI / 2, omega: 0 },
+      ],
+    };
+    const mismatchedHistory = [
+      {
+        time: 0.9,
+        oscillators: [{ phase: 0, omega: 0 }],
+      },
+    ];
+
+    expect(() =>
+      stepEnsemble(
+        state,
+        config,
+        [{ from: 1, to: 0, strength: 1, delaySeconds: 0.05 }],
+        mismatchedHistory,
+        0.01,
+      ),
+    ).toThrow(RangeError);
+  });
+
+  it("ends finite trials at their declared duration without an extra integration step", () => {
+    const eightSeconds = simulateEnsemble(defaultConfig, 8, 0.01);
+    const partialStep = simulateEnsemble(defaultConfig, 0.025, 0.01);
+
+    expect(eightSeconds.finalState.time).toBe(8);
+    expect(eightSeconds.samples.every((sample) => sample.state.time <= 8)).toBe(true);
+    expect(partialStep.finalState.time).toBe(0.025);
   });
 });

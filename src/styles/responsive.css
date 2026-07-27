@@ -1,0 +1,474 @@
+/* Breakpoints, reduced motion, print */
+
+@media (max-width: 1260px) {
+  .mm-global-header {
+    gap: var(--mm-space-3);
+    grid-template-columns: minmax(200px, 1fr) auto;
+  }
+
+  .mm-global-status {
+    justify-content: flex-end;
+  }
+
+  .mm-global-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .mm-curriculum-rail {
+    height: calc(100dvh - 112px);
+    top: 112px;
+  }
+
+  .mm-workbench__content {
+    padding-inline: 22px;
+  }
+
+  .mm-workbench-grid {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
+  .mm-workflow-panel {
+    top: 136px;
+  }
+
+  .mm-result-visual__body {
+    gap: 8px 12px;
+    grid-template-columns: minmax(0, 1fr) 180px;
+  }
+}
+
+@media (max-width: 1040px) {
+  .mm-shell {
+    grid-template-columns: 218px minmax(0, 1fr);
+  }
+
+  .mm-curriculum-rail__domain-heading {
+    font-size: 0.77rem;
+  }
+
+  .mm-workbench-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mm-analysis-stage {
+    border-right: 0;
+    min-height: 0;
+  }
+
+  .mm-workflow-panel {
+    border-top: 1px solid var(--mm-line);
+    position: static;
+  }
+
+  .mm-inspector-stack {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mm-inspector-action,
+  .mm-audio-input,
+  .mm-audio-message {
+    grid-column: 1 / -1;
+  }
+
+  .mm-workbench-band {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .mm-global-header {
+    grid-template-columns: 1fr auto;
+    position: static;
+  }
+
+  .mm-global-status {
+    justify-content: flex-end;
+  }
+
+  .mm-global-actions {
+    grid-column: auto;
+  }
+
+  .mm-global-actions button span {
+    display: none;
+  }
+
+  .mm-global-actions button {
+    min-width: 38px;
+    padding: 0 9px;
+  }
+
+  .mm-shell {
+    display: block;
+  }
+
+  .mm-curriculum-rail {
+    border-bottom: 1px solid var(--mm-line);
+    border-right: 0;
+    height: auto;
+    overflow: visible;
+    padding: 10px 14px;
+    position: static;
+  }
+
+  .mm-curriculum-rail__toggle {
+    align-items: center;
+    display: grid;
+    grid-template-columns: 20px 1fr 18px;
+    min-height: 48px;
+    text-align: left;
+    width: 100%;
+  }
+
+  .mm-curriculum-rail__toggle > span {
+    display: grid;
+    gap: 1px;
+  }
+
+  .mm-curriculum-rail__toggle small {
+    color: var(--mm-muted);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .mm-curriculum-rail__toggle strong {
+    font-size: 0.78rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mm-curriculum-rail__toggle .mm-icon:last-child {
+    transition: transform 160ms ease;
+  }
+
+  .mm-curriculum-rail--expanded .mm-curriculum-rail__toggle .mm-icon:last-child {
+    transform: rotate(180deg);
+  }
+
+  .mm-curriculum-rail__heading {
+    display: none;
+  }
+
+  .mm-curriculum-rail__domains {
+    display: none;
+    padding-top: 10px !important;
+  }
+
+  .mm-curriculum-rail--expanded .mm-curriculum-rail__domains {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mm-curriculum-rail--expanded .mm-curriculum-rail__domain--active {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .mm-curriculum-rail__domain {
+    min-width: 0;
+  }
+
+  .mm-curriculum-rail__domain-heading {
+    min-height: 40px;
+  }
+
+  .mm-curriculum-rail__domain--active .mm-curriculum-rail__lessons {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding-left: 32px !important;
+  }
+
+  .mm-workbench__content {
+    padding-top: 20px;
+  }
+}
+
+@media (max-width: 620px) {
+  .mm-global-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding: 10px 14px;
+  }
+
+  .mm-brand-lockup {
+    flex: 1 0 100%;
+  }
+
+  .mm-brand-lockup p {
+    display: none;
+  }
+
+  .mm-global-status {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+  }
+
+  .mm-global-actions {
+    flex: 0 0 auto;
+  }
+
+  .mm-global-message {
+    padding-inline: 14px;
+  }
+
+  .mm-confirm-dialog form {
+    padding: 22px;
+  }
+
+  .mm-confirm-dialog__actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .mm-confirm-dialog__actions button {
+    width: 100%;
+  }
+
+  .mm-curriculum-rail {
+    padding-inline: 10px;
+  }
+
+  .mm-curriculum-rail--expanded .mm-curriculum-rail__domains {
+    grid-template-columns: 1fr;
+  }
+
+  .mm-curriculum-rail--expanded .mm-curriculum-rail__domain--active {
+    grid-column: auto;
+  }
+
+  .mm-curriculum-rail__domain--active .mm-curriculum-rail__lessons {
+    grid-template-columns: 1fr;
+  }
+
+  .mm-workbench__content {
+    padding: 18px 12px 0;
+  }
+
+  .mm-lesson-brief {
+    display: block;
+    min-height: 0;
+    padding-bottom: 18px;
+  }
+
+  .mm-lesson-brief h1 {
+    font-size: clamp(1.6rem, 8vw, 2rem);
+  }
+
+  .mm-lesson-brief__question {
+    margin-top: var(--mm-space-3);
+  }
+
+  .mm-lesson-brief__equation {
+    border-left: 0;
+    margin-top: var(--mm-space-4);
+    max-width: none;
+    min-width: 0;
+  }
+
+  .mm-lesson-brief__equation p {
+    display: none;
+  }
+
+  .mm-workbench-grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mm-workflow-panel {
+    order: 1;
+    width: 100%;
+  }
+
+  .mm-analysis-stage {
+    order: 2;
+    padding: 14px 12px 20px;
+    width: 100%;
+  }
+
+  .mm-inquiry {
+    padding: 14px;
+  }
+
+  .mm-inquiry-header h2 {
+    font-size: 1rem;
+  }
+
+  .mm-stage-card h3 {
+    font-size: 1.35rem;
+  }
+
+  .mm-result-visual {
+    min-height: 0;
+  }
+
+  .mm-result-visual__caption {
+    padding-inline: 14px;
+  }
+
+  .mm-result-visual__caption h2 {
+    font-size: clamp(1.6rem, 8vw, 2.2rem);
+  }
+
+  .mm-result-visual__body {
+    display: block;
+    padding-inline: 14px;
+  }
+
+  .mm-result-visual__metrics {
+    margin-top: var(--mm-space-3);
+  }
+
+  .mm-result-visual__metrics dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mm-result-visual__metrics dl > div {
+    padding-right: 10px;
+  }
+
+  .mm-result-visual__provenance {
+    grid-template-columns: 1fr;
+  }
+
+  .mm-result-visual__provenance > div {
+    border-bottom: 1px solid var(--mm-line);
+    border-right: 0;
+  }
+
+  .mm-result-visual__provenance > div:last-child {
+    border-bottom: 0;
+  }
+
+  .mm-transport {
+    align-items: flex-start;
+    padding-inline: 2px;
+  }
+
+  .mm-transport button span {
+    display: none;
+  }
+
+  .mm-transport button {
+    min-width: 38px;
+    padding: 0 9px;
+  }
+
+  .mm-volume-control {
+    width: 100%;
+  }
+
+  .mm-inspector-stack {
+    display: block;
+    padding: 0;
+  }
+
+  .mm-inspector-action,
+  .mm-audio-input {
+    margin-top: var(--mm-space-3);
+  }
+
+  .mm-audio-input__range,
+  .mm-audio-settings {
+    grid-template-columns: 1fr;
+  }
+
+  .mm-comparison-table__heading,
+  .mm-evidence-panel__heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mm-comparison-table__heading p {
+    text-align: left;
+  }
+
+  .mm-comparison-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .mm-comparison-summary > div + div {
+    border-left: 0;
+    border-top: 1px solid var(--mm-line);
+  }
+
+  .mm-evidence-panel__claims {
+    grid-template-columns: 1fr;
+  }
+
+  .mm-evidence-claim dl > div {
+    grid-template-columns: 1fr;
+  }
+
+  .mm-evidence-rail {
+    grid-template-columns: 1fr;
+    padding-inline: 14px;
+  }
+
+  .mm-evidence-rail__item,
+  .mm-evidence-rail__item + .mm-evidence-rail__item {
+    border-bottom: 1px solid var(--mm-line);
+    border-right: 0;
+    min-height: 0;
+    padding: 14px 0;
+  }
+
+  .mm-evidence-rail__item:last-child {
+    border-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
+@media print {
+  .mm-global-actions,
+  .mm-curriculum-rail,
+  .mm-workflow-panel,
+  .mm-transport,
+  .mm-evidence-detail > summary {
+    display: none !important;
+  }
+
+  .mm-global-header {
+    border-bottom: 1px solid #000;
+    display: block;
+    position: static;
+  }
+
+  .mm-global-status {
+    margin-top: 8px;
+  }
+
+  .mm-shell,
+  .mm-workbench-grid,
+  .mm-workbench-band {
+    display: block;
+  }
+
+  .mm-workbench__content {
+    padding: 0;
+  }
+
+  .mm-analysis-stage,
+  .mm-comparison-table,
+  .mm-interpretation-boundary,
+  .mm-evidence-panel,
+  .mm-evidence-rail {
+    break-inside: avoid;
+    margin: 10px 0;
+  }
+}

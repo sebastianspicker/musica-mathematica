@@ -1,28 +1,31 @@
 import {
   type EnsembleConfig,
   type EnsembleMetrics,
-  modelLatencyBudgetRatio,
+  modelLatencyBudgetStatus,
   textureProfile,
 } from "./ensemble";
+
+function latencySuggestion(status: ReturnType<typeof modelLatencyBudgetStatus>): string {
+  if (status === "unstable") {
+    return "Model-based option: test a slower tempo, simpler density, or delayed response.";
+  }
+  if (status === "fragile") {
+    return "Model-based option: test sparser pulse material or anticipatory entries.";
+  }
+  return "This configuration is within the model phase budget; real rehearsal fit still needs testing.";
+}
 
 export function rehearsalSuggestions(
   config: EnsembleConfig,
   metrics: EnsembleMetrics,
 ): string[] {
   const suggestions: string[] = [];
-  const latencyRatio = modelLatencyBudgetRatio(config, metrics);
+  const latencyStatus = modelLatencyBudgetStatus(config, metrics);
   const profile = textureProfile(config.repertoireTexture);
-
-  if (latencyRatio > 0.85) {
-    suggestions.push("Slow the tempo, simplify rhythmic density, or compose with delayed response.");
-  } else if (latencyRatio > 0.55) {
-    suggestions.push("Keep pulse material sparse and rehearse anticipatory entries.");
-  } else {
-    suggestions.push("The model delay budget is plausible for peer-driven ensemble work.");
-  }
+  suggestions.push(latencySuggestion(latencyStatus));
 
   if (config.jitterSeconds > 0.012) {
-    suggestions.push("Treat jitter as instability, not just delay. Increase buffers or reduce texture density.");
+    suggestions.push("The jitter heuristic is high; test more buffering or lower texture density as hypotheses.");
   }
 
   if (config.repertoireTexture === "dense-rhythm" && profile.latencyBudgetMultiplier < 1) {
