@@ -9,6 +9,10 @@ type MediaDevicesLike = Readonly<{
   getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream>;
 }>;
 
+type BrowserNavigator = Readonly<{
+  mediaDevices?: Partial<MediaDevicesLike>;
+}>;
+
 export type MicrophoneSession = Readonly<{
   stream: MediaStream;
   settings: SafeMediaSettings;
@@ -57,8 +61,9 @@ export async function startMicrophoneSession(request: MicrophoneRequest): Promis
     throw new AudioInputError("insecure-context", "Microphone capture requires a secure browser context.");
   }
   validateMicrophoneDuration(request.durationSeconds);
-  const mediaDevices = request.mediaDevices ?? globalThis.navigator?.mediaDevices;
-  if (!mediaDevices?.getUserMedia) {
+  const browser = globalThis as { navigator?: BrowserNavigator };
+  const mediaDevices = request.mediaDevices ?? browser.navigator?.mediaDevices;
+  if (!mediaDevices || typeof mediaDevices.getUserMedia !== "function") {
     throw new AudioInputError("insecure-context", "Microphone capture is not available in this browser context.");
   }
 
@@ -70,7 +75,7 @@ export async function startMicrophoneSession(request: MicrophoneRequest): Promis
     },
     video: false,
   });
-  const audioTrack = stream.getAudioTracks()[0];
+  const audioTrack = stream.getAudioTracks().at(0);
   if (!audioTrack) {
     stream.getTracks().forEach((track) => {
       track.stop();

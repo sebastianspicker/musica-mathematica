@@ -14,6 +14,12 @@ import type {
 
 const workerScope = self as DedicatedWorkerGlobalScope;
 
+function isWorkerFrameMessage(message: unknown): message is WorkerFrameMessage {
+  return typeof message === "object"
+    && message !== null
+    && (message as { type?: unknown }).type === "audio-frame";
+}
+
 workerScope.onmessage = (event: MessageEvent<WorkerAttachMessage | WorkerSelectionMessage>) => {
   if (event.data.type === "analyze-selection") {
     try {
@@ -43,8 +49,8 @@ workerScope.onmessage = (event: MessageEvent<WorkerAttachMessage | WorkerSelecti
   const queue = new BoundedAudioFrameQueue(event.data.queueCapacity);
   const fluxHistory: number[] = [];
   let previousMagnitudes: Float64Array | null = null;
-  inputPort.onmessage = (frameEvent: MessageEvent<WorkerFrameMessage>) => {
-    if (frameEvent.data.type !== "audio-frame") return;
+  inputPort.onmessage = (frameEvent: MessageEvent<unknown>) => {
+    if (!isWorkerFrameMessage(frameEvent.data)) return;
     try {
       const queueStatus = queue.push(frameEvent.data.frame);
       const nextFrame = queue.shift();
