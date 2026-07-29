@@ -91,7 +91,9 @@ function usePlayback(duration: number, triggerPulse: ReturnType<typeof usePulseA
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+    };
   }, [duration, running, triggerPulse]);
   return { playhead, running, setPlayhead, setRunning };
 }
@@ -100,18 +102,18 @@ type InquiryActionContext = ReturnType<typeof useLessonWorkbenchState> & ReturnT
 
 function useInquiryActions(context: InquiryActionContext) {
   return {
-    beginPrediction: () => beginPrediction(context),
-    changeInputMode: (mode: InputMode) => changeInputMode(context, mode),
-    openComparison: () => openComparison(context),
-    openInterpretation: () => openInterpretation(context),
-    recordCurrentRun: () => recordCurrentRun(context),
-    resetPlayback: () => resetPlayback(context),
-    restartLesson: () => restartLesson(context),
-    savePrediction: (event: FormEvent<HTMLFormElement>) => savePrediction(context, event),
-    saveResponse: (event: FormEvent<HTMLFormElement>, field: "explanation" | "performanceReflection" | "transferResponse", nextStage: "perform" | "transfer" | "debrief") => saveResponse(context, event, field, nextStage),
-    stepPlayback: () => stepPlayback(context),
-    togglePlayback: () => togglePlayback(context),
-    updateFactor: (factorId: string, value: FactorValue) => updateFactor(context, factorId, value),
+    beginPrediction: () => { beginPrediction(context); },
+    changeInputMode: (mode: InputMode) => { changeInputMode(context, mode); },
+    openComparison: () => { openComparison(context); },
+    openInterpretation: () => { openInterpretation(context); },
+    recordCurrentRun: () => { recordCurrentRun(context); },
+    resetPlayback: () => { resetPlayback(context); },
+    restartLesson: () => { restartLesson(context); },
+    savePrediction: (event: FormEvent<HTMLFormElement>) => { savePrediction(context, event); },
+    saveResponse: (event: FormEvent<HTMLFormElement>, field: "explanation" | "performanceReflection" | "transferResponse", nextStage: "perform" | "transfer" | "debrief") => { saveResponse(context, event, field, nextStage); },
+    stepPlayback: () => { stepPlayback(context); },
+    togglePlayback: () => { togglePlayback(context); },
+    updateFactor: (factorId: string, value: FactorValue) => { updateFactor(context, factorId, value); },
   };
 }
 

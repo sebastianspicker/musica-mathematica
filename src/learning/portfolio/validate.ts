@@ -224,12 +224,33 @@ const isLabId = (value: unknown): value is LabId => {
 };
 
 const isObservable = (value: unknown): value is ObservableRecord => {
-  return isRecord(value) && typeof value.id === "string" && typeof value.label === "string" &&
-    (typeof value.value === "string" || (typeof value.value === "number" && Number.isFinite(value.value))) &&
-    (value.unit === null || typeof value.unit === "string") && typeof value.claimId === "string" &&
-    ["instantaneous", "terminal-mean", "range", "distribution"].includes(String(value.aggregation)) &&
-    (value.precision === undefined || (typeof value.precision === "number" &&
-      Number.isInteger(value.precision) && value.precision >= 0 && value.precision <= 100));
+  return isRecord(value)
+    && hasObservableIdentity(value)
+    && hasObservableValue(value)
+    && hasObservableMetadata(value);
+};
+
+const hasObservableIdentity = (value: Record<string, unknown>): boolean => {
+  return typeof value.id === "string" && typeof value.label === "string";
+};
+
+const hasObservableValue = (value: Record<string, unknown>): boolean => {
+  return typeof value.value === "string" || (typeof value.value === "number" && Number.isFinite(value.value));
+};
+
+const hasObservableMetadata = (value: Record<string, unknown>): boolean => {
+  return (value.unit === null || typeof value.unit === "string")
+    && typeof value.claimId === "string"
+    && isObservableAggregation(value.aggregation)
+    && isObservablePrecision(value.precision);
+};
+
+const isObservableAggregation = (value: unknown): boolean => {
+  return ["instantaneous", "terminal-mean", "range", "distribution"].includes(String(value));
+};
+
+const isObservablePrecision = (value: unknown): boolean => {
+  return value === undefined || (typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 100);
 };
 
 const isTracePoint = (value: unknown): value is TracePoint => {

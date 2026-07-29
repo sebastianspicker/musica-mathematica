@@ -29,7 +29,9 @@ function assertPitchClasses(pitchClasses: readonly number[], name: string): void
   if (pitchClasses.length === 0) {
     throw new RangeError(`${name} must not be empty.`);
   }
-  pitchClasses.forEach((pitchClass, index) => assertInteger(pitchClass, `${name}[${index}]`));
+  pitchClasses.forEach((pitchClass, index) => {
+    assertInteger(pitchClass, `${name}[${index}]`);
+  });
 }
 
 /** Converts any integer pitch spelling to its pitch class in [0, 11]. */

@@ -209,18 +209,15 @@ export const isLessonStage = (value: unknown): value is LessonStage => {
 };
 
 const isRunSnapshot = (value: unknown): value is RunSnapshot => {
-  if (
-    !isRecord(value) ||
-    typeof value.id !== "string" ||
-    value.id.trim().length === 0 ||
-    !isFiniteNumber(value.durationSeconds) ||
-    value.durationSeconds <= 0 ||
-    !isEnsembleConfig(value.config) ||
-    (value.note !== undefined && typeof value.note !== "string")
-  ) {
-    return false;
-  }
+  if (!isRecord(value) || !hasRunSnapshotDetails(value)) return false;
   return isEnsembleMetrics(value.metrics, value.config);
+};
+
+const hasRunSnapshotDetails = (value: Record<string, unknown>): value is Record<string, unknown> & { config: EnsembleConfig } => {
+  return hasNonEmptyText(value.id)
+    && isPositiveFiniteNumber(value.durationSeconds)
+    && isEnsembleConfig(value.config)
+    && (value.note === undefined || typeof value.note === "string");
 };
 
 const isEnsembleConfig = (value: unknown): value is EnsembleConfig => {
@@ -286,6 +283,14 @@ const cloneRun = (run: RunSnapshot): RunSnapshot => {
 
 const isOptionalResponse = (value: unknown): value is string | undefined => {
   return value === undefined || (typeof value === "string" && value.trim().length > 0);
+};
+
+const hasNonEmptyText = (value: unknown): value is string => {
+  return typeof value === "string" && value.trim().length > 0;
+};
+
+const isPositiveFiniteNumber = (value: unknown): value is number => {
+  return isFiniteNumber(value) && value > 0;
 };
 
 const numberWithinBounds = (

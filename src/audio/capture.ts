@@ -72,7 +72,9 @@ export async function startMicrophoneSession(request: MicrophoneRequest): Promis
   });
   const audioTrack = stream.getAudioTracks()[0];
   if (!audioTrack) {
-    stream.getTracks().forEach((track) => track.stop());
+    stream.getTracks().forEach((track) => {
+      track.stop();
+    });
     throw new AudioInputError("decode-failed", "The selected media stream did not contain an audio track.");
   }
   const scheduleStop = request.scheduleStop ?? globalThis.setTimeout.bind(globalThis);
@@ -83,7 +85,9 @@ export async function startMicrophoneSession(request: MicrophoneRequest): Promis
     if (stopped) return;
     stopped = true;
     if (timer !== undefined) cancelScheduledStop(timer);
-    stream.getTracks().forEach((track) => track.stop());
+    stream.getTracks().forEach((track) => {
+      track.stop();
+    });
   };
   timer = scheduleStop(stop, Math.min(request.durationSeconds, AUDIO_ANALYSIS_LIMITS.maximumMicrophoneSeconds) * 1000);
   return Object.freeze({
