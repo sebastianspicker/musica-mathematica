@@ -44,8 +44,8 @@ export function selectionToLabEvaluation(
   const meanHarmonicity = meanFinite(analysis.frames.map((frame) => frame.spectral.harmonicity));
   const pitchFrames = analysis.frames.filter((frame) => frame.pitch.frequencyHz !== null && frame.pitch.confidence >= 0.6);
   const meanPitch = meanFinite(pitchFrames.flatMap((frame) => frame.pitch.frequencyHz === null ? [] : [frame.pitch.frequencyHz]));
-  const topTempo = analysis.tempoHypotheses[0];
-  const topMeter = selectMeterHypotheses(analysis.meterHypotheses, settings.meterBias)[0];
+  const topTempo = analysis.tempoHypotheses.at(0);
+  const topMeter = selectMeterHypotheses(analysis.meterHypotheses, settings.meterBias).at(0);
   const observables: ObservableRecord[] = [
     observed("meanDbfs", "Mean frame level", finiteLabel(meanDbfs, 1), "dBFS"),
     observed("noiseFloor", "Estimated noise floor", finiteLabel(analysis.estimatedNoiseFloorDbfs, 1), "dBFS"),
@@ -94,8 +94,8 @@ export function microphoneFrameToLabEvaluation(
   queue: QueueStatus,
   settings: AudioEvaluationSettings = {},
 ): LabEvaluation {
-  const topTempo = temporal.tempoHypotheses[0];
-  const topMeter = selectMeterHypotheses(temporal.meterHypotheses, settings.meterBias)[0];
+  const topTempo = temporal.tempoHypotheses.at(0);
+  const topMeter = selectMeterHypotheses(temporal.meterHypotheses, settings.meterBias).at(0);
   const stride = Math.max(1, Math.ceil(frame.spectrum.magnitudes.length / 128));
   const trace = Array.from(frame.spectrum.magnitudes).flatMap((magnitude, index): TracePoint[] =>
     index % stride === 0
