@@ -71,8 +71,10 @@ export function generateMarkovSequence(
   if (!Number.isInteger(length) || length < 1) throw new RangeError("length must be a positive integer.");
   const sequence = [initialState];
   while (sequence.length < length) {
-    const currentState = sequence[sequence.length - 1];
-    sequence.push(draw(normalized[currentState], random));
+    const currentState = sequence.at(-1) ?? initialState;
+    const distribution = normalized.at(currentState);
+    if (!distribution) throw new RangeError("generated state must identify a matrix row.");
+    sequence.push(draw(distribution, random));
   }
   return sequence;
 }

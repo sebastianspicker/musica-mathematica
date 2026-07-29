@@ -38,7 +38,7 @@ function isPositiveLocalPeak(scores: readonly ScoredLag[], candidate: ScoredLag,
   ].every(Boolean);
 }
 
-const scoreAt = (scores: readonly ScoredLag[], index: number): number => scores[index]?.score ?? Number.NEGATIVE_INFINITY;
+const scoreAt = (scores: readonly ScoredLag[], index: number): number => scores.at(index)?.score ?? Number.NEGATIVE_INFINITY;
 
 function isFiniteNonNegative(value: number): boolean {
   return Number.isFinite(value) && value >= 0;
@@ -76,9 +76,11 @@ const scoreTempoLag = (centeredFlux: readonly number[], lag: number): ScoredLag 
   let leftEnergy = 0;
   let rightEnergy = 0;
   for (let index = lag; index < centeredFlux.length; index += 1) {
-    numerator += centeredFlux[index] * centeredFlux[index - lag];
-    leftEnergy += centeredFlux[index] * centeredFlux[index];
-    rightEnergy += centeredFlux[index - lag] * centeredFlux[index - lag];
+    const left = centeredFlux.at(index) ?? 0;
+    const right = centeredFlux.at(index - lag) ?? 0;
+    numerator += left * right;
+    leftEnergy += left * left;
+    rightEnergy += right * right;
   }
   const score = [leftEnergy > 0, rightEnergy > 0].every(Boolean)
     ? numerator / Math.sqrt(leftEnergy * rightEnergy)

@@ -225,7 +225,7 @@ export function estimatePitchYin(
   const candidate = findYinCandidate(normalized, minimumPeriod, maximumPeriod, threshold);
   if (candidate === null) return noPitchEstimate();
   const refinedPeriod = refineYinPeriod(normalized, minimumPeriod, maximumPeriod, candidate);
-  const current = normalized[candidate];
+  const current = normalizedAt(normalized, candidate);
   return Object.freeze({
     frequencyHz: sampleRateHz / refinedPeriod,
     confidence: Math.max(0, Math.min(1, 1 - current)),
@@ -258,8 +258,7 @@ const isValidPitchRange = (minimumHz: number, maximumHz: number, sampleRateHz: n
 ].every(Boolean);
 
 const cumulativeMeanNormalizedDifference = (samples: ArrayLike<number>, maximumPeriod: number): Float64Array => {
-  const normalized = new Float64Array(maximumPeriod + 1);
-  normalized[0] = 1;
+  const normalized = [1];
   let runningSum = 0;
   for (let period = 1; period <= maximumPeriod; period += 1) {
     let difference = 0;
@@ -268,10 +267,12 @@ const cumulativeMeanNormalizedDifference = (samples: ArrayLike<number>, maximumP
       difference += delta * delta;
     }
     runningSum += difference;
-    normalized[period] = runningSum === 0 ? 1 : (difference * period) / runningSum;
+    normalized.push(runningSum === 0 ? 1 : (difference * period) / runningSum);
   }
-  return normalized;
+  return Float64Array.from(normalized);
 };
+
+const normalizedAt = (normalized: Float64Array, index: number): number => normalized.at(index) ?? 1;
 
 const findYinCandidate = (
   normalized: Float64Array,
@@ -280,9 +281,12 @@ const findYinCandidate = (
   threshold: number,
 ): number | null => {
   for (let period = minimumPeriod; period <= maximumPeriod; period += 1) {
-    if (normalized[period] >= threshold) continue;
+    if (normalizedAt(normalized, period) >= threshold) continue;
     let candidate = period;
-    while (candidate < maximumPeriod && normalized[candidate + 1] < normalized[candidate]) candidate += 1;
+    while (
+      candidate < maximumPeriod
+      && normalizedAt(normalized, candidate + 1) < normalizedAt(normalized, candidate)
+    ) candidate += 1;
     return candidate;
   }
   return null;
@@ -294,9 +298,9 @@ const refineYinPeriod = (
   maximumPeriod: number,
   candidate: number,
 ): number => {
-  const previous = normalized[Math.max(minimumPeriod, candidate - 1)];
-  const current = normalized[candidate];
-  const next = normalized[Math.min(maximumPeriod, candidate + 1)];
+  const previous = normalizedAt(normalized, Math.max(minimumPeriod, candidate - 1));
+  const current = normalizedAt(normalized, candidate);
+  const next = normalizedAt(normalized, Math.min(maximumPeriod, candidate + 1));
   const denominator = 2 * (2 * current - previous - next);
   return denominator === 0 ? candidate : candidate + (next - previous) / denominator;
 };

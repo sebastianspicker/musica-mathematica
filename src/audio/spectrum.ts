@@ -34,10 +34,14 @@ export function createFftJsSpectrumAnalyzer(FFT: FftJsConstructor): SpectrumAnal
 }
 
 class FftJsSpectrumAnalyzer {
-  constructor(private readonly FFT: FftJsConstructor) {}
+  private readonly fftConstructor: FftJsConstructor;
+
+  constructor(fftConstructor: FftJsConstructor) {
+    this.fftConstructor = fftConstructor;
+  }
 
   analyze(samples: ArrayLike<number>, sampleRateHz: number): Spectrum {
-    return buildSpectrum(this.FFT, samples, sampleRateHz);
+    return buildSpectrum(this.fftConstructor, samples, sampleRateHz);
   }
 }
 

@@ -43,7 +43,7 @@ class CaptureProcessor extends AudioWorkletProcessor {
     const channel = inputs[0]?.[0];
     if (!channel) return true;
     for (let index = 0; index < channel.length; index += 1) {
-      this.captureSample(channel[index]);
+      this.captureSample(channel.at(index) ?? 0);
     }
     return true;
   }
@@ -85,8 +85,10 @@ class CaptureProcessor extends AudioWorkletProcessor {
 
   private copyFrame(): Float32Array {
     const samples = new Float32Array(this.frameSize);
-    for (let index = 0; index < this.frameSize; index += 1) {
-      samples[index] = this.ring[(this.ringIndex + index) % this.frameSize];
+    const tailLength = this.frameSize - this.ringIndex;
+    samples.set(this.ring.subarray(this.ringIndex));
+    if (this.ringIndex > 0) {
+      samples.set(this.ring.subarray(0, this.ringIndex), tailLength);
     }
     return samples;
   }
