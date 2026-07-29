@@ -183,7 +183,7 @@ export function analyzeFluxHistory(
     sensitivity: onsetSensitivity,
   });
   const tempoHypotheses = rankTempoHypotheses(flux, sampleRateHz, hopSize);
-  const strongestTempo = tempoHypotheses[0];
+  const strongestTempo = tempoHypotheses.at(0);
   const beatStrengths = strongestTempo
     ? sampleBeatStrengths(flux, strongestTempo.lagFrames)
     : [];
