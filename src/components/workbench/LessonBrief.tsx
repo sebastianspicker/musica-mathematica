@@ -10,12 +10,12 @@ export type LessonBriefProps = Readonly<{
   stage?: LessonStage;
 }>;
 
-const stageLabels: Readonly<Record<LessonStage, string>> = {
-  predict: "Predict",
-  experiment: "Experiment",
-  interpret: "Interpret",
-  transfer: "Transfer",
-};
+const stageLabels = new Map<LessonStage, string>([
+  ["predict", "Predict"],
+  ["experiment", "Experiment"],
+  ["interpret", "Interpret"],
+  ["transfer", "Transfer"],
+]);
 
 export function LessonBrief({ lesson, stage = "predict" }: LessonBriefProps): ReactElement {
   const headingId = useId();
@@ -31,8 +31,8 @@ export function LessonBrief({ lesson, stage = "predict" }: LessonBriefProps): Re
         <h1 id={headingId}>{lesson.title}</h1>
         <p className="mm-lesson-brief__question">{lesson.question}</p>
       </div>
-      <div className="mm-lesson-brief__task sr-only" aria-label={`Current task: ${stageLabels[stage]}`}>
-        <span>Current task · {stageLabels[stage]}</span>
+      <div className="mm-lesson-brief__task sr-only" aria-label={`Current task: ${stageLabels.get(stage)}`}>
+        <span>Current task · {stageLabels.get(stage)}</span>
         <p>{prompt}</p>
       </div>
       <aside className="mm-lesson-brief__equation" aria-label="Lesson equation">

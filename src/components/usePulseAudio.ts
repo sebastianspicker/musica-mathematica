@@ -39,7 +39,9 @@ export function usePulseAudio(): PulseAudio {
     setAudioUnavailableReason(reason);
   }, [closeContext]);
 
-  useEffect(() => closeContext, [closeContext]);
+  useEffect(() => {
+    return closeContext;
+  }, [closeContext]);
 
   const getOrCreateContext = useCallback((): AudioContext | null => {
     const AudioContextCtor = window.AudioContext;
@@ -101,7 +103,9 @@ export function usePulseAudio(): PulseAudio {
       }
 
       if (context.state === "suspended") {
-        void context.resume().catch(() => markAudioUnavailable("Audio could not start."));
+        void context.resume().catch(() => {
+          markAudioUnavailable("Audio could not start.");
+        });
       }
 
       try {

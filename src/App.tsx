@@ -63,7 +63,9 @@ export function App(): ReactElement {
       if (next === lesson) document.getElementById("mm-current-task")?.focus();
     };
     window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
+    return () => {
+      window.removeEventListener("hashchange", onHashChange);
+    };
   }, [lesson]);
 
   useEffect(() => {
@@ -129,7 +131,9 @@ export function App(): ReactElement {
           <button
             aria-label={presentationMode ? "Exit presentation" : "Presentation mode"}
             type="button"
-            onClick={() => setPresentationMode((value) => !value)}
+            onClick={() => {
+              setPresentationMode((value) => !value);
+            }}
           >
             <InterfaceIcon name="present" />
             <span>{presentationMode ? "Exit" : "Present"}</span>
@@ -142,7 +146,9 @@ export function App(): ReactElement {
             aria-label="Clear local work"
             className="mm-text-danger"
             type="button"
-            onClick={() => clearDialogRef.current?.showModal()}
+            onClick={() => {
+              clearDialogRef.current?.showModal();
+            }}
           >
             <InterfaceIcon name="trash" />
             <span>Clear work</span>
@@ -152,7 +158,9 @@ export function App(): ReactElement {
       {persistenceMessage ? (
         <p className="mm-global-message" role="status">
           <span>{persistenceMessage}</span>
-          <button aria-label="Dismiss message" className="mm-global-message__dismiss" type="button" onClick={() => setPersistenceMessage(null)}>
+          <button aria-label="Dismiss message" className="mm-global-message__dismiss" type="button" onClick={() => {
+            setPersistenceMessage(null);
+          }}>
             <InterfaceIcon name="close" />
           </button>
         </p>

@@ -103,7 +103,9 @@ export async function startMicrophoneAnalysis(request: MicrophoneAnalysisRequest
       return;
     }
     timer = window.setTimeout(
-      () => finishMicrophoneCapture({ cleanup, gate, setBusy, setStatus }),
+      () => {
+        finishMicrophoneCapture({ cleanup, gate, setBusy, setStatus });
+      },
       durationSeconds * 1000,
     );
   } catch (error) {
