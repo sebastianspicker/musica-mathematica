@@ -18,6 +18,10 @@ export type ChordHypothesis = Readonly<{
   label: string;
 }>;
 
+type ScoredLag = Readonly<{ lag: number; score: number }>;
+type TempoOptions = Readonly<{ minimumBpm?: number; maximumBpm?: number; limit?: number }>;
+type ValidatedTempoOptions = Readonly<{ minimumBpm: number; maximumBpm: number; limit: number }>;
+
 function normalizeScores<T extends { score: number }>(items: readonly T[]): Array<T & { confidence: number }> {
   const positiveTotal = items.reduce((sum, item) => sum + Math.max(0, item.score), 0);
   return items.map((item) => ({
@@ -26,52 +30,112 @@ function normalizeScores<T extends { score: number }>(items: readonly T[]): Arra
   }));
 }
 
+function isPositiveLocalPeak(scores: readonly ScoredLag[], candidate: ScoredLag, index: number): boolean {
+  return [
+    candidate.score > 0,
+    candidate.score >= scoreAt(scores, index - 1),
+    candidate.score >= scoreAt(scores, index + 1),
+  ].every(Boolean);
+}
+
+const scoreAt = (scores: readonly ScoredLag[], index: number): number => scores[index]?.score ?? Number.NEGATIVE_INFINITY;
+
+function isFiniteNonNegative(value: number): boolean {
+  return Number.isFinite(value) && value >= 0;
+}
+
+function hasValidTempoTiming(sampleRateHz: number, hopSize: number): boolean {
+  return isPositiveFinite(sampleRateHz) && isPositiveSafeInteger(hopSize);
+}
+
+function hasValidTempoBounds(minimumBpm: number, maximumBpm: number, limit: number): boolean {
+  return minimumBpm > 0 && maximumBpm > minimumBpm && isPositiveSafeInteger(limit);
+}
+
+function isPositiveFinite(value: number): boolean {
+  return Number.isFinite(value) && value > 0;
+}
+
+function isPositiveSafeInteger(value: number): boolean {
+  return Number.isSafeInteger(value) && value > 0;
+}
+
+function tempoLagBounds(
+  fluxLength: number,
+  sampleRateHz: number,
+  hopSize: number,
+  options: ValidatedTempoOptions,
+): Readonly<{ minimumLag: number; maximumLag: number }> | null {
+  const minimumLag = Math.max(1, Math.ceil((60 * sampleRateHz) / (options.maximumBpm * hopSize)));
+  const maximumLag = Math.min(fluxLength - 2, Math.floor((60 * sampleRateHz) / (options.minimumBpm * hopSize)));
+  return minimumLag <= maximumLag ? { minimumLag, maximumLag } : null;
+}
+
+const scoreTempoLag = (centeredFlux: readonly number[], lag: number): ScoredLag => {
+  let numerator = 0;
+  let leftEnergy = 0;
+  let rightEnergy = 0;
+  for (let index = lag; index < centeredFlux.length; index += 1) {
+    numerator += centeredFlux[index] * centeredFlux[index - lag];
+    leftEnergy += centeredFlux[index] * centeredFlux[index];
+    rightEnergy += centeredFlux[index - lag] * centeredFlux[index - lag];
+  }
+  const score = [leftEnergy > 0, rightEnergy > 0].every(Boolean)
+    ? numerator / Math.sqrt(leftEnergy * rightEnergy)
+    : 0;
+  return { lag, score };
+};
+
+const rankTempoScores = (
+  centeredFlux: readonly number[],
+  bounds: Readonly<{ minimumLag: number; maximumLag: number }>,
+  limit: number,
+): ScoredLag[] => {
+  const scores = Array.from(
+    { length: bounds.maximumLag - bounds.minimumLag + 1 },
+    (_, offset) => scoreTempoLag(centeredFlux, bounds.minimumLag + offset),
+  );
+  const peaks = scores.filter((candidate, index) => isPositiveLocalPeak(scores, candidate, index));
+  const candidates = peaks.length > 0 ? peaks : scores.filter(({ score }) => score > 0);
+  return candidates.sort((left, right) => right.score - left.score || left.lag - right.lag).slice(0, limit);
+};
+
+function validateTempoInputs(flux: readonly number[], sampleRateHz: number, hopSize: number, options: TempoOptions): ValidatedTempoOptions {
+  if (!flux.every(isFiniteNonNegative)) {
+    throw new RangeError("flux must contain finite non-negative values");
+  }
+  if (!hasValidTempoTiming(sampleRateHz, hopSize)) {
+    throw new RangeError("sampleRateHz and hopSize must be positive");
+  }
+  const { minimumBpm, maximumBpm, limit } = resolveTempoOptions(options);
+  if (!hasValidTempoBounds(minimumBpm, maximumBpm, limit)) {
+    throw new RangeError("tempo bounds and limit must be positive and ordered");
+  }
+  return { minimumBpm, maximumBpm, limit };
+}
+
+const resolveTempoOptions = (options: TempoOptions): ValidatedTempoOptions => {
+  return {
+    minimumBpm: options.minimumBpm ?? 40,
+    maximumBpm: options.maximumBpm ?? 240,
+    limit: options.limit ?? 3,
+  };
+};
+
 /** Ranks periodicities in a spectral-flux envelope; results remain hypotheses, not detected ground truth. */
 export function rankTempoHypotheses(
   flux: readonly number[],
   sampleRateHz: number,
   hopSize: number,
-  options: Readonly<{ minimumBpm?: number; maximumBpm?: number; limit?: number }> = {},
+  options: TempoOptions = {},
 ): TempoHypothesis[] {
   if (flux.length < 3) return [];
-  if (flux.some((value) => !Number.isFinite(value) || value < 0)) {
-    throw new RangeError("flux must contain finite non-negative values");
-  }
-  if (!Number.isFinite(sampleRateHz) || sampleRateHz <= 0 || !Number.isSafeInteger(hopSize) || hopSize <= 0) {
-    throw new RangeError("sampleRateHz and hopSize must be positive");
-  }
-  const minimumBpm = options.minimumBpm ?? 40;
-  const maximumBpm = options.maximumBpm ?? 240;
-  const limit = options.limit ?? 3;
-  if (!(minimumBpm > 0 && maximumBpm > minimumBpm) || !Number.isSafeInteger(limit) || limit <= 0) {
-    throw new RangeError("tempo bounds and limit must be positive and ordered");
-  }
+  const validatedOptions = validateTempoInputs(flux, sampleRateHz, hopSize, options);
   const mean = flux.reduce((sum, value) => sum + value, 0) / flux.length;
   const centered = flux.map((value) => value - mean);
-  const minimumLag = Math.max(1, Math.ceil((60 * sampleRateHz) / (maximumBpm * hopSize)));
-  const maximumLag = Math.min(flux.length - 2, Math.floor((60 * sampleRateHz) / (minimumBpm * hopSize)));
-  if (maximumLag < minimumLag) return [];
-
-  const scores = Array.from({ length: maximumLag - minimumLag + 1 }, (_, offset) => {
-    const lag = minimumLag + offset;
-    let numerator = 0;
-    let leftEnergy = 0;
-    let rightEnergy = 0;
-    for (let index = lag; index < centered.length; index += 1) {
-      numerator += centered[index] * centered[index - lag];
-      leftEnergy += centered[index] * centered[index];
-      rightEnergy += centered[index - lag] * centered[index - lag];
-    }
-    const score = leftEnergy > 0 && rightEnergy > 0 ? numerator / Math.sqrt(leftEnergy * rightEnergy) : 0;
-    return { lag, score };
-  });
-  const peaks = scores.filter((candidate, index) => {
-    const previous = scores[index - 1]?.score ?? Number.NEGATIVE_INFINITY;
-    const next = scores[index + 1]?.score ?? Number.NEGATIVE_INFINITY;
-    return candidate.score > 0 && candidate.score >= previous && candidate.score >= next;
-  });
-  const pool = peaks.length > 0 ? peaks : scores.filter(({ score }) => score > 0);
-  const ranked = pool.sort((left, right) => right.score - left.score || left.lag - right.lag).slice(0, limit);
+  const bounds = tempoLagBounds(flux.length, sampleRateHz, hopSize, validatedOptions);
+  if (bounds === null) return [];
+  const ranked = rankTempoScores(centered, bounds, validatedOptions.limit);
   return normalizeScores(ranked).map(({ lag, confidence }) => Object.freeze({
     bpm: (60 * sampleRateHz) / (lag * hopSize),
     confidence,

@@ -7,6 +7,9 @@ export type PitchEstimate = Readonly<{
   periodSamples: number | null;
 }>;
 
+type PitchOptions = Readonly<{ minimumHz: number; maximumHz: number; threshold: number }>;
+type PitchOptionsInput = Readonly<{ minimumHz?: number; maximumHz?: number; threshold?: number }>;
+
 export { detectFluxOnsets, spectralFlux } from "./flux";
 
 export type LevelFeatures = Readonly<{
@@ -100,22 +103,26 @@ export function estimateNoiseFloorDbfs(
   percentile = 0.1,
 ): number {
   assertNonEmptyFiniteNumbers(samples, "samples");
-  if (!Number.isSafeInteger(blockSize) || blockSize <= 0) {
+  if (![Number.isSafeInteger(blockSize), blockSize > 0].every(Boolean)) {
     throw new RangeError("blockSize must be a positive safe integer");
   }
-  if (!Number.isFinite(percentile) || percentile < 0 || percentile > 1) {
+  if (![Number.isFinite(percentile), percentile >= 0, percentile <= 1].every(Boolean)) {
     throw new RangeError("percentile must be between zero and one");
   }
   const levels: number[] = [];
   for (let start = 0; start < samples.length; start += blockSize) {
     const end = Math.min(samples.length, start + blockSize);
-    let sumSquares = 0;
-    for (let index = start; index < end; index += 1) sumSquares += samples[index] * samples[index];
-    levels.push(amplitudeToDbfs(Math.sqrt(sumSquares / (end - start))));
+    levels.push(blockRmsDbfs(samples, start, end));
   }
   levels.sort((left, right) => left - right);
   return levels[Math.round((levels.length - 1) * percentile)];
 }
+
+const blockRmsDbfs = (samples: ArrayLike<number>, start: number, end: number): number => {
+  let sumSquares = 0;
+  for (let index = start; index < end; index += 1) sumSquares += samples[index] * samples[index];
+  return amplitudeToDbfs(Math.sqrt(sumSquares / (end - start)));
+};
 
 function weightedFrequencyMean(spectrum: Spectrum, weights: ArrayLike<number>): number {
   let weightedSum = 0;
@@ -161,10 +168,9 @@ export function spectralHarmonicity(
   fundamentalHz: number | null,
   toleranceCents = 35,
 ): number {
-  if (fundamentalHz === null || fundamentalHz <= 0 || !Number.isFinite(fundamentalHz)) return 0;
-  if (!Number.isFinite(toleranceCents) || toleranceCents <= 0) {
-    throw new RangeError("toleranceCents must be positive and finite");
-  }
+  if (fundamentalHz === null) return 0;
+  if (!isPositiveFinite(fundamentalHz)) return 0;
+  assertPositiveFinite(toleranceCents, "toleranceCents");
   let harmonicPower = 0;
   let eligiblePower = 0;
   for (let bin = 1; bin < spectrum.powers.length; bin += 1) {
@@ -172,13 +178,20 @@ export function spectralHarmonicity(
     const power = spectrum.powers[bin];
     if (frequency < fundamentalHz * 0.5) continue;
     eligiblePower += power;
-    const harmonic = Math.max(1, Math.round(frequency / fundamentalHz));
-    const expected = fundamentalHz * harmonic;
-    const cents = 1200 * Math.log2(frequency / expected);
-    if (Math.abs(cents) <= toleranceCents) harmonicPower += power;
+    if (isNearHarmonic(frequency, fundamentalHz, toleranceCents)) harmonicPower += power;
   }
   return eligiblePower > 0 ? harmonicPower / eligiblePower : 0;
 }
+
+function isPositiveFinite(value: number): boolean {
+  return Number.isFinite(value) && value > 0;
+}
+
+const isNearHarmonic = (frequencyHz: number, fundamentalHz: number, toleranceCents: number): boolean => {
+  const harmonic = Math.max(1, Math.round(frequencyHz / fundamentalHz));
+  const expectedHz = fundamentalHz * harmonic;
+  return Math.abs(1200 * Math.log2(frequencyHz / expectedHz)) <= toleranceCents;
+};
 
 export function chromaFromSpectrum(spectrum: Spectrum, minimumFrequencyHz = 40): Float64Array {
   const chroma = new Float64Array(12);
@@ -200,58 +213,94 @@ export function chromaFromSpectrum(spectrum: Spectrum, minimumFrequencyHz = 40):
 export function estimatePitchYin(
   samples: ArrayLike<number>,
   sampleRateHz: number,
-  options: Readonly<{ minimumHz?: number; maximumHz?: number; threshold?: number }> = {},
+  options: PitchOptionsInput = {},
 ): PitchEstimate {
   assertNonEmptyFiniteNumbers(samples, "samples");
-  if (!Number.isFinite(sampleRateHz) || sampleRateHz <= 0) {
-    throw new RangeError("sampleRateHz must be positive and finite");
-  }
-  const minimumHz = options.minimumHz ?? 50;
-  const maximumHz = options.maximumHz ?? 1200;
-  const threshold = options.threshold ?? 0.12;
-  if (!(minimumHz > 0 && maximumHz > minimumHz && maximumHz < sampleRateHz / 2)) {
-    throw new RangeError("pitch range must be positive, ordered, and below Nyquist");
-  }
+  const { minimumHz, maximumHz, threshold } = validatePitchOptions(sampleRateHz, options);
   const minimumPeriod = Math.max(2, Math.floor(sampleRateHz / maximumHz));
   const maximumPeriod = Math.min(Math.floor(sampleRateHz / minimumHz), Math.floor(samples.length / 2));
-  if (maximumPeriod <= minimumPeriod) return Object.freeze({ frequencyHz: null, confidence: 0, periodSamples: null });
+  if (maximumPeriod <= minimumPeriod) return noPitchEstimate();
 
-  const difference = new Float64Array(maximumPeriod + 1);
-  for (let period = 1; period <= maximumPeriod; period += 1) {
-    let sum = 0;
-    const comparisonLength = samples.length - period;
-    for (let index = 0; index < comparisonLength; index += 1) {
-      const delta = samples[index] - samples[index + period];
-      sum += delta * delta;
-    }
-    difference[period] = sum;
-  }
-
-  const normalized = new Float64Array(maximumPeriod + 1);
-  normalized[0] = 1;
-  let runningSum = 0;
-  for (let period = 1; period <= maximumPeriod; period += 1) {
-    runningSum += difference[period];
-    normalized[period] = runningSum === 0 ? 1 : (difference[period] * period) / runningSum;
-  }
-
-  let candidate = -1;
-  for (let period = minimumPeriod; period <= maximumPeriod; period += 1) {
-    if (normalized[period] >= threshold) continue;
-    candidate = period;
-    while (candidate + 1 <= maximumPeriod && normalized[candidate + 1] < normalized[candidate]) candidate += 1;
-    break;
-  }
-  if (candidate < 0) return Object.freeze({ frequencyHz: null, confidence: 0, periodSamples: null });
-
-  const previous = normalized[Math.max(minimumPeriod, candidate - 1)];
+  const normalized = cumulativeMeanNormalizedDifference(samples, maximumPeriod);
+  const candidate = findYinCandidate(normalized, minimumPeriod, maximumPeriod, threshold);
+  if (candidate === null) return noPitchEstimate();
+  const refinedPeriod = refineYinPeriod(normalized, minimumPeriod, maximumPeriod, candidate);
   const current = normalized[candidate];
-  const next = normalized[Math.min(maximumPeriod, candidate + 1)];
-  const denominator = 2 * (2 * current - previous - next);
-  const refinedPeriod = denominator === 0 ? candidate : candidate + (next - previous) / denominator;
   return Object.freeze({
     frequencyHz: sampleRateHz / refinedPeriod,
     confidence: Math.max(0, Math.min(1, 1 - current)),
     periodSamples: refinedPeriod,
   });
 }
+
+const validatePitchOptions = (
+  sampleRateHz: number,
+  options: PitchOptionsInput,
+): PitchOptions => {
+  assertPositiveFinite(sampleRateHz, "sampleRateHz");
+  const minimumHz = options.minimumHz ?? 50;
+  const maximumHz = options.maximumHz ?? 1200;
+  const threshold = options.threshold ?? 0.12;
+  if (!isValidPitchRange(minimumHz, maximumHz, sampleRateHz)) {
+    throw new RangeError("pitch range must be positive, ordered, and below Nyquist");
+  }
+  return { minimumHz, maximumHz, threshold };
+};
+
+function assertPositiveFinite(value: number, name: string): void {
+  if (!Number.isFinite(value) || value <= 0) throw new RangeError(`${name} must be positive and finite`);
+}
+
+const isValidPitchRange = (minimumHz: number, maximumHz: number, sampleRateHz: number): boolean => [
+  minimumHz > 0,
+  maximumHz > minimumHz,
+  maximumHz < sampleRateHz / 2,
+].every(Boolean);
+
+const cumulativeMeanNormalizedDifference = (samples: ArrayLike<number>, maximumPeriod: number): Float64Array => {
+  const normalized = new Float64Array(maximumPeriod + 1);
+  normalized[0] = 1;
+  let runningSum = 0;
+  for (let period = 1; period <= maximumPeriod; period += 1) {
+    let difference = 0;
+    for (let index = 0; index < samples.length - period; index += 1) {
+      const delta = samples[index] - samples[index + period];
+      difference += delta * delta;
+    }
+    runningSum += difference;
+    normalized[period] = runningSum === 0 ? 1 : (difference * period) / runningSum;
+  }
+  return normalized;
+};
+
+const findYinCandidate = (
+  normalized: Float64Array,
+  minimumPeriod: number,
+  maximumPeriod: number,
+  threshold: number,
+): number | null => {
+  for (let period = minimumPeriod; period <= maximumPeriod; period += 1) {
+    if (normalized[period] >= threshold) continue;
+    let candidate = period;
+    while (candidate < maximumPeriod && normalized[candidate + 1] < normalized[candidate]) candidate += 1;
+    return candidate;
+  }
+  return null;
+};
+
+const refineYinPeriod = (
+  normalized: Float64Array,
+  minimumPeriod: number,
+  maximumPeriod: number,
+  candidate: number,
+): number => {
+  const previous = normalized[Math.max(minimumPeriod, candidate - 1)];
+  const current = normalized[candidate];
+  const next = normalized[Math.min(maximumPeriod, candidate + 1)];
+  const denominator = 2 * (2 * current - previous - next);
+  return denominator === 0 ? candidate : candidate + (next - previous) / denominator;
+};
+
+const noPitchEstimate = (): PitchEstimate => {
+  return Object.freeze({ frequencyHz: null, confidence: 0, periodSamples: null });
+};

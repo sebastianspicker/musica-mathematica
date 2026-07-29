@@ -43,35 +43,52 @@ class CaptureProcessor extends AudioWorkletProcessor {
     const channel = inputs[0]?.[0];
     if (!channel) return true;
     for (let index = 0; index < channel.length; index += 1) {
-      this.ring[this.ringIndex] = channel[index];
-      this.ringIndex = (this.ringIndex + 1) % this.frameSize;
-      this.sampleCount += 1;
-      if (this.sampleCount < this.frameSize || (this.sampleCount - this.frameSize) % this.hopSize !== 0) continue;
-      const sequence = this.sequence;
-      this.sequence += 1;
-      if (!this.outputPort || this.credits <= 0) {
-        this.droppedFrames += 1;
-        continue;
-      }
-      const samples = new Float32Array(this.frameSize);
-      for (let frameIndex = 0; frameIndex < this.frameSize; frameIndex += 1) {
-        samples[frameIndex] = this.ring[(this.ringIndex + frameIndex) % this.frameSize];
-      }
-      const message: WorkerFrameMessage = {
-        type: "audio-frame",
-        frame: {
-          sequence,
-          startSample: this.sampleCount - this.frameSize,
-          sampleRateHz: sampleRate,
-          samples,
-          droppedBefore: this.droppedFrames,
-        },
-      };
-      this.outputPort.postMessage(message, [samples.buffer]);
-      this.credits -= 1;
-      this.droppedFrames = 0;
+      this.captureSample(channel[index]);
     }
     return true;
+  }
+
+  private captureSample(sample: number): void {
+    this.ring[this.ringIndex] = sample;
+    this.ringIndex = (this.ringIndex + 1) % this.frameSize;
+    this.sampleCount += 1;
+    if (!this.isFrameReady()) return;
+    this.postFrame();
+  }
+
+  private isFrameReady(): boolean {
+    return this.sampleCount >= this.frameSize && (this.sampleCount - this.frameSize) % this.hopSize === 0;
+  }
+
+  private postFrame(): void {
+    const sequence = this.sequence;
+    this.sequence += 1;
+    if (!this.outputPort || this.credits <= 0) {
+      this.droppedFrames += 1;
+      return;
+    }
+    const samples = this.copyFrame();
+    const message: WorkerFrameMessage = {
+      type: "audio-frame",
+      frame: {
+        sequence,
+        startSample: this.sampleCount - this.frameSize,
+        sampleRateHz: sampleRate,
+        samples,
+        droppedBefore: this.droppedFrames,
+      },
+    };
+    this.outputPort.postMessage(message, [samples.buffer]);
+    this.credits -= 1;
+    this.droppedFrames = 0;
+  }
+
+  private copyFrame(): Float32Array {
+    const samples = new Float32Array(this.frameSize);
+    for (let index = 0; index < this.frameSize; index += 1) {
+      samples[index] = this.ring[(this.ringIndex + index) % this.frameSize];
+    }
+    return samples;
   }
 }
 
