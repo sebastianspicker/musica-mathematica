@@ -4,6 +4,7 @@ import {
   createLessonAttempt,
   isLessonAttemptV1,
   transitionLessonAttempt,
+  type LessonAttemptTransition,
   type RunSnapshot,
 } from "./lessonAttempt";
 
@@ -40,6 +41,12 @@ function invalidExperimentAttempt(unsafeRun: unknown) {
     prediction: "Test coupling.",
     runs: [unsafeRun],
   };
+}
+
+function successfulTransition(transition: LessonAttemptTransition): Extract<LessonAttemptTransition, { ok: true }> {
+  expect(transition.ok).toBe(true);
+  if (!transition.ok) throw new Error(transition.reason);
+  return transition;
 }
 
 describe("lesson attempt transitions", () => {
@@ -99,44 +106,34 @@ describe("lesson attempt transitions", () => {
       type: "set-prediction",
       prediction: "Jitter is the largest stressor.",
     });
-    if (!prediction.ok) throw new Error(prediction.reason);
-    const experiment = transitionLessonAttempt(prediction.attempt, { type: "advance", stage: "experiment" });
-    if (!experiment.ok) throw new Error(experiment.reason);
-    const first = transitionLessonAttempt(experiment.attempt, { type: "record-run", run: run("first") });
-    if (!first.ok) throw new Error(first.reason);
-    const second = transitionLessonAttempt(first.attempt, { type: "record-run", run: run("second") });
-    if (!second.ok) throw new Error(second.reason);
-    const compare = transitionLessonAttempt(second.attempt, { type: "advance", stage: "compare" });
-    if (!compare.ok) throw new Error(compare.reason);
-    const explain = transitionLessonAttempt(compare.attempt, { type: "advance", stage: "explain" });
-    if (!explain.ok) throw new Error(explain.reason);
-    expect(transitionLessonAttempt(explain.attempt, { type: "advance", stage: "perform" })).toMatchObject({
+    const experiment = successfulTransition(prediction).attempt;
+    const first = successfulTransition(transitionLessonAttempt(experiment, { type: "advance", stage: "experiment" })).attempt;
+    const second = successfulTransition(transitionLessonAttempt(first, { type: "record-run", run: run("first") })).attempt;
+    const comparison = successfulTransition(transitionLessonAttempt(second, { type: "record-run", run: run("second") })).attempt;
+    const explain = successfulTransition(transitionLessonAttempt(comparison, { type: "advance", stage: "compare" })).attempt;
+    const performPrompt = successfulTransition(transitionLessonAttempt(explain, { type: "advance", stage: "explain" })).attempt;
+    expect(transitionLessonAttempt(performPrompt, { type: "advance", stage: "perform" })).toMatchObject({
       ok: false,
       reason: "Record an explanation before performing.",
     });
-    const explained = transitionLessonAttempt(explain.attempt, {
+    const explained = successfulTransition(transitionLessonAttempt(performPrompt, {
       type: "set-response",
       field: "explanation",
       response: "The second run reduced the modeled stressor.",
-    });
-    if (!explained.ok) throw new Error(explained.reason);
-    const perform = transitionLessonAttempt(explained.attempt, { type: "advance", stage: "perform" });
-    if (!perform.ok) throw new Error(perform.reason);
-    const reflected = transitionLessonAttempt(perform.attempt, {
+    })).attempt;
+    const perform = successfulTransition(transitionLessonAttempt(explained, { type: "advance", stage: "perform" })).attempt;
+    const reflected = successfulTransition(transitionLessonAttempt(perform, {
       type: "set-response",
       field: "performanceReflection",
       response: "The duo could hear the difference.",
-    });
-    if (!reflected.ok) throw new Error(reflected.reason);
-    const transfer = transitionLessonAttempt(reflected.attempt, { type: "advance", stage: "transfer" });
-    if (!transfer.ok) throw new Error(transfer.reason);
-    const transferred = transitionLessonAttempt(transfer.attempt, {
+    })).attempt;
+    const transfer = successfulTransition(transitionLessonAttempt(reflected, { type: "advance", stage: "transfer" })).attempt;
+    const transferred = successfulTransition(transitionLessonAttempt(transfer, {
       type: "set-response",
       field: "transferResponse",
       response: "Use a slower response pattern in the next rehearsal.",
-    });
-    if (!transferred.ok) throw new Error(transferred.reason);
-    const debrief = transitionLessonAttempt(transferred.attempt, { type: "advance", stage: "debrief" });
+    })).attempt;
+    const debrief = transitionLessonAttempt(transferred, { type: "advance", stage: "debrief" });
 
     expect(debrief).toMatchObject({ ok: true, attempt: { stage: "debrief", runs: [{ id: "first" }, { id: "second" }] } });
     expect(initial.runs).toEqual([]);
