@@ -333,7 +333,3 @@ export function lessonByRoute(hash: string): LabLesson | undefined {
 }
 
 export const defaultLabLesson = labCatalog[0].lessons[0];
-
-if (!defaultLabLesson) {
-  throw new Error("The curriculum must contain at least one lesson.");
-}

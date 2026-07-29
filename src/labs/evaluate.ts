@@ -270,11 +270,11 @@ function evaluatePattern(
   }));
   return result(
     "Ranked periodicity",
-    topMeter ? `${topMeter.beats} beats × ${topMeter.subdivisionsPerBeat} subdivisions` : "No equal-subdivision candidate",
+    `${topMeter.beats} beats × ${topMeter.subdivisionsPerBeat} subdivisions`,
     [
-      observable("topMeter", "Top equal-subdivision candidate", topMeter ? `${topMeter.beats} × ${topMeter.subdivisionsPerBeat}` : "none", null, "heuristic.transparent"),
-      observable("meterScore", "Onset-alignment score", topMeter?.score ?? 0, null, "heuristic.transparent", 3),
-      observable("spectralBin", "Strongest non-DC bin", strongestSpectrum?.bin ?? 0, null, "model.deterministic", 0),
+      observable("topMeter", "Top equal-subdivision candidate", `${topMeter.beats} × ${topMeter.subdivisionsPerBeat}`, null, "heuristic.transparent"),
+      observable("meterScore", "Onset-alignment score", topMeter.score, null, "heuristic.transparent", 3),
+      observable("spectralBin", "Strongest non-DC bin", strongestSpectrum.bin, null, "model.deterministic", 0),
     ],
     profileTrace,
     "spectrum",
