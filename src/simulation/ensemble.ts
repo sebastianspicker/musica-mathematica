@@ -286,18 +286,20 @@ export function configsEqual(left: EnsembleConfig, right: EnsembleConfig): boole
   assertValidEnsembleConfig(left);
   assertValidEnsembleConfig(right);
 
-  return (
-    nearlyEqual(left.musicianCount, right.musicianCount) &&
-    nearlyEqual(left.tempoBpm, right.tempoBpm) &&
-    nearlyEqual(left.tempoSpreadBpm, right.tempoSpreadBpm) &&
-    nearlyEqual(left.couplingStrength, right.couplingStrength) &&
-    nearlyEqual(left.latencySeconds, right.latencySeconds) &&
-    nearlyEqual(left.jitterSeconds, right.jitterSeconds) &&
-    left.topology === right.topology &&
-    left.repertoireTexture === right.repertoireTexture &&
-    nearlyEqual(left.clickTrackStrength, right.clickTrackStrength)
-  );
+  return numericConfigValuesEqual(left, right)
+    && left.topology === right.topology
+    && left.repertoireTexture === right.repertoireTexture;
 }
+
+const numericConfigValuesEqual = (left: EnsembleConfig, right: EnsembleConfig): boolean => {
+  return nearlyEqual(left.musicianCount, right.musicianCount)
+    && nearlyEqual(left.tempoBpm, right.tempoBpm)
+    && nearlyEqual(left.tempoSpreadBpm, right.tempoSpreadBpm)
+    && nearlyEqual(left.couplingStrength, right.couplingStrength)
+    && nearlyEqual(left.latencySeconds, right.latencySeconds)
+    && nearlyEqual(left.jitterSeconds, right.jitterSeconds)
+    && nearlyEqual(left.clickTrackStrength, right.clickTrackStrength);
+};
 
 export function createCouplingEdges(config: EnsembleConfig): CouplingEdge[] {
   assertValidEnsembleConfig(config);
