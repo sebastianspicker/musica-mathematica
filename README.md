@@ -11,6 +11,14 @@ validated assessment. Results describe the selected mathematical model or one
 bounded audio segment. They do not assess a performer or establish a perceptual
 or pedagogical claim.
 
+## Live demo
+
+Open the [static Musica Mathematica workbench](https://sebastianspicker.github.io/musica-mathematica/).
+It is the repository application built for GitHub Pages, not a separate demo
+product. The published site has no backend and uses the same deterministic
+synthetic lesson inputs and browser-local storage as a local build. Optional
+microphone and file analysis stay on the device.
+
 ## Scope
 
 Each domain contains a foundation lesson, a model lesson, and a critique lesson:
@@ -216,15 +224,17 @@ Create the static bundle:
 pnpm build
 ```
 
-Deploy the contents of `dist/` to an HTTPS static host at the origin root. The
-current build uses root-relative asset paths such as `/assets/` and `/fonts/`;
-subpath deployment is not configured. Lesson navigation uses URL fragments, so
-the host does not need a route fallback beyond serving the root `index.html`.
+Deploy the contents of `dist/` to an HTTPS static host. The default build uses
+root-relative asset paths such as `/assets/` and `/fonts/`. The GitHub Pages
+workflow supplies the repository subpath to Vite at build time. Lesson
+navigation uses URL fragments, so the host does not need a route fallback
+beyond serving the root `index.html`.
 
-The repository does not contain a server process, container configuration,
-hosting manifest, deployment command, or rollback procedure. A deployment must
-provide its own cache policy and HTTP security headers. The HTML meta Content
-Security Policy is not a substitute for response headers.
+The repository does not contain a server process or container configuration.
+The GitHub Pages workflow is the supported hosting manifest; rollback uses a
+workflow run for an earlier commit. Other deployments must provide their own
+cache policy and HTTP security headers. The HTML meta Content Security Policy
+is not a substitute for response headers.
 
 ## Troubleshooting
 
