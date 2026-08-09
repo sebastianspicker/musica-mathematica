@@ -56,3 +56,8 @@ pnpm-debug.log*
 *.swp
 *.swo
 Thumbs.db
+/.repowise/
+/.mcp.json
+/AUDIT_LEDGER.md
+/work-in-progress/
+/wip/
