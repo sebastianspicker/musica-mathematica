@@ -15,11 +15,11 @@ export type FactorInspectorProps = Readonly<{
   disabled?: boolean;
 }>;
 
-const inputModeLabels: Readonly<Record<InputMode, string>> = {
-  synthetic: "Synthetic signal",
-  microphone: "Microphone segment",
-  file: "Audio file segment",
-};
+const inputModeLabels = new Map<InputMode, string>([
+  ["synthetic", "Synthetic signal"],
+  ["microphone", "Microphone segment"],
+  ["file", "Audio file segment"],
+]);
 
 export function FactorInspector({
   lesson,
@@ -30,6 +30,7 @@ export function FactorInspector({
   disabled = false,
 }: FactorInspectorProps): ReactElement {
   const instanceId = useId();
+  const valuesById = new Map(Object.entries(values));
 
   return (
     <aside className="mm-factor-inspector" aria-labelledby={`${instanceId}-heading`}>
@@ -43,38 +44,63 @@ export function FactorInspector({
         </strong>
       </div>
 
-      <fieldset className="mm-factor-inspector__source" disabled={disabled}>
-        <legend>Input source</legend>
-        <label htmlFor={`${instanceId}-input-mode`}>Analysis source</label>
-        <select
-          id={`${instanceId}-input-mode`}
-          value={inputMode}
-          onChange={(event) => onInputModeChange(event.currentTarget.value as InputMode)}
-        >
-          {lesson.inputModes.map((mode) => (
-            <option key={mode} value={mode}>{inputModeLabels[mode]}</option>
-          ))}
-        </select>
-        <p>{inputMode === "synthetic"
-          ? "Synthetic factors directly control the published deterministic model."
-          : "Recorded sound is analyzed locally and remains uncalibrated. Factor values describe the learner-declared condition unless the lesson identifies an analysis setting."}</p>
-      </fieldset>
-
-      <fieldset className="mm-factor-inspector__factors" disabled={disabled}>
-        <legend>Experimental factors</legend>
-        {lesson.factors.map((factor) => (
-          <FactorControl
-            factor={factor}
-            helpId={`${instanceId}-${factor.id}-help`}
-            inputId={`${instanceId}-${factor.id}`}
-            key={factor.id}
-            onChange={onFactorChange}
-            value={values[factor.id] ?? factor.defaultValue}
-          />
-        ))}
-      </fieldset>
+      <InputSourceControl
+        disabled={disabled}
+        inputMode={inputMode}
+        inputModes={lesson.inputModes}
+        inputId={`${instanceId}-input-mode`}
+        onInputModeChange={onInputModeChange}
+      />
+      <FactorControls
+        disabled={disabled}
+        factors={lesson.factors}
+        instanceId={instanceId}
+        onFactorChange={onFactorChange}
+        valuesById={valuesById}
+      />
     </aside>
   );
+}
+
+function InputSourceControl({ disabled, inputId, inputMode, inputModes, onInputModeChange }: Readonly<{
+  disabled: boolean;
+  inputId: string;
+  inputMode: InputMode;
+  inputModes: readonly InputMode[];
+  onInputModeChange: (mode: InputMode) => void;
+}>): ReactElement {
+  return <fieldset className="mm-factor-inspector__source" disabled={disabled}>
+    <legend>Input source</legend>
+    <label htmlFor={inputId}>Analysis source</label>
+    <select id={inputId} value={inputMode} onChange={(event) => {
+      onInputModeChange(event.currentTarget.value as InputMode);
+    }}>
+      {inputModes.map((mode) => <option key={mode} value={mode}>{inputModeLabels.get(mode)}</option>)}
+    </select>
+    <p>{inputMode === "synthetic"
+      ? "Synthetic factors directly control the published deterministic model."
+      : "Recorded sound is analyzed locally and remains uncalibrated. Factor values describe the learner-declared condition unless the lesson identifies an analysis setting."}</p>
+  </fieldset>;
+}
+
+function FactorControls({ disabled, factors, instanceId, onFactorChange, valuesById }: Readonly<{
+  disabled: boolean;
+  factors: readonly FactorDefinition[];
+  instanceId: string;
+  onFactorChange: (factorId: string, value: FactorValue) => void;
+  valuesById: ReadonlyMap<string, FactorValue>;
+}>): ReactElement {
+  return <fieldset className="mm-factor-inspector__factors" disabled={disabled}>
+    <legend>Experimental factors</legend>
+    {factors.map((factor) => <FactorControl
+      factor={factor}
+      helpId={`${instanceId}-${factor.id}-help`}
+      inputId={`${instanceId}-${factor.id}`}
+      key={factor.id}
+      onChange={onFactorChange}
+      value={valuesById.get(factor.id) ?? factor.defaultValue}
+    />)}
+  </fieldset>;
 }
 
 type FactorControlProps = Readonly<{
@@ -100,7 +126,9 @@ function FactorControl({
             aria-describedby={helpId}
             checked={typeof value === "boolean" ? value : factor.defaultValue}
             id={inputId}
-            onChange={(event) => onChange(factor.id, event.currentTarget.checked)}
+            onChange={(event) => {
+              onChange(factor.id, event.currentTarget.checked);
+            }}
             type="checkbox"
           />
           <span>{factor.label}</span>
@@ -117,7 +145,9 @@ function FactorControl({
         <select
           aria-describedby={helpId}
           id={inputId}
-          onChange={(event) => onChange(factor.id, event.currentTarget.value)}
+          onChange={(event) => {
+            onChange(factor.id, event.currentTarget.value);
+          }}
           value={typeof value === "string" ? value : factor.defaultValue}
         >
           {factor.options.map((option) => (

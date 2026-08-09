@@ -10,7 +10,9 @@ function assertProbability(value: number, name: string, allowZero: boolean): voi
 
 function assertDistribution(probabilities: readonly number[], name: string): void {
   if (probabilities.length === 0) throw new RangeError(`${name} must not be empty.`);
-  probabilities.forEach((probability, index) => assertProbability(probability, `${name}[${index}]`, true));
+  probabilities.forEach((probability, index) => {
+    assertProbability(probability, `${name}[${index}]`, true);
+  });
   const total = probabilities.reduce((sum, probability) => sum + probability, 0);
   if (Math.abs(total - 1) > 1e-12) throw new RangeError(`${name} must sum to 1.`);
 }
@@ -68,7 +70,12 @@ export function generateMarkovSequence(
   }
   if (!Number.isInteger(length) || length < 1) throw new RangeError("length must be a positive integer.");
   const sequence = [initialState];
-  while (sequence.length < length) sequence.push(draw(normalized[sequence.at(-1)!], random));
+  while (sequence.length < length) {
+    const currentState = sequence.at(-1) ?? initialState;
+    const distribution = normalized.at(currentState);
+    if (!distribution) throw new RangeError("generated state must identify a matrix row.");
+    sequence.push(draw(distribution, random));
+  }
   return sequence;
 }
 

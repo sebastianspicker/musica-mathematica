@@ -43,7 +43,9 @@ function AudioInputPanel({ mode, lesson, factors, onAnalysis }: AudioInputPanelP
     setSettings(null);
     setStatus("No bounded segment has been analyzed.");
     onAnalysis(null);
-    return () => cancelPendingAnalysis(requestVersionRef, cleanupRef);
+    return () => {
+      cancelPendingAnalysis(requestVersionRef, cleanupRef);
+    };
   }, [factors, mode, onAnalysis]);
 
   if (mode === "synthetic") return null;
@@ -190,7 +192,9 @@ function FrameSizeControl({
   return (
     <label>
       <span>Hann frame size</span>
-      <select disabled={busy} value={frameSize} onChange={(event) => onChange(Number(event.currentTarget.value) as 2048 | 4096)}>
+      <select disabled={busy} value={frameSize} onChange={(event) => {
+        onChange(Number(event.currentTarget.value) as 2048 | 4096);
+      }}>
         <option value="2048">2,048 samples · 50% overlap</option>
         <option value="4096">4,096 samples · 50% overlap</option>
       </select>

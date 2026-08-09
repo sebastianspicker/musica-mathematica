@@ -115,20 +115,38 @@ const hasTrialProtocol = (value: Record<string, unknown>): boolean => {
 };
 
 const hasTrialFactors = (value: Record<string, unknown>): boolean => {
-  if (!isRecord(value.factors) || !isLabId(value.labId) || typeof value.lessonId !== "string") return false;
-  const factors = value.factors;
+  const context = trialFactorContext(value);
+  return context !== undefined
+    && hasRequiredFactorValues(context)
+    && hasConformingFactorValues(context);
+};
+
+type TrialFactorContext = Readonly<{
+  factors: Record<string, unknown>;
+  definitions: readonly FactorDefinition[];
+}>;
+
+const trialFactorContext = (value: Record<string, unknown>): TrialFactorContext | undefined => {
+  if (!isRecord(value.factors) || !isLabId(value.labId) || typeof value.lessonId !== "string") return undefined;
   const lesson = labLessonById(value.labId, value.lessonId);
-  if (!lesson) return false;
-  const knownFactorsArePresent = lesson.factors.every((definition) => {
-    if (!Object.prototype.hasOwnProperty.call(factors, definition.id)) return false;
-    const factorValue = factors[definition.id];
-    return isFactorValue(factorValue) && isFactorValueForDefinition(factorValue, definition);
-  });
-  if (!knownFactorsArePresent) return false;
-  return Object.entries(factors).every(([id, factorValue]) => {
-    if (!isFactorValue(factorValue)) return false;
-    const definition = lesson.factors.find((factor) => factor.id === id);
-    return definition === undefined || isFactorValueForDefinition(factorValue, definition);
+  return lesson ? { factors: value.factors, definitions: lesson.factors } : undefined;
+};
+
+const hasRequiredFactorValues = ({ factors, definitions }: TrialFactorContext): boolean => {
+  return definitions.every((definition) => hasConformingFactorValue(factors, definition));
+};
+
+const hasConformingFactorValue = (factors: Record<string, unknown>, definition: FactorDefinition): boolean => {
+  if (!Object.prototype.hasOwnProperty.call(factors, definition.id)) return false;
+  const value = factors[definition.id];
+  return isFactorValue(value) && isFactorValueForDefinition(value, definition);
+};
+
+const hasConformingFactorValues = ({ factors, definitions }: TrialFactorContext): boolean => {
+  return Object.entries(factors).every(([id, value]) => {
+    if (!isFactorValue(value)) return false;
+    const definition = definitions.find((factor) => factor.id === id);
+    return definition === undefined || isFactorValueForDefinition(value, definition);
   });
 };
 
@@ -224,12 +242,33 @@ const isLabId = (value: unknown): value is LabId => {
 };
 
 const isObservable = (value: unknown): value is ObservableRecord => {
-  return isRecord(value) && typeof value.id === "string" && typeof value.label === "string" &&
-    (typeof value.value === "string" || (typeof value.value === "number" && Number.isFinite(value.value))) &&
-    (value.unit === null || typeof value.unit === "string") && typeof value.claimId === "string" &&
-    ["instantaneous", "terminal-mean", "range", "distribution"].includes(String(value.aggregation)) &&
-    (value.precision === undefined || (typeof value.precision === "number" &&
-      Number.isInteger(value.precision) && value.precision >= 0 && value.precision <= 100));
+  return isRecord(value)
+    && hasObservableIdentity(value)
+    && hasObservableValue(value)
+    && hasObservableMetadata(value);
+};
+
+const hasObservableIdentity = (value: Record<string, unknown>): boolean => {
+  return typeof value.id === "string" && typeof value.label === "string";
+};
+
+const hasObservableValue = (value: Record<string, unknown>): boolean => {
+  return typeof value.value === "string" || (typeof value.value === "number" && Number.isFinite(value.value));
+};
+
+const hasObservableMetadata = (value: Record<string, unknown>): boolean => {
+  return (value.unit === null || typeof value.unit === "string")
+    && typeof value.claimId === "string"
+    && isObservableAggregation(value.aggregation)
+    && isObservablePrecision(value.precision);
+};
+
+const isObservableAggregation = (value: unknown): boolean => {
+  return ["instantaneous", "terminal-mean", "range", "distribution"].includes(String(value));
+};
+
+const isObservablePrecision = (value: unknown): boolean => {
+  return value === undefined || (typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 100);
 };
 
 const isTracePoint = (value: unknown): value is TracePoint => {

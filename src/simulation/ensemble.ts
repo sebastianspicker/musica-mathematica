@@ -205,7 +205,8 @@ function leaderToFollowerPhaseLagMs(
     return null;
   }
 
-  const [leader, ...followers] = state.oscillators;
+  const leader = state.oscillators.at(0);
+  const followers = state.oscillators.slice(1);
   if (!leader) {
     return null;
   }
@@ -269,7 +270,7 @@ export function retuneState(state: EnsembleState, config: EnsembleConfig): Ensem
   assertValidEnsembleConfig(config);
   const count = config.musicianCount;
   const oscillators = Array.from({ length: count }, (_, index) => {
-    const existing = state.oscillators[index];
+    const existing = state.oscillators.at(index);
     return {
       phase: existing?.phase ?? initialPhaseFor(index, count),
       omega: naturalOmegaFor(index, count, config),
@@ -286,18 +287,20 @@ export function configsEqual(left: EnsembleConfig, right: EnsembleConfig): boole
   assertValidEnsembleConfig(left);
   assertValidEnsembleConfig(right);
 
-  return (
-    nearlyEqual(left.musicianCount, right.musicianCount) &&
-    nearlyEqual(left.tempoBpm, right.tempoBpm) &&
-    nearlyEqual(left.tempoSpreadBpm, right.tempoSpreadBpm) &&
-    nearlyEqual(left.couplingStrength, right.couplingStrength) &&
-    nearlyEqual(left.latencySeconds, right.latencySeconds) &&
-    nearlyEqual(left.jitterSeconds, right.jitterSeconds) &&
-    left.topology === right.topology &&
-    left.repertoireTexture === right.repertoireTexture &&
-    nearlyEqual(left.clickTrackStrength, right.clickTrackStrength)
-  );
+  return numericConfigValuesEqual(left, right)
+    && left.topology === right.topology
+    && left.repertoireTexture === right.repertoireTexture;
 }
+
+const numericConfigValuesEqual = (left: EnsembleConfig, right: EnsembleConfig): boolean => {
+  return nearlyEqual(left.musicianCount, right.musicianCount)
+    && nearlyEqual(left.tempoBpm, right.tempoBpm)
+    && nearlyEqual(left.tempoSpreadBpm, right.tempoSpreadBpm)
+    && nearlyEqual(left.couplingStrength, right.couplingStrength)
+    && nearlyEqual(left.latencySeconds, right.latencySeconds)
+    && nearlyEqual(left.jitterSeconds, right.jitterSeconds)
+    && nearlyEqual(left.clickTrackStrength, right.clickTrackStrength);
+};
 
 export function createCouplingEdges(config: EnsembleConfig): CouplingEdge[] {
   assertValidEnsembleConfig(config);

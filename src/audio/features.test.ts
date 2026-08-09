@@ -66,6 +66,9 @@ describe("audio features", () => {
     expect(spectralFlatness(testSpectrum)).toBeGreaterThanOrEqual(0);
     expect(spectralFlatness(testSpectrum)).toBeLessThanOrEqual(1);
     expect(spectralHarmonicity(testSpectrum, 100, 10)).toBeCloseTo(1);
+    expect(spectralHarmonicity(testSpectrum, null)).toBe(0);
+    expect(spectralHarmonicity(testSpectrum, 0)).toBe(0);
+    expect(spectralHarmonicity(testSpectrum, Number.NaN)).toBe(0);
 
     const chromaSpectrum = spectrum(
       Array.from({ length: 13 }, (_, index) => index === 0 ? 0 : 440 * index),

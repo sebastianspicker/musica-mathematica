@@ -10,6 +10,18 @@ declare function registerProcessor(name: string, processorCtor: new (options: Au
 
 const PROCESSOR_NAME = "musica-mathematica-capture";
 
+function isWorkletAttachMessage(message: unknown): message is WorkletAttachMessage {
+  return typeof message === "object"
+    && message !== null
+    && (message as { type?: unknown }).type === "attach-output";
+}
+
+function isWorkletCreditMessage(message: unknown): message is WorkletCreditMessage {
+  return typeof message === "object"
+    && message !== null
+    && (message as { type?: unknown }).type === "credits";
+}
+
 class CaptureProcessor extends AudioWorkletProcessor {
   private readonly frameSize: 2048 | 4096;
   private readonly hopSize: number;
@@ -27,11 +39,11 @@ class CaptureProcessor extends AudioWorkletProcessor {
     this.frameSize = requestedFrameSize === 4096 ? 4096 : 2048;
     this.hopSize = this.frameSize / 2;
     this.ring = new Float32Array(this.frameSize);
-    this.port.onmessage = (event: MessageEvent<WorkletAttachMessage>) => {
-      if (event.data.type !== "attach-output") return;
+    this.port.onmessage = (event: MessageEvent<unknown>) => {
+      if (!isWorkletAttachMessage(event.data)) return;
       this.outputPort = event.data.port;
-      this.outputPort.onmessage = (creditEvent: MessageEvent<WorkletCreditMessage>) => {
-        if (creditEvent.data.type === "credits" && Number.isSafeInteger(creditEvent.data.count)) {
+      this.outputPort.onmessage = (creditEvent: MessageEvent<unknown>) => {
+        if (isWorkletCreditMessage(creditEvent.data) && Number.isSafeInteger(creditEvent.data.count)) {
           this.credits += Math.max(0, creditEvent.data.count);
         }
       };
@@ -40,38 +52,57 @@ class CaptureProcessor extends AudioWorkletProcessor {
   }
 
   process(inputs: Float32Array[][]): boolean {
-    const channel = inputs[0]?.[0];
+    const channel = inputs.at(0)?.at(0);
     if (!channel) return true;
     for (let index = 0; index < channel.length; index += 1) {
-      this.ring[this.ringIndex] = channel[index];
-      this.ringIndex = (this.ringIndex + 1) % this.frameSize;
-      this.sampleCount += 1;
-      if (this.sampleCount < this.frameSize || (this.sampleCount - this.frameSize) % this.hopSize !== 0) continue;
-      const sequence = this.sequence;
-      this.sequence += 1;
-      if (!this.outputPort || this.credits <= 0) {
-        this.droppedFrames += 1;
-        continue;
-      }
-      const samples = new Float32Array(this.frameSize);
-      for (let frameIndex = 0; frameIndex < this.frameSize; frameIndex += 1) {
-        samples[frameIndex] = this.ring[(this.ringIndex + frameIndex) % this.frameSize];
-      }
-      const message: WorkerFrameMessage = {
-        type: "audio-frame",
-        frame: {
-          sequence,
-          startSample: this.sampleCount - this.frameSize,
-          sampleRateHz: sampleRate,
-          samples,
-          droppedBefore: this.droppedFrames,
-        },
-      };
-      this.outputPort.postMessage(message, [samples.buffer]);
-      this.credits -= 1;
-      this.droppedFrames = 0;
+      this.captureSample(channel.at(index) ?? 0);
     }
     return true;
+  }
+
+  private captureSample(sample: number): void {
+    this.ring[this.ringIndex] = sample;
+    this.ringIndex = (this.ringIndex + 1) % this.frameSize;
+    this.sampleCount += 1;
+    if (!this.isFrameReady()) return;
+    this.postFrame();
+  }
+
+  private isFrameReady(): boolean {
+    return this.sampleCount >= this.frameSize && (this.sampleCount - this.frameSize) % this.hopSize === 0;
+  }
+
+  private postFrame(): void {
+    const sequence = this.sequence;
+    this.sequence += 1;
+    if (!this.outputPort || this.credits <= 0) {
+      this.droppedFrames += 1;
+      return;
+    }
+    const samples = this.copyFrame();
+    const message: WorkerFrameMessage = {
+      type: "audio-frame",
+      frame: {
+        sequence,
+        startSample: this.sampleCount - this.frameSize,
+        sampleRateHz: sampleRate,
+        samples,
+        droppedBefore: this.droppedFrames,
+      },
+    };
+    this.outputPort.postMessage(message, [samples.buffer]);
+    this.credits -= 1;
+    this.droppedFrames = 0;
+  }
+
+  private copyFrame(): Float32Array {
+    const samples = new Float32Array(this.frameSize);
+    const tailLength = this.frameSize - this.ringIndex;
+    samples.set(this.ring.subarray(this.ringIndex));
+    if (this.ringIndex > 0) {
+      samples.set(this.ring.subarray(0, this.ringIndex), tailLength);
+    }
+    return samples;
   }
 }
 

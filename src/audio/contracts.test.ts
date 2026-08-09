@@ -40,16 +40,16 @@ describe("bounded audio contracts", () => {
   });
 
   it("enforces microphone, selection, and file bounds", () => {
-    expect(() => validateMicrophoneDuration(5)).not.toThrow();
-    expect(() => validateMicrophoneDuration(20)).not.toThrow();
-    expect(() => validateMicrophoneDuration(4.99)).toThrowError(AudioInputError);
+    expect(() => { validateMicrophoneDuration(5); }).not.toThrow();
+    expect(() => { validateMicrophoneDuration(20); }).not.toThrow();
+    expect(() => { validateMicrophoneDuration(4.99); }).toThrowError(AudioInputError);
     expect(validateAnalysisRange({ startSeconds: 2, endSeconds: 32 }, 40)).toEqual({
       startSeconds: 2,
       endSeconds: 32,
     });
-    expect(() => validateAnalysisRange({ startSeconds: 0, endSeconds: 30.01 }, 40)).toThrowError(AudioInputError);
-    expect(() => validateAudioFile({ type: "text/plain", size: 100 })).toThrowError(AudioInputError);
-    expect(() => validateAudioFile({ type: "audio/wav", size: AUDIO_ANALYSIS_LIMITS.maximumFileBytes + 1 })).toThrowError(AudioInputError);
+    expect(() => { validateAnalysisRange({ startSeconds: 0, endSeconds: 30.01 }, 40); }).toThrowError(AudioInputError);
+    expect(() => { validateAudioFile({ type: "text/plain", size: 100 }); }).toThrowError(AudioInputError);
+    expect(() => { validateAudioFile({ type: "audio/wav", size: AUDIO_ANALYSIS_LIMITS.maximumFileBytes + 1 }); }).toThrowError(AudioInputError);
   });
 
   it("retains only allow-listed media settings", () => {
@@ -83,13 +83,14 @@ describe("bounded audio contracts", () => {
       stop,
       getSettings: () => ({ sampleRate: 48_000, deviceId: "private" }),
     } as unknown as MediaStreamTrack;
-    const secondTrack = { stop: vi.fn() } as unknown as MediaStreamTrack;
+    const secondStop = vi.fn();
+    const secondTrack = { stop: secondStop } as unknown as MediaStreamTrack;
     const stream = {
       getAudioTracks: () => [audioTrack],
       getTracks: () => [audioTrack, secondTrack],
     } as unknown as MediaStream;
     let scheduledStop: (() => void) | undefined;
-    const getUserMedia = vi.fn(async () => stream);
+    const getUserMedia = vi.fn(() => Promise.resolve(stream));
     const session = await startMicrophoneSession({
       userInitiated: true,
       durationSeconds: 5,
@@ -109,7 +110,7 @@ describe("bounded audio contracts", () => {
     expect(session.settings).toEqual({ sampleRate: 48_000 });
     scheduledStop?.();
     expect(stop).toHaveBeenCalledOnce();
-    expect(secondTrack.stop).toHaveBeenCalledOnce();
+    expect(secondStop).toHaveBeenCalledOnce();
   });
 
   it("decodes only the selected mono mix and records no file identity", async () => {
@@ -123,8 +124,8 @@ describe("bounded audio contracts", () => {
       getChannelData: (channel: number) => channel === 0 ? left : right,
     } as AudioBuffer;
     const result = await decodeAudioSelection(
-      { type: "audio/wav", size: 8, arrayBuffer: async () => new ArrayBuffer(8) },
-      { decodeAudioData: async () => decoded },
+      { type: "audio/wav", size: 8, arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) },
+      { decodeAudioData: () => Promise.resolve(decoded) },
       { startSeconds: 0, endSeconds: 1 },
     );
 

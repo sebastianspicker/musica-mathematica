@@ -39,73 +39,38 @@ type MicrophoneAnalysisRequest = Readonly<{
 export async function startMicrophoneAnalysis(request: MicrophoneAnalysisRequest): Promise<void> {
   const { analysisSettings, durationSeconds, frameSize, gate, setSettings, state } = request;
   const { onAnalysis, setBusy, setStatus } = state;
-  setBusy(true);
-  setStatus("Requesting a local microphone segment…");
-  onAnalysis(null);
-  const AudioContextCtor = window.AudioContext;
-  if (!AudioContextCtor) {
+  beginAnalysis(state, "Requesting a local microphone segment…");
+  const context = createAudioContext();
+  if (!context) {
     setBusy(false);
     setStatus("Microphone analysis is unavailable because Web Audio is not supported.");
     return;
   }
-  const context = new AudioContextCtor();
-  let stopSession: (() => void) | undefined;
-  let pipeline: Awaited<ReturnType<typeof createMicrophoneAnalysisPipeline>> | undefined;
-  let timer: number | undefined;
-  let contextClosed = false;
-  const cleanup = (): void => {
-    if (timer !== undefined) {
-      window.clearTimeout(timer);
-      timer = undefined;
-    }
-    const activePipeline = pipeline;
-    pipeline = undefined;
-    activePipeline?.stop();
-    const stopActiveSession = stopSession;
-    stopSession = undefined;
-    stopActiveSession?.();
-    if (!contextClosed) {
-      contextClosed = true;
-      void context.close();
-    }
-  };
+  const resources = createMicrophoneResources(context);
+  const { cleanup } = resources;
   gate.registerCleanup(cleanup);
   try {
-    const session = await startMicrophoneSession({ userInitiated: true, durationSeconds });
-    stopSession = session.stop;
-    if (!gate.isCurrent()) {
-      cleanup();
-      return;
-    }
-    setSettings(session.settings);
-    if (context.state === "suspended") await context.resume();
-    if (!gate.isCurrent()) {
-      cleanup();
-      return;
-    }
-    pipeline = await createMicrophoneAnalysisPipeline(context, session.stream, {
+    const started = await prepareMicrophoneCapture({
+      analysisSettings,
+      context,
+      durationSeconds,
       frameSize,
-      queueCapacity: AUDIO_ANALYSIS_LIMITS.defaultQueueCapacity,
-      onsetSensitivity: analysisSettings.onsetSensitivity,
-      workletModuleUrl: captureProcessorModuleUrl,
-      workerFactory: createStreamingAnalysisWorker,
-      onResult: (frame, queue, temporal) => {
-        if (!gate.isCurrent()) return;
-        onAnalysis(microphoneFrameToLabEvaluation(frame, temporal, queue, analysisSettings));
-        setStatus(`Capturing locally · ${Math.max(0, durationSeconds).toFixed(0)} s maximum · ${queue.sequenceGaps + queue.overflowFrames + queue.staleFrames} reported frame gaps`);
-      },
-      onError: (message) => {
-        if (gate.isCurrent()) setStatus(`Analysis worker: ${message}`);
-      },
+      gate,
+      onAnalysis,
+      resources,
+      setSettings,
+      setStatus,
     });
-    if (!gate.isCurrent()) {
+    if (!started) {
       cleanup();
       return;
     }
-    timer = window.setTimeout(
-      () => finishMicrophoneCapture({ cleanup, gate, setBusy, setStatus }),
+    resources.setTimer(window.setTimeout(
+      () => {
+        finishMicrophoneCapture({ cleanup, gate, setBusy, setStatus });
+      },
       durationSeconds * 1000,
-    );
+    ));
   } catch (error) {
     cleanup();
     gate.clearCleanup(cleanup);
@@ -113,6 +78,101 @@ export async function startMicrophoneAnalysis(request: MicrophoneAnalysisRequest
     setBusy(false);
     setStatus(error instanceof Error ? error.message : "Microphone analysis could not start.");
   }
+}
+
+type MicrophoneResources = Readonly<{
+  cleanup: () => void;
+  setPipeline: (pipeline: Awaited<ReturnType<typeof createMicrophoneAnalysisPipeline>>) => void;
+  setSessionStop: (stop: () => void) => void;
+  setTimer: (timer: number) => void;
+}>;
+
+function beginAnalysis(state: AnalysisStateSetters, status: string): void {
+  state.setBusy(true);
+  state.setStatus(status);
+  state.onAnalysis(null);
+}
+
+function createAudioContext(): AudioContext | null {
+  const AudioContextCtor = window.AudioContext;
+  return AudioContextCtor ? new AudioContextCtor() : null;
+}
+
+function createMicrophoneResources(context: AudioContext): MicrophoneResources {
+  let stopSession: (() => void) | undefined;
+  let pipeline: Awaited<ReturnType<typeof createMicrophoneAnalysisPipeline>> | undefined;
+  let timer: number | undefined;
+  const closeContext = createContextCloser(context);
+  return {
+    setSessionStop: (nextStop) => {
+      stopSession = nextStop;
+    },
+    setPipeline: (nextPipeline) => {
+      pipeline = nextPipeline;
+    },
+    setTimer: (nextTimer) => {
+      timer = nextTimer;
+    },
+    cleanup: () => {
+      if (timer !== undefined) {
+        window.clearTimeout(timer);
+        timer = undefined;
+      }
+      const activePipeline = pipeline;
+      pipeline = undefined;
+      activePipeline?.stop();
+      const stopActiveSession = stopSession;
+      stopSession = undefined;
+      stopActiveSession?.();
+      closeContext();
+    },
+  };
+}
+
+function createContextCloser(context: AudioContext): () => void {
+  let contextClosed = false;
+  return () => {
+    if (contextClosed) return;
+    contextClosed = true;
+    void context.close();
+  };
+}
+
+async function prepareMicrophoneCapture(request: Readonly<{
+  analysisSettings: AudioEvaluationSettings;
+  context: AudioContext;
+  durationSeconds: number;
+  frameSize: 2048 | 4096;
+  gate: AnalysisRequestGate;
+  onAnalysis: AnalysisStateSetters["onAnalysis"];
+  resources: MicrophoneResources;
+  setSettings: (settings: SafeMediaSettings | null) => void;
+  setStatus: AnalysisStateSetters["setStatus"];
+}>): Promise<boolean> {
+  const { analysisSettings, context, durationSeconds, frameSize, gate, onAnalysis, resources, setSettings, setStatus } = request;
+  const session = await startMicrophoneSession({ userInitiated: true, durationSeconds });
+  resources.setSessionStop(session.stop);
+  if (!gate.isCurrent()) return false;
+  setSettings(session.settings);
+  if (context.state === "suspended") await context.resume();
+  if (!gate.isCurrent()) return false;
+  const pipeline = await createMicrophoneAnalysisPipeline(context, session.stream, {
+    frameSize,
+    queueCapacity: AUDIO_ANALYSIS_LIMITS.defaultQueueCapacity,
+    onsetSensitivity: analysisSettings.onsetSensitivity,
+    workletModuleUrl: captureProcessorModuleUrl,
+    workerFactory: createStreamingAnalysisWorker,
+    onResult: (frame, queue, temporal) => {
+      if (!gate.isCurrent()) return;
+      onAnalysis(microphoneFrameToLabEvaluation(frame, temporal, queue, analysisSettings));
+      setStatus(`Capturing locally · ${Math.max(0, durationSeconds).toFixed(0)} s maximum · ${queue.sequenceGaps + queue.overflowFrames + queue.staleFrames} reported frame gaps`);
+    },
+    onError: (message) => {
+      if (gate.isCurrent()) setStatus(`Analysis worker: ${message}`);
+    },
+  });
+  resources.setPipeline(pipeline);
+  return gate.isCurrent();
 }
 
 function finishMicrophoneCapture(request: Readonly<{
@@ -147,38 +207,21 @@ export async function analyzeFileSelection(request: FileAnalysisRequest): Promis
     setStatus("Choose a browser-decodable audio/* file first.");
     return;
   }
-  const AudioContextCtor = window.AudioContext;
-  if (!AudioContextCtor) {
+  const context = createAudioContext();
+  if (!context) {
     setStatus("File analysis is unavailable because Web Audio is not supported.");
     return;
   }
-  setBusy(true);
-  setStatus("Decoding the bounded selection locally…");
-  onAnalysis(null);
-  const context = new AudioContextCtor();
+  beginAnalysis(state, "Decoding the bounded selection locally…");
   const controller = new AbortController();
-  let contextClosed = false;
-  const cleanup = (): void => {
-    controller.abort();
-    if (!contextClosed) {
-      contextClosed = true;
-      void context.close();
-    }
-  };
+  const cleanup = createFileCleanup(context, controller);
   gate.registerCleanup(cleanup);
   try {
     const decoded = await decodeAudioSelection(file, context, { startSeconds: selectionStart, endSeconds: selectionStart + selectionDuration });
-    if (!gate.isCurrent() || controller.signal.aborted) return;
-    const analysis = await analyzeSelectionInWorker(decoded.samples, decoded.provenance.sampleRateHz, {
-      frameSize,
-      onsetSensitivity: analysisSettings.onsetSensitivity,
-      signal: controller.signal,
-      workerFactory: createSelectionAnalysisWorker,
-    });
-    if (!gate.isCurrent() || controller.signal.aborted) return;
-    onAnalysis(selectionToLabEvaluation(analysis, decoded.provenance, analysisSettings));
-    fileRef.current = null;
-    setStatus(`Local analysis complete: ${analysis.durationSeconds.toFixed(2)} s, ${analysis.frames.length} frames. Raw audio was discarded.`);
+    if (!isCurrentFileAnalysis(gate, controller)) return;
+    const analysis = await analyzeDecodedFile({ analysisSettings, controller, decoded, frameSize });
+    if (!isCurrentFileAnalysis(gate, controller)) return;
+    publishFileAnalysis({ analysis, analysisSettings, fileRef, onAnalysis, provenance: decoded.provenance, setStatus });
   } catch (error) {
     if (gate.isCurrent()) {
       setStatus(error instanceof Error ? error.message : "The local file analysis failed.");
@@ -188,4 +231,45 @@ export async function analyzeFileSelection(request: FileAnalysisRequest): Promis
     gate.clearCleanup(cleanup);
     if (gate.isCurrent()) setBusy(false);
   }
+}
+
+function createFileCleanup(context: AudioContext, controller: AbortController): () => void {
+  const closeContext = createContextCloser(context);
+  return () => {
+    controller.abort();
+    closeContext();
+  };
+}
+
+function isCurrentFileAnalysis(gate: AnalysisRequestGate, controller: AbortController): boolean {
+  return gate.isCurrent() && !controller.signal.aborted;
+}
+
+async function analyzeDecodedFile(request: Readonly<{
+  analysisSettings: AudioEvaluationSettings;
+  controller: AbortController;
+  decoded: Awaited<ReturnType<typeof decodeAudioSelection>>;
+  frameSize: 2048 | 4096;
+}>) {
+  const { analysisSettings, controller, decoded, frameSize } = request;
+  return analyzeSelectionInWorker(decoded.samples, decoded.provenance.sampleRateHz, {
+    frameSize,
+    onsetSensitivity: analysisSettings.onsetSensitivity,
+    signal: controller.signal,
+    workerFactory: createSelectionAnalysisWorker,
+  });
+}
+
+function publishFileAnalysis(request: Readonly<{
+  analysis: Awaited<ReturnType<typeof analyzeSelectionInWorker>>;
+  analysisSettings: AudioEvaluationSettings;
+  fileRef: MutableRefObject<File | null>;
+  onAnalysis: AnalysisStateSetters["onAnalysis"];
+  provenance: Awaited<ReturnType<typeof decodeAudioSelection>>["provenance"];
+  setStatus: AnalysisStateSetters["setStatus"];
+}>): void {
+  const { analysis, analysisSettings, fileRef, onAnalysis, provenance, setStatus } = request;
+  onAnalysis(selectionToLabEvaluation(analysis, provenance, analysisSettings));
+  fileRef.current = null;
+  setStatus(`Local analysis complete: ${analysis.durationSeconds.toFixed(2)} s, ${analysis.frames.length} frames. Raw audio was discarded.`);
 }

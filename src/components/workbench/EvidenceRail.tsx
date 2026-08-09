@@ -10,7 +10,7 @@ export type EvidenceRailProps = Readonly<{
 
 export function EvidenceRail({ claimIds, sourceIds }: EvidenceRailProps): ReactElement {
   const claims = claimsByIds(claimIds);
-  const primaryClaim = claims.find((claim) => claim.kind === "computed-model-result") ?? claims[0];
+  const primaryClaim = claims.find((claim) => claim.kind === "computed-model-result") ?? claims.at(0);
   const source = sourceById(sourceIds[0]);
 
   return <aside className="mm-evidence-rail" aria-label="Current evidence boundary">

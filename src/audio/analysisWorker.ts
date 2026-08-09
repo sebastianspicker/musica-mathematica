@@ -14,82 +14,117 @@ import type {
 
 const workerScope = self as DedicatedWorkerGlobalScope;
 
+function isWorkerFrameMessage(message: unknown): message is WorkerFrameMessage {
+  if (typeof message !== "object" || message === null) return false;
+  const candidate = message as { type?: unknown; frame?: unknown };
+  if (candidate.type !== "audio-frame" || typeof candidate.frame !== "object" || candidate.frame === null) return false;
+  const frame = candidate.frame as Record<string, unknown>;
+  return typeof frame.sequence === "number"
+    && typeof frame.startSample === "number"
+    && typeof frame.sampleRateHz === "number"
+    && frame.samples instanceof Float32Array
+    && typeof frame.droppedBefore === "number";
+}
+
+function postAnalysisError(error: unknown, requestId?: string): void {
+  const message: AnalysisWorkerMessage = {
+    type: "analysis-error",
+    ...(requestId === undefined ? {} : { requestId }),
+    message: error instanceof Error ? error.message : "Unknown audio-analysis error",
+  };
+  workerScope.postMessage(message);
+}
+
+function handleSelectionAnalysis(message: WorkerSelectionMessage): void {
+  try {
+    const result = analyzeAudioSelection(
+      message.samples,
+      message.sampleRateHz,
+      analyzeSpectrumWithFftJs,
+      { frameSize: message.frameSize, onsetSensitivity: message.onsetSensitivity },
+    );
+    const response: AnalysisWorkerMessage = {
+      type: "selection-result",
+      requestId: message.requestId,
+      result,
+    };
+    workerScope.postMessage(response);
+  } catch (error) {
+    postAnalysisError(error, message.requestId);
+  }
+}
+
+type StreamingAnalysisSession = {
+  readonly inputPort: MessagePort;
+  readonly queue: BoundedAudioFrameQueue;
+  readonly fluxHistory: number[];
+  readonly onsetSensitivity?: number;
+  previousMagnitudes: Float64Array | null;
+};
+
+function handleStreamingFrame(session: StreamingAnalysisSession, message: WorkerFrameMessage): void {
+  try {
+    const queueStatus = session.queue.push(message.frame);
+    const nextFrame = session.queue.shift();
+    if (queueStatus.accepted && nextFrame) {
+      const result = analyzeAudioFrame(nextFrame, analyzeSpectrumWithFftJs);
+      const maximumHistoryFrames = Math.ceil(
+        AUDIO_ANALYSIS_LIMITS.maximumMicrophoneSeconds * nextFrame.sampleRateHz / (nextFrame.samples.length / 2),
+      );
+      for (let missing = 0; missing < nextFrame.droppedBefore; missing += 1) session.fluxHistory.push(0);
+      const flux = session.previousMagnitudes && nextFrame.droppedBefore === 0
+        ? spectralFlux(result.spectrum.magnitudes, session.previousMagnitudes)
+        : 0;
+      session.fluxHistory.push(flux);
+      if (session.fluxHistory.length > maximumHistoryFrames) {
+        session.fluxHistory.splice(0, session.fluxHistory.length - maximumHistoryFrames);
+      }
+      session.previousMagnitudes = result.spectrum.magnitudes;
+      const temporal = analyzeFluxHistory(
+        session.fluxHistory,
+        nextFrame.sampleRateHz,
+        nextFrame.samples.length / 2,
+        session.onsetSensitivity,
+      );
+      const response: AnalysisWorkerMessage = {
+        type: "analysis-result",
+        result,
+        temporal,
+        queue: session.queue.getStatus(),
+      };
+      workerScope.postMessage(response);
+    }
+  } catch (error) {
+    postAnalysisError(error);
+  } finally {
+    const credit: WorkletCreditMessage = { type: "credits", count: 1 };
+    session.inputPort.postMessage(credit);
+  }
+}
+
+function attachStreamingAnalysis(message: WorkerAttachMessage): void {
+  const session: StreamingAnalysisSession = {
+    inputPort: message.port,
+    queue: new BoundedAudioFrameQueue(message.queueCapacity),
+    fluxHistory: [],
+    onsetSensitivity: message.onsetSensitivity,
+    previousMagnitudes: null,
+  };
+  session.inputPort.onmessage = (frameEvent: MessageEvent<unknown>) => {
+    if (!isWorkerFrameMessage(frameEvent.data)) return;
+    handleStreamingFrame(session, frameEvent.data);
+  };
+  session.inputPort.start();
+  const initialCredit: WorkletCreditMessage = { type: "credits", count: message.queueCapacity };
+  session.inputPort.postMessage(initialCredit);
+}
+
 workerScope.onmessage = (event: MessageEvent<WorkerAttachMessage | WorkerSelectionMessage>) => {
   if (event.data.type === "analyze-selection") {
-    try {
-      const result = analyzeAudioSelection(
-        event.data.samples,
-        event.data.sampleRateHz,
-        analyzeSpectrumWithFftJs,
-        { frameSize: event.data.frameSize, onsetSensitivity: event.data.onsetSensitivity },
-      );
-      const message: AnalysisWorkerMessage = {
-        type: "selection-result",
-        requestId: event.data.requestId,
-        result,
-      };
-      workerScope.postMessage(message);
-    } catch (error) {
-      const message: AnalysisWorkerMessage = {
-        type: "analysis-error",
-        requestId: event.data.requestId,
-        message: error instanceof Error ? error.message : "Unknown audio-analysis error",
-      };
-      workerScope.postMessage(message);
-    }
+    handleSelectionAnalysis(event.data);
     return;
   }
-  const inputPort = event.data.port;
-  const queue = new BoundedAudioFrameQueue(event.data.queueCapacity);
-  const fluxHistory: number[] = [];
-  let previousMagnitudes: Float64Array | null = null;
-  inputPort.onmessage = (frameEvent: MessageEvent<WorkerFrameMessage>) => {
-    if (frameEvent.data.type !== "audio-frame") return;
-    try {
-      const queueStatus = queue.push(frameEvent.data.frame);
-      const nextFrame = queue.shift();
-      if (queueStatus.accepted && nextFrame) {
-        const result = analyzeAudioFrame(nextFrame, analyzeSpectrumWithFftJs);
-        const maximumHistoryFrames = Math.ceil(
-          AUDIO_ANALYSIS_LIMITS.maximumMicrophoneSeconds * nextFrame.sampleRateHz / (nextFrame.samples.length / 2),
-        );
-        for (let missing = 0; missing < nextFrame.droppedBefore; missing += 1) fluxHistory.push(0);
-        const flux = previousMagnitudes && nextFrame.droppedBefore === 0
-          ? spectralFlux(result.spectrum.magnitudes, previousMagnitudes)
-          : 0;
-        fluxHistory.push(flux);
-        if (fluxHistory.length > maximumHistoryFrames) {
-          fluxHistory.splice(0, fluxHistory.length - maximumHistoryFrames);
-        }
-        previousMagnitudes = result.spectrum.magnitudes;
-        const temporal = analyzeFluxHistory(
-          fluxHistory,
-          nextFrame.sampleRateHz,
-          nextFrame.samples.length / 2,
-          event.data.onsetSensitivity,
-        );
-        const message: AnalysisWorkerMessage = {
-          type: "analysis-result",
-          result,
-          temporal,
-          queue: queue.getStatus(),
-        };
-        workerScope.postMessage(message);
-      }
-    } catch (error) {
-      const message: AnalysisWorkerMessage = {
-        type: "analysis-error",
-        message: error instanceof Error ? error.message : "Unknown audio-analysis error",
-      };
-      workerScope.postMessage(message);
-    } finally {
-      const credit: WorkletCreditMessage = { type: "credits", count: 1 };
-      inputPort.postMessage(credit);
-    }
-  };
-  inputPort.start();
-  const initialCredit: WorkletCreditMessage = { type: "credits", count: event.data.queueCapacity };
-  inputPort.postMessage(initialCredit);
+  attachStreamingAnalysis(event.data);
 };
 
 export {};

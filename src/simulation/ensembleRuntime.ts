@@ -20,7 +20,7 @@ export function delayedOscillatorPhase(
   }
 
   if (!candidate) return oscillatorPhaseOrZero(fallback, oscillatorIndex);
-  const oscillator = candidate.oscillators[oscillatorIndex];
+  const oscillator = candidate.oscillators.at(oscillatorIndex);
   if (!oscillator) {
     throw new RangeError("delayed coupling history is missing the requested source oscillator.");
   }
@@ -60,18 +60,18 @@ export function clickTrackPull(time: number, phase: number, config: EnsembleConf
 }
 
 export function trimHistory(history: EnsembleState[], keepSeconds: number): void {
-  const latest = history[history.length - 1];
+  const latest = history.at(-1);
   if (!latest) return;
   const cutoff = latest.time - keepSeconds;
   while (history.length > 2) {
-    const earliest = history[0];
+    const earliest = history.at(0);
     if (!earliest || earliest.time >= cutoff) break;
     history.shift();
   }
 }
 
 function oscillatorPhaseOrZero(state: EnsembleState, oscillatorIndex: number): number {
-  const oscillator = state.oscillators[oscillatorIndex];
+  const oscillator = state.oscillators.at(oscillatorIndex);
   return oscillator ? oscillator.phase : 0;
 }
 
