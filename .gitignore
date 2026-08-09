@@ -25,6 +25,10 @@ pnpm-debug.log*
 /.vite/
 /.cache/
 /.eslintcache
+/.agents/
+/.codex/
+/.claude/
+/.cursor/
 .codegraph/
 .continue/
 .serena/
@@ -32,6 +36,7 @@ pnpm-debug.log*
 .codacy/cli-config.yaml
 .codacy/logs/
 .codacy/.gitignore
+/docs/agent/
 
 # Root-local temporary state and captures
 /tmp/
