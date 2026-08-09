@@ -26,6 +26,7 @@ pnpm-debug.log*
 /.cache/
 /.eslintcache
 .codegraph/
+.continue/
 .serena/
 .codacy/tools-configs/
 .codacy/cli-config.yaml
@@ -43,6 +44,7 @@ pnpm-debug.log*
 # Local internal archives and working material
 /.internal/
 /AGENTS.md
+/WIP.md
 
 # Editor and operating-system state
 .idea/
