@@ -10,6 +10,18 @@ dist/
 .env
 .env.*
 !.env.example
+!.env.*.example
+!.env.sample
+!.env.template
+secrets.local.*
+credentials.local.*
+.npmrc.local
+*.local.pem
+*.local.key
+*.p12
+*.pfx
+*.jks
+*.keystore
 
 # Logs and package-manager state
 *.log
@@ -27,6 +39,13 @@ pnpm-debug.log*
 /.eslintcache
 .codegraph/
 .serena/
+.agents/
+.claude/
+.codex/
+.kilo/
+.cursor/
+.repowise/
+.codacy/generated/
 .codacy/tools-configs/
 .codacy/cli-config.yaml
 .codacy/logs/
@@ -43,6 +62,15 @@ pnpm-debug.log*
 # Local internal archives and working material
 /.internal/
 /AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/AUDIT_LEDGER.md
+/remediation-ledger.md
+/plan.md
+/progress.md
+/docs/curriculum-cleanup.md
+/docs/portfolio-notes.md
+/docs/verification-cleanup.md
 
 # Editor and operating-system state
 .idea/
@@ -51,6 +79,33 @@ pnpm-debug.log*
 !.vscode/launch.json
 !.vscode/settings.json
 !.vscode/tasks.json
+# Keep RepoWise's generated extension recommendation local in this checkout.
+/.vscode/extensions.json
 *.swp
 *.swo
 Thumbs.db
+
+# Python caches, reports, and generated artifacts
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+blob-report/
+junit*.xml
+*.sarif
+target/
+.build/
+DerivedData/
+xcuserdata/
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+*.local.db
+*.local.sqlite
+*.local.sqlite3

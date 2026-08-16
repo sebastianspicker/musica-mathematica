@@ -79,7 +79,7 @@ formative scaffolding, not automatic assessment.
 | Lesson | Level | Mathematical work | Musical inquiry and boundary |
 | --- | --- | --- | --- |
 | From BPM to Period | Foundation | Use `T = 60 / b`; invert the relation; carry seconds, beats, and bars through calculations. | Relate score tempo to nominal duration without claiming that a performer realizes an exact clock. |
-| Polyrhythm Return Times | Model | Use greatest common divisors and `lcm(p,q) = |pq| / gcd(p,q)` to find exact integer-lattice returns. | Separate exact pulse realignment from accent, groove, grouping, and perceived beat. |
+| Polyrhythm Return Times | Model | Use greatest common divisors and `lcm(p,q) = \|pq\| / gcd(p,q)` to find exact integer-lattice returns. | Separate exact pulse realignment from accent, groove, grouping, and perceived beat. |
 | Phase on the Circle | Critique | Compute wrapped phase and shortest signed circular difference; reason modulo one cycle. | Identify timing, articulation, cueing, and hierarchy that a single phase variable omits. |
 
 Suggested performance task: layer two pulse cycles, mark the mathematical
@@ -89,7 +89,7 @@ return, then change accent or articulation without changing the onset lattice.
 
 | Lesson | Level | Mathematical work | Musical inquiry and boundary |
 | --- | --- | --- | --- |
-| Lock-In and Order | Foundation | Explore natural-frequency spread, coupling, and the Kuramoto order parameter `r = |N^-1 sum exp(i theta_j)|`. | Interpret phase concentration as a model property, never as ensemble quality. |
+| Lock-In and Order | Foundation | Explore natural-frequency spread, coupling, and the Kuramoto order parameter `r = \|N^-1 sum exp(i theta_j)\|`. | Interpret phase concentration as a model property, never as ensemble quality. |
 | Delay, Jitter, and Topology | Model | Compare delayed coupling graphs, square-root degree normalization, deterministic pseudo-jitter, and terminal phase statistics. | Distinguish a configured model stressor from an observation of a rehearsal or network route. |
 | External Pulse or Peer Adaptation | Critique | Compare peer coupling with separate sinusoidal forcing and inspect configured peer share. | Choose a musical criterion before discussing click or peer-led strategies; no strategy is declared universally better. |
 

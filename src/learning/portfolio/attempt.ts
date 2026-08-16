@@ -83,14 +83,31 @@ export function advanceAttempt(
   stage: LessonStage,
   now = new Date().toISOString(),
 ): LessonAttemptV2 {
-  const currentIndex = lessonStages.indexOf(attempt.stage);
-  if (lessonStages[currentIndex + 1] !== stage) return attempt;
-  if (stage === "experiment" && !attempt.prediction) return attempt;
-  if ((stage === "compare" || stage === "explain") && attempt.trials.length < 2) return attempt;
-  if (stage === "perform" && !attempt.explanation) return attempt;
-  if (stage === "transfer" && !attempt.performanceReflection) return attempt;
-  if (stage === "debrief" && !attempt.transferResponse) return attempt;
+  if (!isNextLessonStage(attempt.stage, stage) || !meetsStageRequirement(attempt, stage)) return attempt;
   return { ...attempt, stage, updatedAt: now };
+}
+
+const hasPrediction = (attempt: LessonAttemptV2): boolean => Boolean(attempt.prediction);
+const hasTwoTrials = (attempt: LessonAttemptV2): boolean => attempt.trials.length >= 2;
+const hasExplanation = (attempt: LessonAttemptV2): boolean => Boolean(attempt.explanation);
+const hasPerformanceReflection = (attempt: LessonAttemptV2): boolean => Boolean(attempt.performanceReflection);
+const hasTransferResponse = (attempt: LessonAttemptV2): boolean => Boolean(attempt.transferResponse);
+
+const stageRequirements: Partial<Record<LessonStage, (attempt: LessonAttemptV2) => boolean>> = {
+  experiment: hasPrediction,
+  compare: hasTwoTrials,
+  explain: hasTwoTrials,
+  perform: hasExplanation,
+  transfer: hasPerformanceReflection,
+  debrief: hasTransferResponse,
+};
+
+function isNextLessonStage(currentStage: LessonStage, stage: LessonStage): boolean {
+  return lessonStages[lessonStages.indexOf(currentStage) + 1] === stage;
+}
+
+function meetsStageRequirement(attempt: LessonAttemptV2, stage: LessonStage): boolean {
+  return stageRequirements[stage]?.(attempt) ?? true;
 }
 
 export function setAttemptResponse(

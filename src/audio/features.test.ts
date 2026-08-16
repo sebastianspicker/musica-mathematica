@@ -66,6 +66,9 @@ describe("audio features", () => {
     expect(spectralFlatness(testSpectrum)).toBeGreaterThanOrEqual(0);
     expect(spectralFlatness(testSpectrum)).toBeLessThanOrEqual(1);
     expect(spectralHarmonicity(testSpectrum, 100, 10)).toBeCloseTo(1);
+    expect(spectralHarmonicity(testSpectrum, null)).toBe(0);
+    expect(spectralHarmonicity(testSpectrum, 0)).toBe(0);
+    expect(spectralHarmonicity(testSpectrum, Number.NaN)).toBe(0);
 
     const chromaSpectrum = spectrum(
       Array.from({ length: 13 }, (_, index) => index === 0 ? 0 : 440 * index),
@@ -100,6 +103,22 @@ describe("audio features", () => {
     const chords = rankChordHypotheses(cMajor);
     expect(chords).toHaveLength(3);
     expect(chords[0]).toMatchObject({ rootPitchClass: 0, quality: "major", label: "C major" });
+  });
+
+  it("preserves meter validation and the frozen no-chord fallback", () => {
+    const noChord = rankChordHypotheses(Array.from({ length: 12 }, () => 0));
+
+    expect(noChord).toEqual([{ rootPitchClass: null, quality: "no-chord", confidence: 1, label: "No chord" }]);
+    expect(Object.isFrozen(noChord[0])).toBe(true);
+    expect(() => rankChordHypotheses(Array.from({ length: 11 }, () => 0))).toThrow(
+      "chroma must contain twelve finite non-negative values",
+    );
+    expect(() => rankMeterHypotheses([1, Number.NaN])).toThrow(
+      "beatStrengths must contain finite non-negative values",
+    );
+    expect(() => rankMeterHypotheses([1, 0.5], [1])).toThrow(
+      "meter candidates must contain integers of at least two beats",
+    );
   });
 
   it("uses Hann framing and keeps fft.js behind one adapter", () => {

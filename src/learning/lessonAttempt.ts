@@ -1,9 +1,7 @@
 import {
-  ensembleConfigBounds,
+  isEnsembleConfig,
   type EnsembleConfig,
   type EnsembleMetrics,
-  type RepertoireTexture,
-  type Topology,
 } from "../simulation/ensemble";
 
 export const lessonStages = [
@@ -54,19 +52,6 @@ export type LessonAttemptTransition =
 const stageIndex = (stage: LessonStage): number => lessonStages.indexOf(stage);
 const minimumRunsFailure = (attempt: LessonAttemptV1): string | undefined => {
   return attempt.runs.length >= 2 ? undefined : "Record at least two runs before comparing or explaining.";
-};
-const responseStages: Readonly<Record<LessonResponseField, LessonStage>> = {
-  explanation: "explain",
-  performanceReflection: "perform",
-  transferResponse: "transfer",
-};
-const stageRequirementFailures: Partial<Record<LessonStage, (attempt: LessonAttemptV1) => string | undefined>> = {
-  experiment: (attempt) => hasPrediction(attempt) ? undefined : "Record a prediction before beginning an experiment.",
-  compare: minimumRunsFailure,
-  explain: minimumRunsFailure,
-  perform: (attempt) => hasResponse(attempt.explanation) ? undefined : "Record an explanation before performing.",
-  transfer: (attempt) => hasResponse(attempt.performanceReflection) ? undefined : "Record a performance reflection before transfer.",
-  debrief: (attempt) => hasResponse(attempt.transferResponse) ? undefined : "Record a transfer response before debriefing.",
 };
 
 export function createLessonAttempt(lessonId: string): LessonAttemptV1 {
@@ -119,10 +104,10 @@ const setResponse = (
 ): LessonAttemptTransition => {
   const response = responseInput.trim();
   if (response.length === 0) return rejected(attempt, "A lesson response must contain text.");
-  if (attempt.stage !== responseStages[field]) {
+  if (attempt.stage !== responseStageFor(field)) {
     return rejected(attempt, "This response can only be recorded in its inquiry stage.");
   }
-  return accepted({ ...attempt, [field]: response });
+  return accepted(withResponse(attempt, field, response));
 };
 
 const advanceStage = (attempt: LessonAttemptV1, stage: Exclude<LessonStage, "orient">): LessonAttemptTransition => {
@@ -134,7 +119,44 @@ const advanceStage = (attempt: LessonAttemptV1, stage: Exclude<LessonStage, "ori
 };
 
 const unmetStageRequirement = (attempt: LessonAttemptV1, stage: LessonStage): string | undefined => {
-  return stageRequirementFailures[stage]?.(attempt);
+  if (stage === "experiment") {
+    return hasPrediction(attempt) ? undefined : "Record a prediction before beginning an experiment.";
+  }
+  if (stage === "compare" || stage === "explain") return minimumRunsFailure(attempt);
+  return reflectiveStageRequirement(attempt, stage);
+};
+
+const reflectiveStageRequirement = (attempt: LessonAttemptV1, stage: LessonStage): string | undefined => {
+  switch (stage) {
+    case "perform":
+      return hasResponse(attempt.explanation) ? undefined : "Record an explanation before performing.";
+    case "transfer":
+      return hasResponse(attempt.performanceReflection) ? undefined : "Record a performance reflection before transfer.";
+    case "debrief":
+      return hasResponse(attempt.transferResponse) ? undefined : "Record a transfer response before debriefing.";
+    default:
+      return undefined;
+  }
+};
+
+const responseStageFor = (field: LessonResponseField): LessonStage => {
+  switch (field) {
+    case "explanation": return "explain";
+    case "performanceReflection": return "perform";
+    case "transferResponse": return "transfer";
+  }
+};
+
+const withResponse = (
+  attempt: LessonAttemptV1,
+  field: LessonResponseField,
+  response: string,
+): LessonAttemptV1 => {
+  switch (field) {
+    case "explanation": return { ...attempt, explanation: response };
+    case "performanceReflection": return { ...attempt, performanceReflection: response };
+    case "transferResponse": return { ...attempt, transferResponse: response };
+  }
 };
 
 const accepted = (attempt: LessonAttemptV1): LessonAttemptTransition => {
@@ -209,36 +231,15 @@ export const isLessonStage = (value: unknown): value is LessonStage => {
 };
 
 const isRunSnapshot = (value: unknown): value is RunSnapshot => {
-  if (
-    !isRecord(value) ||
-    typeof value.id !== "string" ||
-    value.id.trim().length === 0 ||
-    !isFiniteNumber(value.durationSeconds) ||
-    value.durationSeconds <= 0 ||
-    !isEnsembleConfig(value.config) ||
-    (value.note !== undefined && typeof value.note !== "string")
-  ) {
-    return false;
-  }
+  if (!isRecord(value) || !hasRunSnapshotDetails(value)) return false;
   return isEnsembleMetrics(value.metrics, value.config);
 };
 
-const isEnsembleConfig = (value: unknown): value is EnsembleConfig => {
-  if (!isRecord(value)) return false;
-  return hasBoundedEnsembleConfigNumbers(value)
-    && isTopology(value.topology)
-    && isRepertoireTexture(value.repertoireTexture);
-};
-
-const hasBoundedEnsembleConfigNumbers = (value: Record<string, unknown>): boolean => {
-  return numberWithinBounds(value.musicianCount, ensembleConfigBounds.musicianCount)
-    && Number.isInteger(value.musicianCount)
-    && numberWithinBounds(value.tempoBpm, ensembleConfigBounds.tempoBpm)
-    && numberWithinBounds(value.tempoSpreadBpm, ensembleConfigBounds.tempoSpreadBpm)
-    && numberWithinBounds(value.couplingStrength, ensembleConfigBounds.couplingStrength)
-    && numberWithinBounds(value.latencySeconds, ensembleConfigBounds.latencySeconds)
-    && numberWithinBounds(value.jitterSeconds, ensembleConfigBounds.jitterSeconds)
-    && numberWithinBounds(value.clickTrackStrength, ensembleConfigBounds.clickTrackStrength);
+const hasRunSnapshotDetails = (value: Record<string, unknown>): value is Record<string, unknown> & { config: EnsembleConfig } => {
+  return hasNonEmptyText(value.id)
+    && isPositiveFiniteNumber(value.durationSeconds)
+    && isEnsembleConfig(value.config)
+    && (value.note === undefined || typeof value.note === "string");
 };
 
 const isEnsembleMetrics = (value: unknown, config: EnsembleConfig): value is EnsembleMetrics => {
@@ -288,23 +289,16 @@ const isOptionalResponse = (value: unknown): value is string | undefined => {
   return value === undefined || (typeof value === "string" && value.trim().length > 0);
 };
 
-const numberWithinBounds = (
-  value: unknown,
-  bounds: { min: number; max: number },
-): value is number => {
-  return isFiniteNumber(value) && value >= bounds.min && value <= bounds.max;
+const hasNonEmptyText = (value: unknown): value is string => {
+  return typeof value === "string" && value.trim().length > 0;
+};
+
+const isPositiveFiniteNumber = (value: unknown): value is number => {
+  return isFiniteNumber(value) && value > 0;
 };
 
 const numberInRange = (value: unknown, min: number, max: number): value is number => {
   return isFiniteNumber(value) && value >= min && value <= max;
-};
-
-const isTopology = (value: unknown): value is Topology => {
-  return value === "all-to-all" || value === "leader-follower" || value === "sections" || value === "click-track";
-};
-
-const isRepertoireTexture = (value: unknown): value is RepertoireTexture => {
-  return value === "pulse" || value === "drone" || value === "call-response" || value === "rubato" || value === "dense-rhythm";
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {

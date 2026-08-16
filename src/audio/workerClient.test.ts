@@ -26,11 +26,7 @@ function selectionAnalysis(): AudioSelectionAnalysis {
 describe("selection analysis worker client", () => {
   it("rejects non-owning views before creating a worker", async () => {
     const construct = vi.fn();
-    vi.stubGlobal("Worker", class {
-      constructor() {
-        construct();
-      }
-    });
+    vi.stubGlobal("Worker", function WorkerStub() { construct(); });
     const backing = new Float32Array(4_096);
     await expect(analyzeSelectionInWorker(
       backing.subarray(0, 2_048),
@@ -77,11 +73,7 @@ describe("selection analysis worker client", () => {
   it("uses a production worker factory without constructing a URL worker", async () => {
     const derived = selectionAnalysis();
     const globalConstruct = vi.fn();
-    vi.stubGlobal("Worker", class {
-      constructor() {
-        globalConstruct();
-      }
-    });
+    vi.stubGlobal("Worker", function WorkerStub() { globalConstruct(); });
     const factory = vi.fn(() => {
       const worker = {
         onmessage: null as ((event: MessageEvent) => void) | null,

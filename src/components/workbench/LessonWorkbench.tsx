@@ -106,8 +106,12 @@ function ExperimentStage({ lesson, runtime }: ExperimentStageProps): ReactElemen
       </button>
       <div className="mm-transport-time"><span>Protocol</span><strong>{runtime.playhead.toFixed(1)} / {lesson.protocol.durationSeconds.toFixed(1)} s</strong></div>
       <label className="mm-compact-toggle"><input checked={runtime.motionEnabled} type="checkbox" onChange={(event) => { runtime.setMotionEnabled(event.currentTarget.checked); if (!event.currentTarget.checked) runtime.resetPlayback(); }} />Motion</label>
-      <label className="mm-compact-toggle"><input checked={audio.audioEnabled} type="checkbox" onChange={(event) => audio.setAudioEnabled(event.currentTarget.checked)} />Audio</label>
-      <label className="mm-volume-control"><span>Volume</span><input aria-label="Preview volume" disabled={!audio.audioEnabled} min="0" max="100" type="range" value={Math.round(audio.audioVolume * 100)} onChange={(event) => audio.setAudioVolume(event.currentTarget.valueAsNumber / 100)} /></label>
+      <label className="mm-compact-toggle"><input checked={audio.audioEnabled} type="checkbox" onChange={(event) => {
+        audio.setAudioEnabled(event.currentTarget.checked);
+      }} />Audio</label>
+      <label className="mm-volume-control"><span>Volume</span><input aria-label="Preview volume" disabled={!audio.audioEnabled} min="0" max="100" type="range" value={Math.round(audio.audioVolume * 100)} onChange={(event) => {
+        audio.setAudioVolume(event.currentTarget.valueAsNumber / 100);
+      }} /></label>
     </div>
     {audio.audioUnavailableReason ? <p className="mm-audio-message" role="status">{audio.audioUnavailableReason}</p> : null}
   </section>;

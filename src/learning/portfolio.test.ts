@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
+import type { TracePoint, TrialSnapshotV2 } from "../labs/types";
 import { defaultConfig, lessonPresets } from "../simulation/presets";
 import { simulateEnsemble } from "../simulation/ensemble";
-import { createLessonAttempt, transitionLessonAttempt, type LessonAttemptV1 } from "./lessonAttempt";
 import {
+  createLessonAttempt,
+  transitionLessonAttempt,
+  type LessonAttemptV1,
+  type LessonStage,
+} from "./lessonAttempt";
+import {
+  advanceAttempt,
   clearPortfolio,
   createAttemptV2,
   createPortfolio,
@@ -17,6 +24,7 @@ import {
   selectLesson,
   updateAttempt,
 } from "./portfolio";
+import type { LessonAttemptV2 } from "./portfolio";
 import { learningRecordStorageKey } from "./localLearningRecord";
 
 class MemoryStorage {
@@ -26,22 +34,127 @@ class MemoryStorage {
   removeItem(key: string): void { this.values.delete(key); }
 }
 
+function phaseProportionTrial(id: string, trace: readonly TracePoint[] = []): TrialSnapshotV2 {
+  return {
+    id,
+    labId: "phase-proportion",
+    lessonId: "from-bpm-to-period",
+    protocolId: "phase-proportion.from-bpm-to-period.v1",
+    deterministic: true,
+    recordedAt: "2026-07-17T10:01:00.000Z",
+    factors: { bpm: 120, beatsPerBar: 4 },
+    observables: [{ id: "period", label: "Period", value: 0.5, unit: "s", aggregation: "instantaneous", claimId: "math.identity" }],
+    trace,
+    provenance: { source: "model", calibration: "uncalibrated", method: "test" },
+  };
+}
+
+function expectLaterTimestampedUpdate(
+  attempt: LessonAttemptV2,
+  now: string,
+  update: () => LessonAttemptV2,
+): LessonAttemptV2 {
+  expect(attempt.updatedAt < now).toBe(true);
+  const updated = update();
+  expect({ isNew: updated !== attempt, updatedAt: updated.updatedAt }).toEqual({
+    isNew: true,
+    updatedAt: now,
+  });
+  return updated;
+}
+
+function expectAdvanced(
+  attempt: LessonAttemptV2,
+  stage: LessonStage,
+  now: string,
+): LessonAttemptV2 {
+  const advanced = expectLaterTimestampedUpdate(
+    attempt,
+    now,
+    () => advanceAttempt(attempt, stage, now),
+  );
+  expect(advanced).toEqual({ ...attempt, stage, updatedAt: now });
+  return advanced;
+}
+
+function expectRecordedTrial(
+  attempt: LessonAttemptV2,
+  trial: TrialSnapshotV2,
+  now: string,
+): LessonAttemptV2 {
+  const attemptSnapshot = structuredClone(attempt);
+  const trialSnapshot = structuredClone(trial);
+  const recorded = expectLaterTimestampedUpdate(
+    attempt,
+    now,
+    () => recordTrial(attempt, trial, now),
+  );
+  expect({
+    attempt,
+    originalTrialCount: attempt.trials.length,
+    originalTrials: attempt.trials,
+    trial,
+  }).toEqual({
+    attempt: attemptSnapshot,
+    originalTrialCount: attemptSnapshot.trials.length,
+    originalTrials: attemptSnapshot.trials,
+    trial: trialSnapshot,
+  });
+  expect({
+    appendedTrial: recorded.trials.at(-1),
+    hasNewTrials: recorded.trials !== attempt.trials,
+    trialCount: recorded.trials.length,
+  }).toEqual({
+    appendedTrial: trialSnapshot,
+    hasNewTrials: true,
+    trialCount: attemptSnapshot.trials.length + 1,
+  });
+  return recorded;
+}
+
 describe("v2 learning portfolio", () => {
+  it("advances through each gated stage only after its immediate prerequisite", () => {
+    const transitionTimes = Array.from(
+      { length: 10 },
+      (_, minute) => `2026-07-17T10:${String(minute).padStart(2, "0")}:00.000Z`,
+    );
+    const [orientAt, predictAt, experimentAt, firstTrialAt, secondTrialAt, compareAt, explainAt, performAt, transferAt, debriefAt] = transitionTimes;
+    const orient = createAttemptV2("phase-proportion", "from-bpm-to-period", orientAt);
+    expect(advanceAttempt(orient, "experiment", predictAt)).toBe(orient);
+
+    const predict = expectAdvanced(orient, "predict", predictAt);
+    expect(advanceAttempt(predict, "experiment", experimentAt)).toBe(predict);
+
+    const experiment = expectAdvanced(
+      { ...predict, prediction: "The period halves." },
+      "experiment",
+      experimentAt,
+    );
+    const oneTrial = expectRecordedTrial(experiment, phaseProportionTrial("Run A"), firstTrialAt);
+    expect(advanceAttempt(oneTrial, "compare", compareAt)).toBe(oneTrial);
+
+    const twoTrials = expectRecordedTrial(oneTrial, phaseProportionTrial("Run B"), secondTrialAt);
+    const compare = expectAdvanced(twoTrials, "compare", compareAt);
+    const underRecordedComparison = { ...compare, trials: [phaseProportionTrial("Run A")] };
+    expect(advanceAttempt(underRecordedComparison, "explain", explainAt)).toBe(underRecordedComparison);
+
+    const explain = expectAdvanced(compare, "explain", explainAt);
+    expect(advanceAttempt(explain, "perform", performAt)).toBe(explain);
+
+    const perform = expectAdvanced({ ...explain, explanation: "The period is inversely proportional to tempo." }, "perform", performAt);
+    expect(advanceAttempt(perform, "transfer", transferAt)).toBe(perform);
+
+    const transfer = expectAdvanced({ ...perform, performanceReflection: "I kept the pulse steady." }, "transfer", transferAt);
+    expect(advanceAttempt(transfer, "debrief", debriefAt)).toBe(transfer);
+
+    expectAdvanced({ ...transfer, transferResponse: "I can use this relationship when setting a tempo." }, "debrief", debriefAt);
+  });
+
   it("covers all curated lessons and caps stored trace data", () => {
     expect(portfolioLessonCount).toBe(24);
     const attempt = { ...createAttemptV2("phase-proportion", "from-bpm-to-period", "2026-07-17T10:00:00.000Z"), stage: "experiment" as const, prediction: "The period halves." };
-    const recorded = recordTrial(attempt, {
-      id: "Run A",
-      labId: "phase-proportion",
-      lessonId: "from-bpm-to-period",
-      protocolId: "phase-proportion.from-bpm-to-period.v1",
-      deterministic: true,
-      recordedAt: "2026-07-17T10:01:00.000Z",
-      factors: { bpm: 120, beatsPerBar: 4 },
-      observables: [{ id: "period", label: "Period", value: 0.5, unit: "s", aggregation: "instantaneous", claimId: "math.identity" }],
-      trace: Array.from({ length: 1000 }, (_, index) => ({ x: index, y: index / 1000, series: "test" })),
-      provenance: { source: "model", calibration: "uncalibrated", method: "test" },
-    }, "2026-07-17T10:01:00.000Z");
+    const trace = Array.from({ length: 1000 }, (_, index) => ({ x: index, y: index / 1000, series: "test" }));
+    const recorded = recordTrial(attempt, phaseProportionTrial("Run A", trace), "2026-07-17T10:01:00.000Z");
     expect(recorded.trials[0].trace).toHaveLength(maximumTracePointsPerTrial);
     expect(recorded.trials[0].trace.at(0)?.x).toBe(0);
     expect(recorded.trials[0].trace.at(-1)?.x).toBe(999);
@@ -112,12 +225,7 @@ describe("v2 learning portfolio", () => {
           prediction: "The period halves.",
           updatedAt: "2026-07-17T10:01:00.000Z",
           trials: [{
-            id: "Run A",
-            labId: "phase-proportion",
-            lessonId: "from-bpm-to-period",
-            protocolId: "phase-proportion.from-bpm-to-period.v1",
-            deterministic: true,
-            recordedAt: "2026-07-17T10:01:00.000Z",
+            ...phaseProportionTrial("Run A"),
             factors,
             observables: [{
               id: "period",
@@ -128,8 +236,6 @@ describe("v2 learning portfolio", () => {
               claimId: "math.identity",
               precision,
             }],
-            trace: [],
-            provenance: { source: "model", calibration: "uncalibrated", method: "test" },
           }],
         },
       },

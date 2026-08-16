@@ -25,7 +25,7 @@ export function runLabel(runCount: number): string {
 export function seedForTrial(lesson: LabLesson, factors: Readonly<Record<string, FactorValue>>): string {
   if (lesson.protocol.seed?.startsWith("factor:")) {
     const id = lesson.protocol.seed.slice("factor:".length);
-    return String(factors[id] ?? "unspecified");
+    return String(new Map(Object.entries(factors)).get(id) ?? "unspecified");
   }
   return lesson.protocol.seed ?? "unspecified";
 }

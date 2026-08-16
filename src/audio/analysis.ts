@@ -130,6 +130,17 @@ export function analyzeAudioSelection(
   }
 
   const hopSize = Math.round(frameSize * (1 - AUDIO_ANALYSIS_LIMITS.overlapRatio));
+  const frames = analyzeSelectionFrames(samples, sampleRateHz, frameSize, hopSize, analyzeSpectrum);
+  return buildSelectionAnalysis(samples, sampleRateHz, frameSize, hopSize, frames, options);
+}
+
+function analyzeSelectionFrames(
+  samples: ArrayLike<number>,
+  sampleRateHz: number,
+  frameSize: 2048 | 4096,
+  hopSize: number,
+  analyzeSpectrum: SpectrumAnalyzer,
+): FrameAnalysis[] {
   const frames: FrameAnalysis[] = [];
   for (let startSample = 0, sequence = 0; startSample + frameSize <= samples.length; startSample += hopSize, sequence += 1) {
     const frameSamples = Float32Array.from(
@@ -144,17 +155,22 @@ export function analyzeAudioSelection(
       droppedBefore: 0,
     }, analyzeSpectrum));
   }
+  return frames;
+}
 
+function buildSelectionAnalysis(
+  samples: ArrayLike<number>,
+  sampleRateHz: number,
+  frameSize: 2048 | 4096,
+  hopSize: number,
+  frames: readonly FrameAnalysis[],
+  options: AudioSelectionAnalysisOptions,
+): AudioSelectionAnalysis {
   const flux = frames.map((frame, index) => index === 0
     ? 0
     : spectralFlux(frame.spectrum.magnitudes, frames[index - 1].spectrum.magnitudes));
   const temporal = analyzeFluxHistory(flux, sampleRateHz, hopSize, options.onsetSensitivity);
-  const meanChroma = new Float64Array(12);
-  for (const frame of frames) {
-    for (let pitchClass = 0; pitchClass < meanChroma.length; pitchClass += 1) {
-      meanChroma[pitchClass] += frame.chroma[pitchClass] / frames.length;
-    }
-  }
+  const meanChroma = averageChroma(frames);
 
   return Object.freeze({
     calibration: "uncalibrated" as const,
@@ -173,6 +189,16 @@ export function analyzeAudioSelection(
   });
 }
 
+function averageChroma(frames: readonly FrameAnalysis[]): Float64Array {
+  const meanChroma = new Float64Array(12);
+  for (const frame of frames) {
+    for (let pitchClass = 0; pitchClass < meanChroma.length; pitchClass += 1) {
+      meanChroma[pitchClass] += frame.chroma[pitchClass] / frames.length;
+    }
+  }
+  return meanChroma;
+}
+
 export function analyzeFluxHistory(
   flux: readonly number[],
   sampleRateHz: number,
@@ -183,7 +209,7 @@ export function analyzeFluxHistory(
     sensitivity: onsetSensitivity,
   });
   const tempoHypotheses = rankTempoHypotheses(flux, sampleRateHz, hopSize);
-  const strongestTempo = tempoHypotheses[0];
+  const strongestTempo = tempoHypotheses.at(0);
   const beatStrengths = strongestTempo
     ? sampleBeatStrengths(flux, strongestTempo.lagFrames)
     : [];

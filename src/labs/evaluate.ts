@@ -49,13 +49,59 @@ export function evaluateLesson(
   lesson: LabLesson,
   factors: Readonly<Record<string, FactorValue>>,
 ): LabEvaluation {
+  const direct = evaluateDirectLesson(lesson.id, factors);
+  if (direct) return direct;
+  const grouped = evaluateGroupedLesson(lesson, factors);
+  if (grouped) return grouped;
+  throw new RangeError(`No evaluator is registered for lesson ${lesson.id}.`);
+}
+
+function evaluateDirectLesson(id: LabLesson["id"], factors: Readonly<Record<string, FactorValue>>): LabEvaluation | null {
+  return evaluateFoundations(id, factors) ?? evaluateAdvancedFirst(id, factors) ?? evaluateAdvancedSecond(id, factors);
+}
+
+function evaluateFoundations(id: LabLesson["id"], factors: Readonly<Record<string, FactorValue>>): LabEvaluation | null {
+  switch (id) {
+    case "from-bpm-to-period": return evaluateBpm(factors);
+    case "polyrhythm-return-times": return evaluatePolyrhythm(factors);
+    case "phase-on-the-circle": return evaluateCircularPhase(factors);
+    case "recorded-onset-hypotheses": return evaluateOnsetHypotheses(factors);
+    case "ratios-logs-cents": return evaluateRatio(factors);
+    case "temperaments-and-commas": return evaluateTemperament(factors);
+    case "timbre-changes-consonance": return evaluateTimbreConsonance(factors);
+    default: return null;
+  }
+}
+
+function evaluateAdvancedFirst(id: LabLesson["id"], factors: Readonly<Record<string, FactorValue>>): LabEvaluation | null {
+  switch (id) {
+    case "pitch-class-symmetry": return evaluatePitchClass(factors);
+    case "tonnetz-and-voice-leading": return evaluateVoiceLeading(factors);
+    case "chord-hypotheses": return evaluateChordHypotheses(factors);
+    case "resonance-modes-partials": return evaluateResonance(factors);
+    case "fourier-windows-aliasing": return evaluateAliasing(factors);
+    case "time-varying-timbre": return evaluateTimeVaryingTimbre(factors);
+    case "seeded-chance": return evaluateSeededChance(factors);
+    default: return null;
+  }
+}
+
+function evaluateAdvancedSecond(id: LabLesson["id"], factors: Readonly<Record<string, FactorValue>>): LabEvaluation | null {
+  switch (id) {
+    case "markov-memory": return evaluateMarkov(factors);
+    case "entropy-surprisal-form": return evaluateInformation(factors);
+    case "provenance-and-uncertainty": return evaluateUncertainty(factors);
+    case "recovering-parameters": return evaluateParameterRecovery(factors);
+    case "compare-without-grading": return evaluateDescriptiveComparison(factors);
+    default: return null;
+  }
+}
+
+function evaluateGroupedLesson(
+  lesson: LabLesson,
+  factors: Readonly<Record<string, FactorValue>>,
+): LabEvaluation | null {
   switch (lesson.id) {
-    case "from-bpm-to-period":
-      return evaluateBpm(factors);
-    case "polyrhythm-return-times":
-      return evaluatePolyrhythm(factors);
-    case "phase-on-the-circle":
-      return evaluateCircularPhase(factors);
     case "lock-in-and-order":
     case "delay-jitter-topology":
     case "external-pulse-or-peer-adaptation":
@@ -63,40 +109,8 @@ export function evaluateLesson(
     case "cycles-and-euclidean-rhythm":
     case "autocorrelation-spectrum-meter":
       return evaluatePattern(lesson.id, factors);
-    case "recorded-onset-hypotheses":
-      return evaluateOnsetHypotheses(factors);
-    case "ratios-logs-cents":
-      return evaluateRatio(factors);
-    case "temperaments-and-commas":
-      return evaluateTemperament(factors);
-    case "timbre-changes-consonance":
-      return evaluateTimbreConsonance(factors);
-    case "pitch-class-symmetry":
-      return evaluatePitchClass(factors);
-    case "tonnetz-and-voice-leading":
-      return evaluateVoiceLeading(factors);
-    case "chord-hypotheses":
-      return evaluateChordHypotheses(factors);
-    case "resonance-modes-partials":
-      return evaluateResonance(factors);
-    case "fourier-windows-aliasing":
-      return evaluateAliasing(factors);
-    case "time-varying-timbre":
-      return evaluateTimeVaryingTimbre(factors);
-    case "seeded-chance":
-      return evaluateSeededChance(factors);
-    case "markov-memory":
-      return evaluateMarkov(factors);
-    case "entropy-surprisal-form":
-      return evaluateInformation(factors);
-    case "provenance-and-uncertainty":
-      return evaluateUncertainty(factors);
-    case "recovering-parameters":
-      return evaluateParameterRecovery(factors);
-    case "compare-without-grading":
-      return evaluateDescriptiveComparison(factors);
     default:
-      throw new RangeError(`No evaluator is registered for lesson ${lesson.id}.`);
+      return null;
   }
 }
 

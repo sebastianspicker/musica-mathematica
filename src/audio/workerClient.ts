@@ -86,7 +86,9 @@ export async function createMicrophoneAnalysisPipeline(
       captureNode.disconnect();
       silentOutput.disconnect();
       worker.terminate();
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach((track) => {
+        track.stop();
+      });
     },
   });
 }
@@ -165,7 +167,7 @@ export function analyzeSelectionInWorker(
       worker.postMessage(message, [samples.buffer]);
     } catch (error) {
       finish();
-      reject(error);
+      reject(error instanceof Error ? error : new Error("Audio analysis worker could not receive the selection."));
     }
   });
 }

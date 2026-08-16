@@ -107,23 +107,26 @@ export function validateMicrophoneDuration(durationSeconds: number): void {
 }
 
 export function validateAnalysisRange(range: AnalysisRange, decodedDurationSeconds: number): AnalysisRange {
-  const duration = range.endSeconds - range.startSeconds;
-  if (
-    !Number.isFinite(decodedDurationSeconds)
-    || decodedDurationSeconds <= 0
-    || !Number.isFinite(range.startSeconds)
-    || !Number.isFinite(range.endSeconds)
-    || range.startSeconds < 0
-    || range.endSeconds <= range.startSeconds
-    || range.endSeconds > decodedDurationSeconds
-    || duration > AUDIO_ANALYSIS_LIMITS.maximumSelectionSeconds
-  ) {
+  if (!isValidAnalysisRange(range, decodedDurationSeconds)) {
     throw new AudioInputError(
       "invalid-selection",
       `Select a positive range of at most ${AUDIO_ANALYSIS_LIMITS.maximumSelectionSeconds} seconds inside the decoded audio.`,
     );
   }
   return Object.freeze({ startSeconds: range.startSeconds, endSeconds: range.endSeconds });
+}
+
+function isValidAnalysisRange(range: AnalysisRange, decodedDurationSeconds: number): boolean {
+  return [
+    Number.isFinite(decodedDurationSeconds),
+    decodedDurationSeconds > 0,
+    Number.isFinite(range.startSeconds),
+    Number.isFinite(range.endSeconds),
+    range.startSeconds >= 0,
+    range.endSeconds > range.startSeconds,
+    range.endSeconds <= decodedDurationSeconds,
+    range.endSeconds - range.startSeconds <= AUDIO_ANALYSIS_LIMITS.maximumSelectionSeconds,
+  ].every(Boolean);
 }
 
 export class BoundedAudioFrameQueue {

@@ -25,9 +25,15 @@ export function InquiryStage(props: InquiryStageProps): ReactElement {
   if (attempt.stage === "predict") return <PredictionStage lesson={lesson} onSavePrediction={props.onSavePrediction} />;
   if (attempt.stage === "experiment") return <ExperimentStage {...props} />;
   if (attempt.stage === "compare") return <CompareStage reason={props.comparisonReason} />;
-  if (attempt.stage === "explain") return <ResponseStage field="explanation" heading="Interpret" prompt={lesson.interpretationPrompt} button="Save interpretation and try the musical task" onSubmit={(event) => props.onSaveResponse(event, "explanation", "perform")} />;
-  if (attempt.stage === "perform") return <ResponseStage field="performanceReflection" heading="Perform / hear" prompt={`Try this away from the display: ${lesson.transferPrompt} What did hearing or performing add that the model did not?`} button="Save reflection and transfer" onSubmit={(event) => props.onSaveResponse(event, "performanceReflection", "transfer")} />;
-  if (attempt.stage === "transfer") return <ResponseStage field="transferResponse" heading="Transfer" prompt={lesson.transferPrompt} button="Save transfer and open debrief" onSubmit={(event) => props.onSaveResponse(event, "transferResponse", "debrief")} />;
+  if (attempt.stage === "explain") return <ResponseStage field="explanation" heading="Interpret" prompt={lesson.interpretationPrompt} button="Save interpretation and try the musical task" onSubmit={(event) => {
+    props.onSaveResponse(event, "explanation", "perform");
+  }} />;
+  if (attempt.stage === "perform") return <ResponseStage field="performanceReflection" heading="Perform / hear" prompt={`Try this away from the display: ${lesson.transferPrompt} What did hearing or performing add that the model did not?`} button="Save reflection and transfer" onSubmit={(event) => {
+    props.onSaveResponse(event, "performanceReflection", "transfer");
+  }} />;
+  if (attempt.stage === "transfer") return <ResponseStage field="transferResponse" heading="Transfer" prompt={lesson.transferPrompt} button="Save transfer and open debrief" onSubmit={(event) => {
+    props.onSaveResponse(event, "transferResponse", "debrief");
+  }} />;
   return <DebriefStage attempt={attempt} />;
 }
 
@@ -40,7 +46,9 @@ function PredictionStage({ lesson, onSavePrediction }: Readonly<{ lesson: LabLes
 }
 
 function ExperimentStage(props: InquiryStageProps): ReactElement {
-  return <div className="mm-stage-card"><h3>Experiment</h3><p>{props.lesson.experimentPrompt}</p><label><span>Optional observation note</span><textarea rows={2} value={props.note} onChange={(event) => props.onNoteChange(event.currentTarget.value)} /></label><div className="mm-inline-actions"><button disabled={props.attempt.trials.length < 2} type="button" onClick={props.onCompare}>Compare the latest two runs</button></div><p className="mm-comparison-readiness">{props.comparisonReason}</p></div>;
+  return <div className="mm-stage-card"><h3>Experiment</h3><p>{props.lesson.experimentPrompt}</p><label><span>Optional observation note</span><textarea rows={2} value={props.note} onChange={(event) => {
+    props.onNoteChange(event.currentTarget.value);
+  }} /></label><div className="mm-inline-actions"><button disabled={props.attempt.trials.length < 2} type="button" onClick={props.onCompare}>Compare the latest two runs</button></div><p className="mm-comparison-readiness">{props.comparisonReason}</p></div>;
 }
 
 function CompareStage({ reason }: Readonly<{ reason: string }>): ReactElement {

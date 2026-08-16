@@ -29,7 +29,9 @@ export function CurriculumRail({
         aria-expanded={expanded}
         className="mm-curriculum-rail__toggle"
         type="button"
-        onClick={() => setExpanded((value) => !value)}
+        onClick={() => {
+          setExpanded((value) => !value);
+        }}
       >
         <InterfaceIcon name="menu" />
         <span>
@@ -42,7 +44,7 @@ export function CurriculumRail({
       <ol className="mm-curriculum-rail__domains" id={listId}>
         {domains.map((domain) => {
           const domainIsActive = domain.id === activeLabId;
-          const firstLesson = domain.lessons[0];
+          const firstLesson = domain.lessons.at(0);
           const domainMeta = domainIsActive && activeLesson
             ? `${domain.lessons.length} lessons · ${activeLesson.level}`
             : `${domain.lessons.length} lessons`;
@@ -70,7 +72,9 @@ export function CurriculumRail({
                   <a
                     className="mm-curriculum-rail__domain-heading"
                     href={lessonRoute(firstLesson)}
-                    onClick={() => setExpanded(false)}
+                    onClick={() => {
+                      setExpanded(false);
+                    }}
                   >
                     {domainHeading}
                   </a>
@@ -88,7 +92,9 @@ export function CurriculumRail({
                           : "mm-curriculum-rail__lesson"}
                         href={lessonRoute(lesson)}
                         aria-current={lessonIsActive ? "page" : undefined}
-                        onClick={() => setExpanded(false)}
+                        onClick={() => {
+                          setExpanded(false);
+                        }}
                       >
                         <span className="mm-curriculum-rail__lesson-dot" aria-hidden="true" />
                         <span className="mm-curriculum-rail__lesson-body">

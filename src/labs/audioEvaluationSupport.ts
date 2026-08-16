@@ -1,5 +1,5 @@
 import type { TemporalHypotheses } from "../audio";
-import type { AudioEvaluationSettings } from "./audioEvaluation";
+import type { AudioEvaluationSettings } from "./audioEvaluationTypes";
 import type { ObservableRecord } from "./types";
 
 type MeterHypotheses = TemporalHypotheses["meterHypotheses"];

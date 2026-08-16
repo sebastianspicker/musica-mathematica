@@ -1,4 +1,4 @@
-import type { CouplingEdge } from "./ensemble";
+import type { CouplingEdge } from "./ensembleTypes";
 import { assertFiniteNonNegative } from "../numericValidation";
 
 export { assertFiniteNonNegative, assertFinitePositive } from "../numericValidation";

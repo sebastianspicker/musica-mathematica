@@ -53,4 +53,23 @@ describe("mathematical lesson semantics", () => {
       "Layer B (2 pulses / shared cycle)",
     ]);
   });
+
+  it("reports an explicit no-candidate result for valid prime cycle lengths", () => {
+    const selected = lesson("autocorrelation-spectrum-meter");
+    const factors = { ...defaultFactorsFor(selected), steps: 11, pulses: 5, rotation: 0 };
+
+    expect(() => evaluateLesson(selected, factors)).not.toThrow();
+    const evaluation = evaluateLesson(selected, factors);
+
+    expect(evaluation.headline).toBe("Ranked periodicity");
+    expect(evaluation.observables).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "topMeter", label: "Top equal-subdivision candidate", value: "none" }),
+      expect.objectContaining({ id: "meterScore", label: "Onset-alignment score", value: 0 }),
+      expect.objectContaining({ id: "spectralBin", label: "Strongest non-DC bin", value: expect.any(Number) }),
+    ]));
+    expect(evaluation.observables.every((observable) =>
+      typeof observable.value !== "number" || Number.isFinite(observable.value),
+    )).toBe(true);
+    expect(evaluation.trace.every((point) => Number.isFinite(point.x) && Number.isFinite(point.y))).toBe(true);
+  });
 });

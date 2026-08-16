@@ -6,6 +6,7 @@ import {
   configsEqual,
   createCouplingEdges,
   createInitialState,
+  isEnsembleConfig,
   metricsFor,
   modelLatencyBudgetRatio,
   modelLatencyBudgetSeconds,
@@ -49,6 +50,52 @@ function advanceAcrossFrameChunks(
 }
 
 describe("ensemble simulation invariants", () => {
+  it("recognizes only complete, bounded serialized ensemble configs", () => {
+    expect(isEnsembleConfig(defaultConfig)).toBe(true);
+
+    const invalidConfigs: unknown[] = [
+      null,
+      [],
+      {},
+      { ...defaultConfig, musicianCount: 2.5 },
+      { ...defaultConfig, tempoBpm: 181 },
+      { ...defaultConfig, tempoSpreadBpm: -0.5 },
+      { ...defaultConfig, couplingStrength: Number.NaN },
+      { ...defaultConfig, latencySeconds: 0.181 },
+      { ...defaultConfig, jitterSeconds: -0.001 },
+      { ...defaultConfig, clickTrackStrength: 3.01 },
+      { ...defaultConfig, topology: "invented" },
+      { ...defaultConfig, repertoireTexture: "invented" },
+    ];
+
+    for (const config of invalidConfigs) {
+      expect(isEnsembleConfig(config)).toBe(false);
+    }
+  });
+
+  it("keeps topology edge order and section strengths stable", () => {
+    const config: EnsembleConfig = {
+      ...defaultConfig,
+      musicianCount: 3,
+      topology: "sections",
+      couplingStrength: 2,
+      latencySeconds: 0.04,
+    };
+
+    expect(createCouplingEdges(config)).toEqual([
+      { from: 0, to: 1, strength: 2, delaySeconds: 0.04 },
+      { from: 0, to: 2, strength: 0.7, delaySeconds: 0.04 },
+      { from: 1, to: 0, strength: 2, delaySeconds: 0.04 },
+      { from: 1, to: 2, strength: 0.7, delaySeconds: 0.04 },
+      { from: 2, to: 0, strength: 0.7, delaySeconds: 0.04 },
+      { from: 2, to: 1, strength: 0.7, delaySeconds: 0.04 },
+    ]);
+    expect(createCouplingEdges({ ...config, topology: "leader-follower" })).toEqual([
+      { from: 0, to: 1, strength: 2, delaySeconds: 0.04 },
+      { from: 0, to: 2, strength: 2, delaySeconds: 0.04 },
+    ]);
+  });
+
   it("identical tempos with strong coupling converge toward lock-in", () => {
     const coherence = run({
       tempoSpreadBpm: 0,

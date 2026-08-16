@@ -26,9 +26,8 @@ export function assessControlledComparison(
   recommendedControls: readonly (keyof EnsembleConfig)[],
   mode: ComparisonMode = "single-control",
 ): ComparisonAssessment {
-  const right = runs.at(-1);
-  const left = runs.at(-2);
-  if (!left || !right) {
+  const runPair = latestRunPair(runs);
+  if (!runPair) {
     return {
       changedFields: [],
       reason: "Record two runs before comparing them.",
@@ -36,41 +35,12 @@ export function assessControlledComparison(
     };
   }
 
-  const changedFields = configKeys.filter(
-    (key) => !configValuesEqual(left.config[key], right.config[key]),
-  );
-  if (changedFields.length === 0) {
+  const changedFields = changedConfigFields(...runPair);
+  const failureReason = comparisonFailureReason(changedFields, recommendedControls, mode);
+  if (failureReason) {
     return {
       changedFields,
-      reason: "Change at least one recommended control between the two runs.",
-      valid: false,
-    };
-  }
-
-  const recommended = new Set<keyof EnsembleConfig>(recommendedControls);
-  const unrelatedChanges = changedFields.filter((field) => !recommended.has(field));
-  if (unrelatedChanges.length > 0) {
-    return {
-      changedFields,
-      reason: `Hold unrelated controls constant: ${unrelatedChanges.join(", ")}.`,
-      valid: false,
-    };
-  }
-
-  if (mode === "single-control" && changedFields.length !== 1) {
-    return {
-      changedFields,
-      reason: "For a controlled comparison, change exactly one recommended control between runs.",
-      valid: false,
-    };
-  }
-  if (
-    mode === "all-recommended-controls" &&
-    recommendedControls.some((control) => !changedFields.includes(control))
-  ) {
-    return {
-      changedFields,
-      reason: `This strategy comparison requires changing: ${recommendedControls.join(", ")}.`,
+      reason: failureReason,
       valid: false,
     };
   }
@@ -80,6 +50,57 @@ export function assessControlledComparison(
     reason: `Comparable runs; changed ${changedFields.join(", ")}.`,
     valid: true,
   };
+}
+
+function latestRunPair(runs: readonly RunSnapshot[]): readonly [RunSnapshot, RunSnapshot] | undefined {
+  const right = runs.at(-1);
+  const left = runs.at(-2);
+  return left && right ? [left, right] : undefined;
+}
+
+function changedConfigFields(
+  left: RunSnapshot,
+  right: RunSnapshot,
+): readonly (keyof EnsembleConfig)[] {
+  return configKeys.filter((key) => !configValuesEqual(left.config[key], right.config[key]));
+}
+
+function comparisonFailureReason(
+  changedFields: readonly (keyof EnsembleConfig)[],
+  recommendedControls: readonly (keyof EnsembleConfig)[],
+  mode: ComparisonMode,
+): string | undefined {
+  if (changedFields.length === 0) {
+    return "Change at least one recommended control between the two runs.";
+  }
+
+  const recommended = new Set<keyof EnsembleConfig>(recommendedControls);
+  const unrelatedChanges = changedFields.filter((field) => !recommended.has(field));
+  if (unrelatedChanges.length > 0) {
+    return `Hold unrelated controls constant: ${unrelatedChanges.join(", ")}.`;
+  }
+
+  return modeFailureReason(changedFields, recommendedControls, mode);
+}
+
+function modeFailureReason(
+  changedFields: readonly (keyof EnsembleConfig)[],
+  recommendedControls: readonly (keyof EnsembleConfig)[],
+  mode: ComparisonMode,
+): string | undefined {
+  if (mode === "single-control") {
+    return changedFields.length === 1
+      ? undefined
+      : "For a controlled comparison, change exactly one recommended control between runs.";
+  }
+
+  if (mode === "all-recommended-controls") {
+    return recommendedControls.every((control) => changedFields.includes(control))
+      ? undefined
+      : `This strategy comparison requires changing: ${recommendedControls.join(", ")}.`;
+  }
+
+  return undefined;
 }
 
 function configValuesEqual(

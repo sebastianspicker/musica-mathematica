@@ -9,6 +9,10 @@ type MediaDevicesLike = Readonly<{
   getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream>;
 }>;
 
+type BrowserNavigator = Readonly<{
+  mediaDevices?: Partial<MediaDevicesLike>;
+}>;
+
 export type MicrophoneSession = Readonly<{
   stream: MediaStream;
   settings: SafeMediaSettings;
@@ -49,32 +53,41 @@ export function sanitizeMediaTrackSettings(settings: MediaTrackSettings): SafeMe
 }
 
 export async function startMicrophoneSession(request: MicrophoneRequest): Promise<MicrophoneSession> {
-  if (!request.userInitiated) {
-    throw new AudioInputError("user-gesture-required", "Microphone capture must start from a user gesture.");
-  }
-  const secureContext = request.secureContext ?? globalThis.isSecureContext;
-  if (!secureContext) {
-    throw new AudioInputError("insecure-context", "Microphone capture requires a secure browser context.");
-  }
+  assertCaptureRequest(request);
+  const stream = await availableMediaDevices(request).getUserMedia(microphoneConstraints());
+  const audioTrack = requireAudioTrack(stream);
+  return createMicrophoneSession(stream, audioTrack, request);
+}
+
+function assertCaptureRequest(request: MicrophoneRequest): void {
+  if (!request.userInitiated) throw new AudioInputError("user-gesture-required", "Microphone capture must start from a user gesture.");
+  if (!(request.secureContext ?? globalThis.isSecureContext)) throw new AudioInputError("insecure-context", "Microphone capture requires a secure browser context.");
   validateMicrophoneDuration(request.durationSeconds);
-  const mediaDevices = request.mediaDevices ?? globalThis.navigator?.mediaDevices;
-  if (!mediaDevices?.getUserMedia) {
+}
+
+function availableMediaDevices(request: MicrophoneRequest): MediaDevicesLike {
+  const browser = globalThis as { navigator?: BrowserNavigator };
+  const mediaDevices = request.mediaDevices ?? browser.navigator?.mediaDevices;
+  if (!mediaDevices || typeof mediaDevices.getUserMedia !== "function") {
     throw new AudioInputError("insecure-context", "Microphone capture is not available in this browser context.");
   }
+  return mediaDevices as MediaDevicesLike;
+}
 
-  const stream = await mediaDevices.getUserMedia({
-    audio: {
-      autoGainControl: false,
-      echoCancellation: false,
-      noiseSuppression: false,
-    },
-    video: false,
-  });
-  const audioTrack = stream.getAudioTracks()[0];
+function microphoneConstraints(): MediaStreamConstraints {
+  return { audio: { autoGainControl: false, echoCancellation: false, noiseSuppression: false }, video: false };
+}
+
+function requireAudioTrack(stream: MediaStream): MediaStreamTrack {
+  const audioTrack = stream.getAudioTracks().at(0);
   if (!audioTrack) {
-    stream.getTracks().forEach((track) => track.stop());
+    stopTracks(stream);
     throw new AudioInputError("decode-failed", "The selected media stream did not contain an audio track.");
   }
+  return audioTrack;
+}
+
+function createMicrophoneSession(stream: MediaStream, audioTrack: MediaStreamTrack, request: MicrophoneRequest): MicrophoneSession {
   const scheduleStop = request.scheduleStop ?? globalThis.setTimeout.bind(globalThis);
   const cancelScheduledStop = request.cancelScheduledStop ?? globalThis.clearTimeout.bind(globalThis);
   let stopped = false;
@@ -83,7 +96,7 @@ export async function startMicrophoneSession(request: MicrophoneRequest): Promis
     if (stopped) return;
     stopped = true;
     if (timer !== undefined) cancelScheduledStop(timer);
-    stream.getTracks().forEach((track) => track.stop());
+    stopTracks(stream);
   };
   timer = scheduleStop(stop, Math.min(request.durationSeconds, AUDIO_ANALYSIS_LIMITS.maximumMicrophoneSeconds) * 1000);
   return Object.freeze({
@@ -94,3 +107,5 @@ export async function startMicrophoneSession(request: MicrophoneRequest): Promis
     stop,
   });
 }
+
+function stopTracks(stream: MediaStream): void { stream.getTracks().forEach((track) => track.stop()); }

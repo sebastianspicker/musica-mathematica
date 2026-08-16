@@ -143,6 +143,15 @@ names, and device identifiers are not stored in the portfolio or its export.
 See [docs/LOCAL_AUDIO_METHOD.md](docs/LOCAL_AUDIO_METHOD.md) for the processing
 path and interpretation limits.
 
+## Local demo
+
+`pnpm dev` is the local demo entry point. It starts only the Vite development
+server on `127.0.0.1`; the lessons, portfolio, and optional audio-analysis
+pipeline run in the browser. No backend, account, or external service is
+required for synthetic lesson input. Microphone and file-analysis paths still
+depend on the browser, permission, codecs, and hardware described in
+[Limitations](#limitations).
+
 ## Interface
 
 ![Lesson workbench with curriculum navigation, result plot, and factors locked until prediction](docs/assets/screenshots/workbench-overview.png)
@@ -207,6 +216,8 @@ viewport.
 
 The GitHub Actions workflow installs dependencies from the lockfile, installs
 Chromium with Linux system dependencies, and runs `pnpm verify` on Node 22.
+The workflow is CI only; it does not deploy the application or exercise
+microphone hardware.
 
 ## Deployment and operation
 
@@ -225,6 +236,14 @@ The repository does not contain a server process, container configuration,
 hosting manifest, deployment command, or rollback procedure. A deployment must
 provide its own cache policy and HTTP security headers. The HTML meta Content
 Security Policy is not a substitute for response headers.
+
+GitHub Pages is feasible only after deployment work is added and verified. No
+Pages workflow exists in this repository. The current Vite configuration emits
+root-relative assets, so it can be hosted at an origin root (for example, a
+custom domain or a user/organization Pages site) but is not configured for a
+project-site subpath such as `/repository-name/`. A Pages deployment would need
+an explicit build-and-publish workflow, a suitable Vite `base` setting for its
+chosen origin, and a review of the host's cache and response-header behavior.
 
 ## Troubleshooting
 

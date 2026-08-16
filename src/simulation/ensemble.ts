@@ -1,4 +1,7 @@
-import { assertValidEnsembleConfig, textureProfile } from "./ensembleConfig";
+import {
+  assertValidEnsembleConfig,
+  textureProfile,
+} from "./ensembleConfig";
 import {
   clickTrackPull,
   delayedOscillatorPhase,
@@ -21,14 +24,16 @@ import {
 import type {
   EnsembleConfig,
 } from "./ensembleConfig";
+import type { CouplingEdge, EnsembleState, Oscillator } from "./ensembleTypes";
 
-export { ensembleConfigBounds, textureProfile } from "./ensembleConfig";
+export { ensembleConfigBounds, isEnsembleConfig, textureProfile } from "./ensembleConfig";
 export type {
   EnsembleConfig,
   RepertoireTexture,
   TextureProfile,
   Topology,
 } from "./ensembleConfig";
+export type { CouplingEdge, EnsembleState, Oscillator } from "./ensembleTypes";
 
 const FIXED_STEP_EPSILON_SECONDS = 1e-10;
 
@@ -37,23 +42,6 @@ const FIXED_STEP_EPSILON_SECONDS = 1e-10;
  * irregular, but model integration always advances in these fixed increments.
  */
 export const fixedSimulationStepSeconds = 0.01;
-
-export type Oscillator = {
-  phase: number;
-  omega: number;
-};
-
-export type CouplingEdge = {
-  from: number;
-  to: number;
-  strength: number;
-  delaySeconds: number;
-};
-
-export type EnsembleState = {
-  time: number;
-  oscillators: Oscillator[];
-};
 
 export type EnsembleMetrics = {
   coherence: number;
@@ -205,7 +193,8 @@ function leaderToFollowerPhaseLagMs(
     return null;
   }
 
-  const [leader, ...followers] = state.oscillators;
+  const leader = state.oscillators.at(0);
+  const followers = state.oscillators.slice(1);
   if (!leader) {
     return null;
   }
@@ -269,7 +258,7 @@ export function retuneState(state: EnsembleState, config: EnsembleConfig): Ensem
   assertValidEnsembleConfig(config);
   const count = config.musicianCount;
   const oscillators = Array.from({ length: count }, (_, index) => {
-    const existing = state.oscillators[index];
+    const existing = state.oscillators.at(index);
     return {
       phase: existing?.phase ?? initialPhaseFor(index, count),
       omega: naturalOmegaFor(index, count, config),
@@ -286,57 +275,65 @@ export function configsEqual(left: EnsembleConfig, right: EnsembleConfig): boole
   assertValidEnsembleConfig(left);
   assertValidEnsembleConfig(right);
 
-  return (
-    nearlyEqual(left.musicianCount, right.musicianCount) &&
-    nearlyEqual(left.tempoBpm, right.tempoBpm) &&
-    nearlyEqual(left.tempoSpreadBpm, right.tempoSpreadBpm) &&
-    nearlyEqual(left.couplingStrength, right.couplingStrength) &&
-    nearlyEqual(left.latencySeconds, right.latencySeconds) &&
-    nearlyEqual(left.jitterSeconds, right.jitterSeconds) &&
-    left.topology === right.topology &&
-    left.repertoireTexture === right.repertoireTexture &&
-    nearlyEqual(left.clickTrackStrength, right.clickTrackStrength)
-  );
+  return numericConfigValuesEqual(left, right)
+    && left.topology === right.topology
+    && left.repertoireTexture === right.repertoireTexture;
 }
+
+const numericConfigValuesEqual = (left: EnsembleConfig, right: EnsembleConfig): boolean => {
+  return nearlyEqual(left.musicianCount, right.musicianCount)
+    && nearlyEqual(left.tempoBpm, right.tempoBpm)
+    && nearlyEqual(left.tempoSpreadBpm, right.tempoSpreadBpm)
+    && nearlyEqual(left.couplingStrength, right.couplingStrength)
+    && nearlyEqual(left.latencySeconds, right.latencySeconds)
+    && nearlyEqual(left.jitterSeconds, right.jitterSeconds)
+    && nearlyEqual(left.clickTrackStrength, right.clickTrackStrength);
+};
 
 export function createCouplingEdges(config: EnsembleConfig): CouplingEdge[] {
   assertValidEnsembleConfig(config);
-  const count = config.musicianCount;
-  const edges: CouplingEdge[] = [];
-
-  if (config.topology === "leader-follower") {
-    for (let to = 1; to < count; to += 1) {
-      edges.push({
-        from: 0,
-        to,
-        strength: config.couplingStrength,
-        delaySeconds: config.latencySeconds,
-      });
-    }
-    return edges;
-  }
-
-  for (let from = 0; from < count; from += 1) {
-    for (let to = 0; to < count; to += 1) {
-      if (from === to) {
-        continue;
-      }
-
-      const sameSection = Math.floor(from / 2) === Math.floor(to / 2);
-      const sectionMultiplier =
-        config.topology === "sections" ? (sameSection ? 1 : 0.35) : 1;
-
-      edges.push({
-        from,
-        to,
-        strength: config.couplingStrength * sectionMultiplier,
-        delaySeconds: config.latencySeconds,
-      });
-    }
-  }
-
-  return edges;
+  return config.topology === "leader-follower"
+    ? createLeaderFollowerEdges(config)
+    : createPeerCouplingEdges(config);
 }
+
+const createLeaderFollowerEdges = (config: EnsembleConfig): CouplingEdge[] => {
+  return Array.from({ length: config.musicianCount - 1 }, (_, index) => {
+    return couplingEdge(0, index + 1, config.couplingStrength, config.latencySeconds);
+  });
+};
+
+const createPeerCouplingEdges = (config: EnsembleConfig): CouplingEdge[] => {
+  return orderedOscillatorPairs(config.musicianCount).map(({ from, to }) => {
+    return couplingEdge(
+      from,
+      to,
+      config.couplingStrength * sectionCouplingMultiplier(config.topology, from, to),
+      config.latencySeconds,
+    );
+  });
+};
+
+const orderedOscillatorPairs = (count: number): Array<Pick<CouplingEdge, "from" | "to">> => {
+  return Array.from({ length: count }, (_, from) =>
+    Array.from({ length: count - 1 }, (_, index) => ({
+      from,
+      to: index < from ? index : index + 1,
+    })),
+  ).flat();
+};
+
+const sectionCouplingMultiplier = (topology: EnsembleConfig["topology"], from: number, to: number): number => {
+  if (topology !== "sections") return 1;
+  return Math.floor(from / 2) === Math.floor(to / 2) ? 1 : 0.35;
+};
+
+const couplingEdge = (
+  from: number,
+  to: number,
+  strength: number,
+  delaySeconds: number,
+): CouplingEdge => ({ from, to, strength, delaySeconds });
 
 export function stepEnsemble(
   state: EnsembleState,

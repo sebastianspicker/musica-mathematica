@@ -84,29 +84,29 @@ function assertPairedEventCounts(
   }
 }
 
-function centeredToleranceFor(
+const centeredToleranceFor = (
   options: Readonly<{ unit?: string; centeredTolerance?: number }>,
-): number {
+): number => {
   const tolerance = options.centeredTolerance ?? 1e-9;
   if (!Number.isFinite(tolerance) || tolerance < 0) {
     throw new RangeError("centeredTolerance must be non-negative and finite");
   }
   return tolerance;
-}
+};
 
-function alignmentDirection(medianDifference: number, centeredTolerance: number): AlignmentDirection {
+const alignmentDirection = (medianDifference: number, centeredTolerance: number): AlignmentDirection => {
   if (Math.abs(medianDifference) <= centeredTolerance) return "centered";
   if (medianDifference < 0) return "observed-earlier";
   return "observed-later";
-}
+};
 
-function alignmentRelation(direction: AlignmentDirection, medianDifference: number): string {
+const alignmentRelation = (direction: AlignmentDirection, medianDifference: number): string => {
   if (direction === "centered") {
     return `have a centered median signed difference of ${medianDifference}`;
   }
   const relativeTiming = direction === "observed-earlier" ? "earlier" : "later";
   return `occur ${relativeTiming} by ${Math.abs(medianDifference)}`;
-}
+};
 
 /**
  * Summarizes paired signed differences. It deliberately exposes no score,

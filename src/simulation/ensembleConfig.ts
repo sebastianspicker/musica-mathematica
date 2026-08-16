@@ -115,6 +115,19 @@ export function assertValidEnsembleConfig(config: EnsembleConfig): void {
   }
 }
 
+/** Returns whether an unknown serialized value is a supported ensemble configuration. */
+export function isEnsembleConfig(value: unknown): value is EnsembleConfig {
+  if (!isRecord(value)) return false;
+
+  try {
+    assertValidEnsembleConfig(value as EnsembleConfig);
+    return true;
+  } catch (error) {
+    if (error instanceof RangeError) return false;
+    throw error;
+  }
+}
+
 function assertBoundedNumber(
   name: string,
   value: number,
@@ -139,3 +152,7 @@ const validTextureValues = new Set<RepertoireTexture>([
   "rubato",
   "dense-rhythm",
 ]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
