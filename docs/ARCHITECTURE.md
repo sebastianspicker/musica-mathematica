@@ -128,12 +128,9 @@ command, or rollback procedure.
 - Colocated `src/**/*.test.ts(x)` files run in Vitest's Node environment and
   cover models, learning state, storage, migration, audio contracts, worker
   coordination, and component output.
-- Playwright starts its own Vite server on strict port `4174` and runs the
-  workflows under `tests/e2e/`.
-- `.github/workflows/ci.yml` uses Node 22 and pnpm 11.6.0, installs Chromium and
-  Linux browser dependencies, and runs `pnpm verify`.
+- `.github/workflows/ci.yml` uses Node 22 and pnpm 11.6.0 and runs `pnpm verify`.
 
-Build output, Playwright output, coverage, caches, and local tool state are
+Build output, coverage, caches, and local tool state are
 ignored.
 
 ## Compatibility surfaces

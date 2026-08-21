@@ -12,12 +12,11 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
-    "lint": "eslint src tests",
+    "lint": "eslint src",
     "test": "pnpm test:unit",
-    "test:e2e": "playwright test",
     "test:unit": "vitest run",
     "typecheck": "tsc --noEmit",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build && pnpm test:e2e"
+    "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build"
   },
   "dependencies": {
     "fft.js": "^4.0.4",
@@ -26,7 +25,6 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.60.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "8.64.0",

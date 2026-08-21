@@ -1,30 +1,12 @@
-# Screenshot maintenance
+# Static screenshots
 
-The README uses two Chromium screenshots:
+The README uses two retained static screenshots:
 
 - `docs/assets/screenshots/workbench-overview.png`
 - `docs/assets/screenshots/controlled-comparison.png`
 
-## Prerequisites
-
-Install dependencies and Playwright Chromium:
-
-```sh
-pnpm install --frozen-lockfile
-pnpm exec playwright install chromium
-```
-
-## Capture
-
-Run:
-
-```sh
-node scripts/capture-readme-screenshots.mjs
-```
-
-The script starts Vite on strict port `4175`, clears browser `localStorage`,
-captures a 1440 by 1000 default lesson, records a controlled 90-to-120 BPM
-comparison, and overwrites both PNG files.
+There is no automated capture lane. Replace an image only after manual review
+of the running application and preserve the same asset paths.
 
 ## Review
 
@@ -34,8 +16,4 @@ Before accepting replacements:
 2. Check that privacy, calibration, and disabled-control labels match runtime
    state.
 3. Check visible focus, text clipping, chart labels, and horizontal overflow.
-4. Run `pnpm verify`.
-5. Confirm README links and alt text still describe the images.
-
-The capture script covers one desktop Chromium viewport. It does not establish
-mobile, cross-browser, screen-reader, or classroom-projection conformance.
+4. Confirm README links and alt text still describe the images.

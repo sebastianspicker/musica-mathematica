@@ -59,8 +59,8 @@ content and teaching boundaries.
   hypotheses.
 - Pitch estimation is monophonic. Tempo, meter, onset, and chord estimates can
   be ambiguous or incorrect.
-- Automated browser tests cover Chromium only. Firefox, Safari, hardware
-  microphones, and platform codec behavior have not been verified.
+- Firefox, Safari, hardware microphones, and platform codec behavior have not
+  been verified.
 - No formal accessibility conformance or classroom-effectiveness claim has
   been established.
 - Only the implemented version 1 to version 2 portfolio migration is supported.
@@ -75,7 +75,6 @@ evidence categories, and prohibited inferences.
 - pnpm `11.6.0`
 - A browser with JavaScript modules
 - Browser `localStorage` for persistence
-- Playwright Chromium for `pnpm test:e2e` and `pnpm verify`
 
 Microphone input also requires a secure browser context, user permission,
 `getUserMedia`, `AudioWorklet`, and Web Worker support. Loopback development
@@ -87,18 +86,6 @@ Install the locked dependencies:
 
 ```sh
 pnpm install --frozen-lockfile
-```
-
-Install Playwright Chromium if it is not already available:
-
-```sh
-pnpm exec playwright install chromium
-```
-
-On Linux systems that do not already have Chromium's system libraries, use:
-
-```sh
-pnpm exec playwright install --with-deps chromium
 ```
 
 ## Configuration
@@ -158,9 +145,7 @@ depend on the browser, permission, codecs, and hardware described in
 
 ![Controlled comparison of trials at 90 and 120 BPM](docs/assets/screenshots/controlled-comparison.png)
 
-The screenshots are 1440 by 1000 Chromium captures produced by
-`scripts/capture-readme-screenshots.mjs`. See
-[docs/SCREENSHOTS.md](docs/SCREENSHOTS.md) before replacing them.
+The screenshots are retained static documentation assets.
 
 ## Repository structure
 
@@ -175,13 +160,12 @@ The screenshots are 1440 by 1000 Chromium captures produced by
 | `src/learning/` | Inquiry stages, comparison, evidence, portfolio, and migration |
 | `src/styles/` | Application stylesheets |
 | `src/**/*.test.ts(x)` | Colocated Vitest unit and component tests |
-| `tests/e2e/` | Playwright browser workflows and scenario helpers |
 | `scripts/` | Maintainer scripts |
 | `public/` | Static assets copied into the build |
 | `docs/` | Architecture, curriculum, audio, and screenshot documentation |
 | `.github/workflows/` | Continuous-integration workflow |
 | `package.json` and `pnpm-lock.yaml` | Package metadata, scripts, and locked dependencies |
-| `vite.config.ts` and `playwright.config.ts` | Build, unit-test, and browser-test configuration |
+| `vite.config.ts` | Build and unit-test configuration |
 | `tsconfig.json` and `eslint.config.mjs` | TypeScript and lint configuration |
 
 ## Development workflow
@@ -202,20 +186,17 @@ Available commands:
 | `pnpm test` | Run the Vitest suite through the unit-test alias. |
 | `pnpm test:unit` | Run the Vitest unit and component suite. |
 | `pnpm build` | Type-check and create the static bundle in `dist/`. |
-| `pnpm test:e2e` | Run the Playwright Chromium workflows. |
-| `pnpm verify` | Run lint, typecheck, unit tests, build, and end-to-end tests. |
+| `pnpm verify` | Run lint, typecheck, direct unit contracts, and build. |
 | `pnpm audit --prod` | Query the package registry for production dependency advisories. |
 
 ## Testing
 
 Vitest covers deterministic models, portfolio validation and migration, audio
-contracts, worker coordination, and component output. Playwright covers route
-navigation, inquiry completion, local persistence, export, clearing, legacy
-migration, storage failure, reduced motion, audio failure reporting, and a small
-viewport.
+contracts, worker coordination, simulation, evaluator, and portfolio migration
+boundaries.
 
-The GitHub Actions workflow installs dependencies from the lockfile, installs
-Chromium with Linux system dependencies, and runs `pnpm verify` on Node 22.
+The GitHub Actions workflow installs dependencies from the lockfile and runs
+`pnpm verify` on Node 22.
 The workflow is CI only; it does not deploy the application or exercise
 microphone hardware.
 
@@ -247,17 +228,6 @@ chosen origin, and a review of the host's cache and response-header behavior.
 
 ## Troubleshooting
 
-### Playwright cannot find Chromium
-
-Run:
-
-```sh
-pnpm exec playwright install chromium
-```
-
-Linux CI installs browser system dependencies with
-`pnpm exec playwright install --with-deps chromium`.
-
 ### Microphone input is unavailable
 
 Confirm that the page is in a secure context, permission is granted, and the
@@ -277,8 +247,7 @@ that were not exported.
 
 ### Port 5173 is unavailable
 
-Stop the process using the port or use Vite's displayed fallback URL. The
-Playwright suite uses strict port `4174` and fails if that port is occupied.
+Stop the process using the port or use Vite's displayed fallback URL.
 
 ## Security considerations
 

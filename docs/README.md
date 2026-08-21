@@ -8,7 +8,6 @@
 | [Curriculum](MUSICA_MATHEMATICA_CURRICULUM.md) | Lesson sequence, mathematical work, teaching use, and pedagogical limits |
 | [Local audio method](LOCAL_AUDIO_METHOD.md) | Audio contracts, processing, persistence, and interpretation limits |
 | [Scientific audit](../SCIENTIFIC_AUDIT.md) | Model equations, claim taxonomy, research context, and prohibited inferences |
-| [Screenshot maintenance](SCREENSHOTS.md) | Capture command, prerequisites, and review checks |
 | [Release status](../RELEASE_STATUS.md) | Current local checks and publication blockers |
 | [Changelog](../CHANGELOG.md) | User-visible changes assigned to release versions |
 | [Contribution guide](../CONTRIBUTING.md) | Change rules, tests, documentation, and pull-request expectations |

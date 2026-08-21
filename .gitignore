@@ -1,8 +1,5 @@
 node_modules/
 dist/
-/test-results/
-/playwright-report/
-/.playwright-results/
 *.tsbuildinfo
 .DS_Store
 
@@ -73,6 +70,7 @@ pnpm-debug.log*
 /docs/verification-cleanup.md
 
 # Editor and operating-system state
+/.mcp.json
 .idea/
 .vscode/*
 !.vscode/extensions.json
@@ -109,3 +107,16 @@ xcuserdata/
 *.local.db
 *.local.sqlite
 *.local.sqlite3
+
+# Generated test and coverage output (local only)
+/coverage/
+/htmlcov/
+/.coverage
+/.coverage.*
+/.pytest_cache/
+/test-results/
+/playwright-report/
+/blob-report/
+/coverage.xml
+/junit.xml
+/junit-*.xml

@@ -760,9 +760,7 @@
     {
       "toolId": "ESLint8",
       "exclude": [
-        "src/components/workbench/workbench.test.tsx",
-        "src/audio/analysis.test.ts",
-        "src/components/usePulseAudio.test.ts"
+        "src/audio/analysis.test.ts"
       ],
       "patterns": [
         {

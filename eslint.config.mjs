@@ -80,18 +80,6 @@ export default [
     rules: codacyRules,
   },
   {
-    files: ["scripts/capture-readme-screenshots.mjs"],
-    languageOptions: {
-      globals: {
-        console: "readonly",
-        document: "readonly",
-        localStorage: "readonly",
-        process: "readonly",
-        setTimeout: "readonly",
-      },
-    },
-  },
-  {
     files: ["**/*.ts", "**/*.tsx"],
     plugins: {
       "@typescript-eslint": typescriptPlugin,
