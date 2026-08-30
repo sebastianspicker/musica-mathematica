@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./App";
+import { App } from "./app/App";
+import { curriculumRegistry } from "./curriculum/catalog";
 import "katex/dist/katex.min.css";
 import "./styles/index.css";
 
@@ -12,6 +13,6 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <App curriculum={curriculumRegistry} />
   </StrictMode>,
 );

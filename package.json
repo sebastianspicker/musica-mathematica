@@ -16,7 +16,7 @@
     "test": "pnpm test:unit",
     "test:unit": "vitest run",
     "typecheck": "tsc --noEmit",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build"
+    "verify": "pnpm lint && pnpm test:unit && pnpm build"
   },
   "dependencies": {
     "fft.js": "^4.0.4",

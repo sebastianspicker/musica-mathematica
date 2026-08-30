@@ -1,0 +1,78 @@
+import type { DomainDefinition, ThreeLessons } from "../../curriculum/contracts";
+import { commonClaims, lesson, numberFactor } from "../support/construction";
+
+const lessons = [
+      lesson("phase-proportion", 1, {
+        id: "from-bpm-to-period",
+        level: "foundation",
+        title: "From BPM to Period",
+        shortTitle: "BPM ↔ period",
+        question: "How does a tempo become a duration, and which units must travel with the calculation?",
+        objective: "Convert tempo to beat and bar duration, then test the inverse conversion.",
+        equation: "T = 60 / b",
+        equationCaption: "With b in beats per minute, T is seconds per beat.",
+        predictionPrompt: "Before changing tempo, predict how doubling BPM changes beat duration.",
+        experimentPrompt: "Change BPM only; compare beat and bar duration in two runs.",
+        interpretationPrompt: "State the inverse relationship without treating a tempo label as performed timing.",
+        transferPrompt: "Choose a score passage and calculate the time represented by one bar.",
+        factors: [
+          numberFactor("bpm", "Tempo", 90, 30, 240, 1, "BPM", "Beats per minute."),
+          numberFactor("beatsPerBar", "Beats per bar", 4, 1, 12, 1, "beats", "Equal beats used in the bar-duration calculation."),
+        ],
+        claimIds: commonClaims,
+        sourceIds: ["snyder-2024"],
+      }),
+      lesson("phase-proportion", 2, {
+        id: "polyrhythm-return-times",
+        level: "model",
+        title: "Polyrhythm Return Times",
+        shortTitle: "Return times",
+        question: "When must two integer pulse cycles realign?",
+        objective: "Use greatest common divisors and least common multiples to explain exact returns.",
+        equation: "L = lcm(p, q) = |pq| / gcd(p, q)",
+        equationCaption: "L is the number of equal lattice subdivisions inside one shared cycle; both layers realign at that cycle's endpoint.",
+        predictionPrompt: "Predict whether 4:2 returns sooner or later than 3:2.",
+        experimentPrompt: "Change one pulse count, record a second run, and inspect the onset lattice.",
+        interpretationPrompt: "Separate exact mathematical alignment from perceived beat, accent, or groove.",
+        transferPrompt: "Find one notated polyrhythm and identify its mathematical return point.",
+        factors: [
+          numberFactor("pulseA", "Layer A pulses", 3, 1, 12, 1, "pulses / shared cycle", "Integer onset count distributed through one shared cycle."),
+          numberFactor("pulseB", "Layer B pulses", 2, 1, 12, 1, "pulses / shared cycle", "Integer onset count distributed through the same shared cycle."),
+          numberFactor("bpm", "Shared-cycle reference tempo", 90, 30, 180, 1, "BPM", "For this conversion only, one shared cycle is assigned one reference beat of duration 60 / BPM seconds."),
+        ],
+        claimIds: commonClaims,
+        sourceIds: ["jacoby-2024", "snyder-2024"],
+      }),
+      lesson("phase-proportion", 3, {
+        id: "phase-on-the-circle",
+        level: "critique",
+        title: "Phase on the Circle",
+        shortTitle: "Circular phase",
+        question: "Why is phase a circular quantity rather than an ordinary distance?",
+        objective: "Calculate wrapped phase and the shortest signed circular difference.",
+        equation: "phi(t) = (t / T) mod 1",
+        equationCaption: "One full cycle is identified with zero on the unit circle.",
+        predictionPrompt: "Predict the shortest direction between the two phases after the selected time.",
+        experimentPrompt: "Change one period or offset and compare wrapped phase differences.",
+        interpretationPrompt: "Explain what circular distance captures and which musical timing details it omits.",
+        transferPrompt: "Describe a musical cue that phase alone cannot represent.",
+        factors: [
+          numberFactor("periodA", "Period A", 1, 0.2, 4, 0.05, "s", "Cycle duration for oscillator A."),
+          numberFactor("periodB", "Period B", 1.5, 0.2, 4, 0.05, "s", "Cycle duration for oscillator B."),
+          numberFactor("elapsed", "Elapsed time", 3, 0, 16, 0.1, "s", "Time at which phase is sampled."),
+          numberFactor("offset", "B phase offset", 0, -0.5, 0.5, 0.01, "cycles", "Initial phase of B relative to A."),
+        ],
+        claimIds: commonClaims,
+        sourceIds: ["snyder-2024"],
+      }),
+] as const satisfies ThreeLessons;
+
+export const phaseProportionDefinition: DomainDefinition<typeof lessons> = {
+  id: "phase-proportion",
+  number: 1,
+  title: "Phase & Proportion",
+  shortTitle: "Phase",
+  mark: "◯",
+  description: "Move between tempo, period, ratio, return time, and circular phase.",
+  lessons,
+};

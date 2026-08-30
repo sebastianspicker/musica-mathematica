@@ -66,7 +66,7 @@ content and teaching boundaries.
 - Only the implemented version 1 to version 2 portfolio migration is supported.
 - The repository is `UNLICENSED`.
 
-See [SCIENTIFIC_AUDIT.md](SCIENTIFIC_AUDIT.md) for the implemented model,
+See [the scientific basis](docs/SCIENTIFIC_BASIS.md) for the implemented model,
 evidence categories, and prohibited inferences.
 
 ## Requirements
@@ -130,43 +130,40 @@ names, and device identifiers are not stored in the portfolio or its export.
 See [docs/LOCAL_AUDIO_METHOD.md](docs/LOCAL_AUDIO_METHOD.md) for the processing
 path and interpretation limits.
 
-## Local demo
-
-`pnpm dev` is the local demo entry point. It starts only the Vite development
-server on `127.0.0.1`; the lessons, portfolio, and optional audio-analysis
-pipeline run in the browser. No backend, account, or external service is
-required for synthetic lesson input. Microphone and file-analysis paths still
-depend on the browser, permission, codecs, and hardware described in
-[Limitations](#limitations).
-
 ## Interface
 
 ![Lesson workbench with curriculum navigation, result plot, and factors locked until prediction](docs/assets/screenshots/workbench-overview.png)
 
 ![Controlled comparison of trials at 90 and 120 BPM](docs/assets/screenshots/controlled-comparison.png)
 
-The screenshots are retained static documentation assets.
-
 ## Repository structure
 
 | Path | Purpose |
 | --- | --- |
 | `src/main.tsx` | Browser entry point |
-| `src/App.tsx` | Routes, portfolio state, export, clearing, and presentation mode |
-| `src/components/workbench/` | Curriculum and lesson interface |
-| `src/labs/` | Lesson catalog, domain models, and evaluator dispatch |
-| `src/simulation/` | Delayed ensemble model and compatibility surfaces |
-| `src/audio/` | Input validation, worklet, worker, features, and hypotheses |
-| `src/learning/` | Inquiry stages, comparison, evidence, portfolio, and migration |
+| `src/app/` | Browser composition, hash routing, portfolio adapters, audio coordination, and stateful lesson controllers |
+| `src/ui/` | Presentational lesson-workbench components |
+| `src/curriculum/` | Shared lesson contracts and the canonical domain registry |
+| `src/domains/` | Eight domain definitions, deterministic models, and evaluators |
+| `src/learning/` | Inquiry state, evidence, portfolio schema, migration, and repository functions |
+| `src/audio/analysis/` | Portable signal analysis, features, and hypotheses |
+| `src/audio/protocol/` | Bounded frame queue and Worker/AudioWorklet messages |
+| `src/audio/browser/` | Browser capture, decoding, AudioWorklet, and Worker adapters |
+| `src/shared/` | Cross-domain utilities |
 | `src/styles/` | Application stylesheets |
 | `src/**/*.test.ts(x)` | Colocated Vitest unit and component tests |
-| `scripts/` | Maintainer scripts |
 | `public/` | Static assets copied into the build |
 | `docs/` | Architecture, curriculum, audio, and screenshot documentation |
 | `.github/workflows/` | Continuous-integration workflow |
 | `package.json` and `pnpm-lock.yaml` | Package metadata, scripts, and locked dependencies |
 | `vite.config.ts` | Build and unit-test configuration |
 | `tsconfig.json` and `eslint.config.mjs` | TypeScript and lint configuration |
+
+`src/app/` depends on the lower-level curriculum, domain, learning, audio, and
+UI boundaries. Domain and learning rules remain browser-independent; only the
+app and browser-audio layers access routing, storage, media, workers, or DOM
+APIs. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for runtime flows,
+compatibility contracts, and placement guidance.
 
 ## Development workflow
 
@@ -181,19 +178,19 @@ Available commands:
 | Command | Purpose |
 | --- | --- |
 | `pnpm dev` | Start Vite on `127.0.0.1:5173`. |
-| `pnpm lint` | Run ESLint over `src` and `tests`. |
+| `pnpm lint` | Run ESLint over `src`. |
 | `pnpm typecheck` | Run TypeScript without emitting files. |
 | `pnpm test` | Run the Vitest suite through the unit-test alias. |
-| `pnpm test:unit` | Run the Vitest unit and component suite. |
+| `pnpm test:unit` | Run the colocated Vitest unit and build-contract suite. |
 | `pnpm build` | Type-check and create the static bundle in `dist/`. |
 | `pnpm verify` | Run lint, typecheck, direct unit contracts, and build. |
 | `pnpm audit --prod` | Query the package registry for production dependency advisories. |
 
 ## Testing
 
-Vitest covers deterministic models, portfolio validation and migration, audio
-contracts, worker coordination, simulation, evaluator, and portfolio migration
-boundaries.
+Vitest covers deterministic domain and ensemble models, portfolio validation
+and migration, audio contracts, worker coordination, evaluator dispatch, and
+production bundle contracts.
 
 The GitHub Actions workflow installs dependencies from the lockfile and runs
 `pnpm verify` on Node 22.

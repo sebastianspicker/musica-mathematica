@@ -27,7 +27,7 @@ Open <http://127.0.0.1:5173/>.
 - Keep raw audio, file names, device identifiers, and media streams outside
   portfolio storage and exports.
 - Keep model and audio claims within the limits in
-  `SCIENTIFIC_AUDIT.md` and `docs/LOCAL_AUDIO_METHOD.md`.
+  `docs/SCIENTIFIC_BASIS.md` and `docs/LOCAL_AUDIO_METHOD.md`.
 - Do not add production dependencies without maintainer approval.
 
 ## Tests

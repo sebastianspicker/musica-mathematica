@@ -1,0 +1,83 @@
+import type { DomainDefinition, ThreeLessons } from "../../curriculum/contracts";
+import { commonClaims, lesson, numberFactor, selectFactor } from "../support/construction";
+
+const lessons = [
+      lesson("rhythm-meter", 1, {
+        id: "cycles-and-euclidean-rhythm",
+        level: "foundation",
+        title: "Cycles and Euclidean Rhythm",
+        shortTitle: "Cycles & Euclid",
+        question: "What stays invariant when onsets are distributed and rotated on a cycle?",
+        objective: "Build a Euclidean onset pattern and separate interval structure from downbeat choice.",
+        equation: "E(k,n)[i] = 1 iff (ik mod n) < k",
+        equationCaption: "This deterministic construction distributes k binary onsets over n steps.",
+        predictionPrompt: "Predict whether rotation changes density or only onset positions.",
+        experimentPrompt: "Change rotation, then change pulse count in a separate comparison.",
+        interpretationPrompt: "Distinguish cyclic equivalence from performed accent and cultural meaning.",
+        transferPrompt: "Map one generated cycle to an instrumental pattern and choose an accent deliberately.",
+        factors: [
+          numberFactor("steps", "Cycle length", 16, 4, 32, 1, "steps", "Number of equal positions in the cycle."),
+          numberFactor("pulses", "Onsets", 5, 0, 16, 1, "onsets", "Onsets distributed across the cycle."),
+          numberFactor("rotation", "Rotation", 0, -16, 16, 1, "steps", "Cyclic displacement of the pattern."),
+        ],
+        claimIds: commonClaims,
+        sourceIds: ["jacoby-2024", "snyder-2024"],
+      }),
+      lesson("rhythm-meter", 2, {
+        id: "autocorrelation-spectrum-meter",
+        level: "model",
+        title: "Autocorrelation, Spectrum, and Meter",
+        shortTitle: "Meter profiles",
+        question: "Which periodicities are present in an onset pattern, and why can meter remain ambiguous?",
+        objective: "Compare circular autocorrelation, a discrete spectrum, and ranked equal-subdivision candidates.",
+        equation: "R[l] = sum x[n]x[(n+l) mod N]",
+        equationCaption: "Autocorrelation counts cyclic onset overlap at each lag.",
+        predictionPrompt: "Predict the strongest non-zero lag before viewing the profile.",
+        experimentPrompt: "Change one onset parameter and compare the ranked metric candidates.",
+        interpretationPrompt: "Explain why a high alignment score is not a listener's definitive meter.",
+        transferPrompt: "Mark two plausible meters for the same pattern and perform both accent schemes.",
+        factors: [
+          numberFactor("steps", "Cycle length", 12, 4, 32, 1, "steps", "Number of positions in the cyclic onset vector."),
+          numberFactor("pulses", "Onsets", 5, 1, 12, 1, "onsets", "Distributed onsets used to generate the vector."),
+          numberFactor("rotation", "Rotation", 0, -12, 12, 1, "steps", "Cyclic downbeat displacement."),
+        ],
+        claimIds: [...commonClaims, "heuristic.transparent"],
+        sourceIds: ["jacoby-2024", "snyder-2024"],
+      }),
+      lesson("rhythm-meter", 3, {
+        id: "recorded-onset-hypotheses",
+        level: "critique",
+        title: "Recorded-Onset Hypotheses",
+        shortTitle: "Onset hypotheses",
+        question: "How should ranked onset and tempo estimates be interpreted when sound replaces a clean binary pattern?",
+        objective: "Inspect multiple hypotheses, method settings, and uncertainty without treating transcription as truth.",
+        equation: "flux_t = sum max(0, |X_t|-|X_(t-1)|)",
+        equationCaption: "Positive spectral flux is one onset-strength feature, not a complete rhythm transcription.",
+        predictionPrompt: "Predict how a stricter onset threshold changes the number of detected events.",
+        experimentPrompt: "Compare synthetic, microphone, or file input locally; retain only derived features.",
+        interpretationPrompt: "Name evidence that would confirm or reject the top tempo and meter hypotheses.",
+        transferPrompt: "Check one ranked hypothesis against a score, tapping task, or close listening.",
+        factors: [
+          numberFactor("tempoBpm", "Synthetic tempo", 108, 40, 220, 1, "BPM", "Tempo of the privacy-safe synthetic fixture."),
+          numberFactor("threshold", "Onset threshold", 0.35, 0.05, 0.95, 0.05, "", "Relative spectral-flux cutoff."),
+          selectFactor("meterBias", "Candidate family", "mixed", [
+            { value: "mixed", label: "Mixed" },
+            { value: "duple", label: "Duple" },
+            { value: "triple", label: "Triple" },
+          ], "Candidate set used by the lightweight ranking stage."),
+        ],
+        claimIds: ["measurement.local", "hypothesis.transcription", "literature.context", "recommendation.inquiry"],
+        sourceIds: ["jacoby-2024", "snyder-2024", "w3c-webaudio", "w3c-mediacapture"],
+        inputModes: ["synthetic", "microphone", "file"],
+      }),
+] as const satisfies ThreeLessons;
+
+export const rhythmMeterDefinition: DomainDefinition<typeof lessons> = {
+  id: "rhythm-meter",
+  number: 3,
+  title: "Rhythm & Meter",
+  shortTitle: "Rhythm",
+  mark: "▥",
+  description: "Construct cyclic onset patterns and test competing metric representations.",
+  lessons,
+};

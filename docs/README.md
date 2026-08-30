@@ -4,11 +4,11 @@
 | --- | --- |
 | [Project README](../README.md) | Requirements, installation, configuration, usage, testing, deployment, and troubleshooting |
 | [Product brief](../PRODUCT.md) | Audience, workflow, product constraints, and interface requirements |
-| [Architecture](ARCHITECTURE.md) | Runtime paths, state, storage, audio, security, build, and compatibility surfaces |
+| [Architecture](ARCHITECTURE.md) | Runtime composition, module boundaries, dependency direction, browser contracts, and placement guidance |
 | [Curriculum](MUSICA_MATHEMATICA_CURRICULUM.md) | Lesson sequence, mathematical work, teaching use, and pedagogical limits |
 | [Local audio method](LOCAL_AUDIO_METHOD.md) | Audio contracts, processing, persistence, and interpretation limits |
-| [Scientific audit](../SCIENTIFIC_AUDIT.md) | Model equations, claim taxonomy, research context, and prohibited inferences |
-| [Release status](../RELEASE_STATUS.md) | Current local checks and publication blockers |
+| [Scientific basis](SCIENTIFIC_BASIS.md) | Model equations, claim taxonomy, research context, and prohibited inferences |
+| [Release status](../RELEASE_STATUS.md) | Release conditions and publication blockers |
 | [Changelog](../CHANGELOG.md) | User-visible changes assigned to release versions |
 | [Contribution guide](../CONTRIBUTING.md) | Change rules, tests, documentation, and pull-request expectations |
 | [Security policy](../SECURITY.md) | Reporting and browser trust boundaries |

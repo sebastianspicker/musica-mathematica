@@ -1,150 +1,131 @@
 # Architecture
 
-## System boundary
+Musica Mathematica is a static React and Vite application. It has no
+application server, account system, database, remote persistence, or runtime
+API configuration. Lessons, portfolios, and optional audio analysis run in the
+browser.
 
-Musica Mathematica is a static Vite application. It has no application server,
-database, service worker, account system, or remote persistence service.
+## Runtime composition
 
 ```text
 index.html
   -> src/main.tsx
-  -> src/App.tsx
-  -> src/labs/catalog.ts
-  -> src/components/workbench/
-  -> src/labs/evaluate.ts
-  -> domain evaluator or local audio result
+  -> src/app/App.tsx
+  -> src/app/workbench/          stateful lesson orchestration
+  -> src/ui/workbench/           rendering
+  -> curriculum, domains, learning, and audio boundaries
 ```
 
-`src/main.tsx` mounts React and imports KaTeX and application styles.
-`src/App.tsx` owns lesson selection, hash routing, portfolio persistence, JSON
-export, clearing, and presentation mode.
+`src/main.tsx` mounts the React tree and imports global styles. `src/app/App.tsx`
+selects the active lesson, keeps the URL fragment valid, loads and saves the
+portfolio, and coordinates export, clearing, and presentation mode.
 
-Lesson routes use
-`#/labs/<domain-id>/lessons/<lesson-id>`. Invalid fragments are replaced with
-the current valid route.
+Lesson URLs use `#/labs/<domain-id>/lessons/<lesson-id>`. An unknown fragment
+is replaced with the active valid route.
 
-## Curriculum and evaluation
+## Modules and dependency direction
 
-`src/labs/catalog.ts` and `src/labs/catalogAdvancedDomains.ts` define eight
-domains with three lessons each. A lesson declares identifiers, display text,
-factors, protocol, claim references, source references, and input modes.
+| Area | Responsibility | May depend on |
+| --- | --- | --- |
+| `src/shared/` | Small generic utilities, including numeric validation. | No application layers. |
+| `src/curriculum/` | Lesson contracts and registry validation. `catalog.ts` assembles all domains. | `src/domains/` only at catalog assembly. |
+| `src/domains/` | Lesson definitions, deterministic models, and evaluators for eight domains. | `curriculum` contracts and `shared` utilities. |
+| `src/learning/` | Inquiry stages, evidence, source records, portfolio schema, migration, and repository functions. | `curriculum` contracts and `shared` utilities. |
+| `src/audio/analysis/` | Portable FFT-backed analysis, features, and hypotheses. | `audio` analysis contracts only. |
+| `src/audio/protocol/` | Worker and AudioWorklet message types plus bounded frame queues. | `audio/analysis` contracts. |
+| `src/audio/browser/` | Browser capture, decoding, Worker, and AudioWorklet adapters. | `audio/analysis` and `audio/protocol`. |
+| `src/ui/` | Presentational React components. | Typed input contracts. |
+| `src/app/` | Browser routing, persistence/download adapters, controllers, and UI composition. | All lower-level contracts and adapters. |
 
-`src/labs/evaluate.ts` dispatches lessons to deterministic evaluators.
-Domain-specific code is under `src/labs/`. The delayed ensemble implementation
-is under `src/simulation/`. These modules do not depend on browser APIs.
+Domain, learning, and portable analysis code must not depend on React, DOM,
+`localStorage`, Worker, AudioWorklet, or media APIs. Browser adapters belong in
+`src/app/` or `src/audio/browser/`. Presentational components belong in
+`src/ui/`; stateful coordination belongs in `src/app/`.
 
-An evaluation contains:
+## Curriculum and evaluations
 
-- headline and display result;
-- typed observables;
-- bounded trace points and axis metadata;
-- provenance and calibration status;
-- claim identifiers; and
-- an interpretation annotation.
+`src/curriculum/contracts.ts` defines lessons, factors, provenance, traces, and
+`EvaluationOutput`. `src/curriculum/registry.ts` validates that each domain has
+exactly three lessons and an evaluator for each lesson. `src/curriculum/catalog.ts`
+is the canonical registry of the eight domain modules.
 
-The claim taxonomy is defined in `src/learning/evidence.ts` and documented in
-`SCIENTIFIC_AUDIT.md`.
+Each `src/domains/<domain>/` directory contains the domain definition, lessons,
+evaluators, and any domain model. A domain evaluator accepts selected factor
+values and returns a validated `EvaluationOutput`; it neither reads browser
+state nor selects routes. `src/domains/support/` holds shared domain-construction
+and result helpers.
 
-## Inquiry and portfolio state
+Add a lesson in its domain's `lessons.ts`, provide the matching evaluator in
+`evaluators.ts`, and keep the domain's public `index.ts` definition aligned.
+Add a new domain through `src/curriculum/catalog.ts`. Do not add a global
+evaluator dispatcher.
 
-The lesson stages are `orient`, `predict`, `experiment`, `compare`, `explain`,
-`perform`, `transfer`, and `debrief`. Transition functions in `src/learning/`
-enforce required prediction, trial, and response data.
+## Inquiry and portfolio
 
-Version 2 portfolio records use the key
-`musicaMathematica.learning.v2`. Validation occurs on load, update, save, and
-export. Each lesson retains at most 12 trials. Each trial retains at most 256
-trace points.
+`src/learning/stages.ts` owns the ordered lesson stages. `src/learning/inquiry/`
+owns controlled-comparison rules.
+`src/learning/evidence/` owns claim and source records. `src/learning/portfolio/`
+owns the version 2 schema, validation, sanitization, aggregation, migration,
+and repository functions.
 
-If no valid version 2 portfolio exists, the loader can copy a valid
-`ensembleCouplingLab.learning.v1` record into an Ensemble Dynamics lesson. It
-converts delay and jitter from seconds to milliseconds and marks trials with a
-legacy protocol identifier. It does not delete the version 1 key. The clear
-action removes both keys.
+Persistence is behind `StoragePort`; the browser adapter is
+`src/app/portfolio/browserStorage.ts`. A valid portfolio is stored under
+`musicaMathematica.learning.v2`. The JSON schema intentionally retains `labId`,
+and a valid `ensembleCouplingLab.learning.v1` record may be migrated into the
+corresponding Ensemble Dynamics attempts. Both are compatibility contracts.
 
-If `localStorage` is unavailable or rejects a write, the application continues
-with in-memory state and reports the persistence failure.
+Records are validated and sanitized on load, save, and export. The application
+stores no raw audio, file names, media streams, or device identifiers. Export is
+a local JSON download; there is no import or restore path.
 
-## Local audio
-
-Three critique lessons support optional microphone and file input.
+## Local audio analysis
 
 ```text
 microphone
-  -> MediaStream
-  -> AudioWorklet
-  -> bounded MessagePort and queue
-  -> module Web Worker
-  -> derived features and hypotheses
+  -> AudioWorklet -> bounded MessagePort -> Worker -> derived features
 
-file
-  -> AudioBuffer decode
-  -> bounded mono selection
-  -> module Web Worker
-  -> derived features and hypotheses
+audio file
+  -> browser decode -> bounded mono selection -> Worker -> derived features
+
+derived result
+  -> src/app/audio/ mapping -> lesson evaluation and optional trial snapshot
 ```
 
-`src/audio/` contains input validation, worklet and worker coordination,
-FFT-backed analysis, hypothesis ranking, and safe media settings. Worklet frames
-and file selections are transferred to workers. Raw audio is transient and is
-not accepted by the portfolio schema.
+`src/audio/analysis/` performs windowing, spectrum generation, features, and
+hypothesis formation. `src/audio/protocol/` defines transferable messages and
+the bounded queue. `src/audio/browser/` owns capture, decoding, worker creation,
+and the AudioWorklet module URL. `src/app/audio/` coordinates a user-initiated
+request and maps a completed analysis into a lesson evaluation.
 
-Only Recorded-Onset Hypotheses permits an audio-derived portfolio comparison.
-Chord Hypotheses and Time-Varying Timbre show audio results as observation
-appendices while their stored controlled comparisons remain synthetic.
+The UI accepts only the documented bounded input: microphone capture from 5 to
+20 seconds, audio files up to 25 MiB and 90 decoded seconds, and selections up
+to 30 seconds. Supported frame sizes are 2,048 and 4,096 samples with 50%
+overlap. Raw media is transient. See [LOCAL_AUDIO_METHOD.md](LOCAL_AUDIO_METHOD.md)
+for the processing method and interpretation limits.
 
-See `docs/LOCAL_AUDIO_METHOD.md` for numerical limits and method details.
+## External contracts
 
-## Network and privacy
+These values have consumers outside their defining file and require focused
+tests plus an explicit compatibility decision when changed:
 
-Application code does not call `fetch`, `XMLHttpRequest`, `WebSocket`,
-`EventSource`, or beacon APIs. Source citations are external links opened after
-user action.
+- route, domain, lesson, protocol, claim, factor, and input-mode identifiers;
+- `LessonDefinition`, `EvaluationOutput`, portfolio version 2 schema, storage
+  keys, trial and trace caps, and exported JSON fields;
+- legacy portfolio migration behavior;
+- audio frame sizes, queue capacity, worker and worklet message shapes, and
+  media input limits; and
+- static-origin assumptions: root-relative public assets and hash routing.
 
-The Content Security Policy in `index.html` restricts scripts, images, fonts,
-and connections to the same origin, with loopback WebSocket access for the Vite
-development server. UI fonts are served from `public/fonts/`. KaTeX fonts are
-included in the build.
+`index.html` defines the Content Security Policy. The production application
+does not provide a backend connection; its loopback WebSocket allowance exists
+for the Vite development server. Deploy `dist/` to an HTTPS origin root. A
+subpath deployment, host headers, deployment workflow, and rollback procedure
+are not configured here.
 
-Portfolio export creates a local JSON download. The application has no portfolio
-import or restore path. Microphone permission, source selection, codec support,
-and browser site-data controls remain platform responsibilities.
+## Tests and checks
 
-## Build and deployment
-
-`pnpm build` runs TypeScript and Vite. Vite writes the static bundle to `dist/`.
-The current source uses root-relative public paths, so deployment is configured
-for an origin root rather than a subpath.
-
-Hash routes do not require server-side route rewriting. The static host must
-serve `index.html` and the `/assets/`, `/fonts/`, favicon, and license files from
-the same origin.
-
-The repository has no container, server process, hosting manifest, deployment
-command, or rollback procedure.
-
-## Tests and CI
-
-- Colocated `src/**/*.test.ts(x)` files run in Vitest's Node environment and
-  cover models, learning state, storage, migration, audio contracts, worker
-  coordination, and component output.
-- `.github/workflows/ci.yml` uses Node 22 and pnpm 11.6.0 and runs `pnpm verify`.
-
-Build output, coverage, caches, and local tool state are
-ignored.
-
-## Compatibility surfaces
-
-The following values affect stored records, routes, tests, or current browser
-behavior:
-
-- domain, lesson, protocol, claim, and input-mode identifiers;
-- `musicaMathematica.learning.v2` and the version 2 portfolio shape;
-- `ensembleCouplingLab.learning.v1` migration behavior;
-- trial and trace caps;
-- ensemble configuration, topology, texture, metrics, and fixed-step behavior;
-- audio frame sizes and input limits; and
-- exported JSON fields.
-
-Changes to these surfaces require focused tests and an explicit compatibility
-decision.
+Tests are colocated under `src/**/*.test.ts(x)` and run in Vitest's Node
+environment. The production build uses TypeScript and Vite. Run `pnpm verify`
+for the integrated local gate: lint, type-check, unit tests, and production
+build. Browser, microphone hardware, codecs, deployment headers, and platform
+behavior require separate runtime verification.

@@ -97,7 +97,7 @@ The Ensemble Coupling Lab compatibility schema contains seven scenarios that
 map into these three lessons. Its identifiers migrate into the v2 portfolio,
 while the phase-only simulator and its public configuration contract remain the
 model core. The exact implemented equation and heuristic multipliers are
-published in [the scientific audit](../SCIENTIFIC_AUDIT.md#ensemble-model).
+published in [the scientific basis](SCIENTIFIC_BASIS.md#ensemble-model).
 
 Suggested performance task: rehearse a short passage with two reversible cueing
 policies, then compare musical criteria selected before the trial. Do not use

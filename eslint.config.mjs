@@ -71,6 +71,41 @@ const codacyRules = {
   "valid-typeof": ["error", { requireStringLiterals: false }],
 };
 
+const domainNames = [
+  "ensemble-dynamics",
+  "harmony-geometry",
+  "measurement-inference",
+  "phase-proportion",
+  "pitch-tuning",
+  "probability-form",
+  "rhythm-meter",
+  "timbre-acoustics",
+];
+
+function restrictImports(forbidden, message) {
+  return ["error", {
+    patterns: [{
+      // `no-restricted-imports` matches these against the import specifier, so
+      // `**/app` catches every relative depth without banning sibling files.
+      group: forbidden.map((path) => `**/${path}`),
+      message,
+    }],
+  }];
+}
+
+const applicationImports = ["app", "ui", "audio", "learning", "domains"];
+const domainImports = ["app", "ui", "audio", "learning"];
+
+const domainBoundaryConfigs = domainNames.map((domain) => ({
+  files: [`src/domains/${domain}/**/*.ts`, `src/domains/${domain}/**/*.tsx`],
+  rules: {
+    "no-restricted-imports": restrictImports(
+      [...domainImports, ...domainNames.filter((name) => name !== domain)],
+      "Domain modules may depend only on curriculum, shared utilities, their own domain, and domains/support.",
+    ),
+  },
+}));
+
 export default [
   {
     files: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx", "**/*.mjs", "**/*.cjs", "**/*.vue"],
@@ -88,6 +123,89 @@ export default [
       "no-undef": "off",
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": ["error"],
+    },
+  },
+  {
+    files: ["src/shared/**/*.ts", "src/shared/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": restrictImports(
+        applicationImports,
+        "Shared utilities must remain independent of application layers.",
+      ),
+    },
+  },
+  {
+    files: ["src/curriculum/**/*.ts", "src/curriculum/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": restrictImports(
+        applicationImports,
+        "Curriculum modules may depend only on shared utilities and curriculum modules.",
+      ),
+    },
+  },
+  {
+    // Catalog composition is the sole intentional curriculum-to-domain edge.
+    files: ["src/curriculum/catalog.ts"],
+    rules: {
+      "no-restricted-imports": restrictImports(
+        ["app", "ui", "audio", "learning"],
+        "The curriculum catalog may compose domain definitions, but must remain independent of application layers.",
+      ),
+    },
+  },
+  {
+    files: ["src/domains/support/**/*.ts", "src/domains/support/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": restrictImports(
+        [...domainImports, ...domainNames],
+        "Domain support modules may depend only on curriculum, shared utilities, and domain support modules.",
+      ),
+    },
+  },
+  ...domainBoundaryConfigs,
+  {
+    files: ["src/learning/**/*.ts", "src/learning/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": restrictImports(
+        ["app", "ui", "audio", "domains", "curriculum/catalog"],
+        "Learning modules may depend only on curriculum contracts and registry ports, shared utilities, and learning modules.",
+      ),
+    },
+  },
+  {
+    files: ["src/learning/legacy-v1/**/*.ts", "src/learning/legacy-v1/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": restrictImports(
+        ["app", "ui", "audio", "domains", "evidence", "inquiry", "curriculum/catalog"],
+        "Legacy v1 may depend only on its own modules, learning/portfolio, curriculum contracts and registry ports, and shared utilities.",
+      ),
+    },
+  },
+  {
+    files: ["src/audio/analysis/**/*.ts", "src/audio/analysis/**/*.tsx", "src/audio/protocol/**/*.ts", "src/audio/protocol/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": restrictImports(
+        ["app", "ui", "learning", "domains", "audio/browser"],
+        "Audio analysis and protocol modules must remain independent of application, UI, learning, domain, and browser-adapter layers.",
+      ),
+    },
+  },
+  {
+    files: ["src/audio/browser/**/*.ts", "src/audio/browser/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": restrictImports(
+        ["app", "ui", "learning", "domains"],
+        "Browser audio adapters may depend on audio analysis and protocol, but not application layers.",
+      ),
+    },
+  },
+  {
+    files: ["src/ui/**/*.ts", "src/ui/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": restrictImports(
+        ["app", "audio/browser"],
+        "UI components must render from supplied data and must not import application or browser-adapter modules.",
+      ),
     },
   },
 ];
