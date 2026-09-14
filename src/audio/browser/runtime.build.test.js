@@ -6,16 +6,18 @@ import { build } from "vite";
 import { afterAll, describe, expect, it } from "vitest";
 
 const outputDirectory = await mkdtemp(join(tmpdir(), "musica-mathematica-worklet-"));
+const pagesBase = "/musica-mathematica/";
 
 afterAll(async () => {
   await rm(outputDirectory, { force: true, recursive: true });
 });
 
-describe("AudioWorklet production bundle", () => {
-  it("emits the capture processor as a same-origin JavaScript asset", async () => {
+describe("GitHub Pages audio production bundle", () => {
+  it("emits base-aware application, worker, worklet, and font assets", async () => {
     await build({
       configFile: resolve(dirname(fileURLToPath(import.meta.url)), "../../../vite.config.ts"),
       logLevel: "silent",
+      mode: "pages",
       build: {
         emptyOutDir: true,
         outDir: outputDirectory,
@@ -34,10 +36,25 @@ describe("AudioWorklet production bundle", () => {
     expect(workletSource).not.toContain("data:video/mp2t");
     expect(workletSource).not.toContain("captureProcessor.ts");
 
+    const analysisWorkerAssetName = assetNames.find((name) => /^analysisWorker-.+\.js$/.test(name));
+    expect(analysisWorkerAssetName).toBeDefined();
+
     const applicationAssetNames = assetNames.filter((name) => /^index-.+\.js$/.test(name));
     const applicationSources = await Promise.all(
       applicationAssetNames.map((name) => readFile(join(assetsDirectory, name), "utf8")),
     );
-    expect(applicationSources.join("\n")).toContain(workletAssetName);
+    const applicationSource = applicationSources.join("\n");
+    expect(applicationSource).toContain(`${pagesBase}assets/${workletAssetName}`);
+    expect(applicationSource).toContain(`${pagesBase}assets/${analysisWorkerAssetName}`);
+    expect(applicationSource).toContain("musicaMathematica.demo.learning.v2");
+
+    const indexHtml = await readFile(join(outputDirectory, "index.html"), "utf8");
+    expect(indexHtml).toContain(`${pagesBase}assets/`);
+    expect(indexHtml).toContain(`href="${pagesBase}favicon.svg"`);
+
+    const stylesheetAssetName = assetNames.find((name) => /^index-.+\.css$/.test(name));
+    expect(stylesheetAssetName).toBeDefined();
+    const stylesheet = await readFile(join(assetsDirectory, stylesheetAssetName), "utf8");
+    expect(stylesheet).toContain(`${pagesBase}fonts/`);
   }, 30_000);
 });

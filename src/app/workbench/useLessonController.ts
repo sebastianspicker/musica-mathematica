@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useRef, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { defaultFactorsFor, type EvaluationOutput, type FactorValue, type InputMode, type LessonDefinition } from "../../curriculum/contracts";
 import type { CurriculumRegistry } from "../../curriculum/registry";
 import { activeAttempt, advanceAttempt, createPortfolio, recordTrial, selectLesson, setAttemptPrediction, setAttemptResponse } from "../../learning/portfolio/aggregate";
 import { assessTrialComparison } from "../../learning/inquiry/comparison";
 import { lessonStages } from "../../learning/stages";
 import type { LessonAttemptV2, TrialSnapshotV2 } from "../../learning/portfolio/schema-v2";
+import { createPlaybackStore, type PlaybackStore } from "./playbackStore";
 import { usePulseAudio } from "../audio/usePulseAudio";
 import {
   factorsForAttempt,
   initialMotionEnabled,
   recordingBlocker,
+  recordedRunWasTrimmed,
   runLabel,
   seedForTrial,
 } from "./workbenchHelpers";
@@ -25,9 +27,8 @@ export type LessonControllerRuntime = Readonly<{
   message: string | null;
   motionEnabled: boolean;
   note: string;
-  playhead: number;
+  playback: PlaybackStore;
   recordLabel: string;
-  running: boolean;
   beginPrediction: () => void;
   changeInputMode: (mode: InputMode) => void;
   openComparison: () => void;
@@ -53,20 +54,35 @@ export type LessonControllerDependencies = Readonly<{
   curriculum: CurriculumRegistry;
   lesson: LessonDefinition;
   attempt: LessonAttemptV2;
+  initialFactors?: Readonly<Record<string, FactorValue>>;
   onAttemptChange: (attempt: LessonAttemptV2) => void;
   onPersistenceMessage: (message: string | null) => void;
 }>;
 
 export function useLessonController(dependencies: LessonControllerDependencies): LessonControllerRuntime {
-  const state = useLessonControllerState(dependencies.curriculum, dependencies.lesson, dependencies.attempt);
+  const state = useLessonControllerState(
+    dependencies.curriculum,
+    dependencies.lesson,
+    dependencies.attempt,
+    dependencies.initialFactors,
+  );
   const audio = usePulseAudio();
   const playback = usePlayback(dependencies.lesson.protocol.durationSeconds, audio.triggerPulse);
-  const actions = useInquiryActions({ ...dependencies, ...state, ...playback });
-  return { ...state, ...playback, audio, ...actions };
+  const { curriculum, lesson, attempt, onAttemptChange, onPersistenceMessage } = dependencies;
+  const context = useMemo(() => ({ curriculum, lesson, attempt, onAttemptChange, onPersistenceMessage, ...state, ...playback }), [curriculum, lesson, attempt, onAttemptChange, onPersistenceMessage, state, playback]);
+  const actions = useInquiryActions(context);
+  return { ...state, playback, audio, ...actions };
 }
 
-function useLessonControllerState(curriculum: CurriculumRegistry, lesson: LessonDefinition, attempt: LessonAttemptV2) {
-  const [factors, setFactors] = useState<Record<string, FactorValue>>(() => factorsForAttempt(lesson, attempt));
+function useLessonControllerState(
+  curriculum: CurriculumRegistry,
+  lesson: LessonDefinition,
+  attempt: LessonAttemptV2,
+  initialFactors?: Readonly<Record<string, FactorValue>>,
+) {
+  const [factors, setFactors] = useState<Record<string, FactorValue>>(
+    () => factorsForAttempt(lesson, attempt, initialFactors),
+  );
   const [inputMode, setInputMode] = useState<InputMode>("synthetic");
   const [audioEvaluation, setAudioEvaluation] = useState<EvaluationOutput | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -76,35 +92,25 @@ function useLessonControllerState(curriculum: CurriculumRegistry, lesson: Lesson
   const evaluation = inputMode === "synthetic" ? syntheticEvaluation : audioEvaluation ?? syntheticEvaluation;
   const comparison = useMemo(() => assessTrialComparison(lesson, attempt.trials), [attempt.trials, lesson]);
   const experimentActive = lessonStages.indexOf(attempt.stage) >= lessonStages.indexOf("experiment");
-  return { audioEvaluation, comparison, evaluation, experimentActive, factors, inputMode, message, motionEnabled, note, recordLabel: runLabel(attempt.trials.length), setAudioEvaluation, setFactors, setInputMode, setMessage, setMotionEnabled, setNote };
+  const recordLabel = runLabel(attempt.trials.length);
+  return useMemo(() => ({ audioEvaluation, comparison, evaluation, experimentActive, factors, inputMode, message, motionEnabled, note, recordLabel, setAudioEvaluation, setFactors, setInputMode, setMessage, setMotionEnabled, setNote }), [audioEvaluation, comparison, evaluation, experimentActive, factors, inputMode, message, motionEnabled, note, recordLabel]);
 }
 
 function usePlayback(duration: number, triggerPulse: ReturnType<typeof usePulseAudio>["triggerPulse"]) {
-  const [running, setRunning] = useState(false);
-  const [playhead, setPlayhead] = useState(0);
-  const previousBeatRef = useRef(-1);
-  useEffect(() => {
-    if (!running) return;
-    let frame = 0;
-    let previous = performance.now();
-    const tick = (now: number): void => {
-      const elapsed = Math.min((now - previous) / 1000, 0.1);
-      previous = now;
-      setPlayhead((current) => advancePlayhead(current, elapsed, duration, previousBeatRef, triggerPulse, setRunning));
-      frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(frame);
-    };
-  }, [duration, running, triggerPulse]);
-  return { playhead, running, setPlayhead, setRunning };
+  const [playback] = useState(() => createPlaybackStore(duration, {
+    now: () => performance.now(),
+    requestFrame: (callback) => requestAnimationFrame(callback),
+    cancelFrame: (frame) => cancelAnimationFrame(frame),
+  }));
+  useEffect(() => { playback.setPulse(triggerPulse); }, [playback, triggerPulse]);
+  useEffect(() => playback.stop, [playback]);
+  return playback;
 }
 
 type InquiryActionContext = ReturnType<typeof useLessonControllerState> & ReturnType<typeof usePlayback> & LessonControllerDependencies;
 
 function useInquiryActions(context: InquiryActionContext) {
-  return {
+  return useMemo(() => ({
     beginPrediction: () => { beginPrediction(context); },
     changeInputMode: (mode: InputMode) => { changeInputMode(context, mode); },
     openComparison: () => { openComparison(context); },
@@ -117,7 +123,7 @@ function useInquiryActions(context: InquiryActionContext) {
     stepPlayback: () => { stepPlayback(context); },
     togglePlayback: () => { togglePlayback(context); },
     updateFactor: (factorId: string, value: FactorValue) => { updateFactor(context, factorId, value); },
-  };
+  }), [context]);
 }
 
 function beginPrediction(context: InquiryActionContext): void {
@@ -159,6 +165,9 @@ function recordCurrentRun(context: InquiryActionContext): void {
     return;
   }
   context.onAttemptChange(next);
+  if (recordedRunWasTrimmed(context.attempt, trial, next)) {
+    context.onPersistenceMessage("This run was saved within local portfolio limits. Older runs, long notes, or detailed result data were trimmed.");
+  }
   context.setNote("");
   context.setRunning(false);
   context.setPlayhead(context.lesson.protocol.durationSeconds);
@@ -211,7 +220,7 @@ function stepPlayback(context: InquiryActionContext): void {
 }
 
 function togglePlayback(context: InquiryActionContext): void {
-  if (context.playhead >= context.lesson.protocol.durationSeconds) context.setPlayhead(0);
+  if (context.getPlayhead() >= context.lesson.protocol.durationSeconds) context.setPlayhead(0);
   context.setRunning((value) => !value);
 }
 
@@ -223,19 +232,6 @@ function updateFactor(context: InquiryActionContext, factorId: string, value: Fa
   }
 }
 
-function advancePlayhead(current: number, elapsed: number, duration: number, previousBeatRef: { current: number }, triggerPulse: ReturnType<typeof usePulseAudio>["triggerPulse"], setRunning: Dispatch<SetStateAction<boolean>>): number {
-  const next = current + elapsed;
-  const beat = Math.floor(next);
-  if (beat !== previousBeatRef.current) {
-    previousBeatRef.current = beat;
-    triggerPulse(beat % 4, beat % 4 === 0 ? 1 : 0.65);
-  }
-  if (next >= duration) {
-    setRunning(false);
-    return duration;
-  }
-  return next;
-}
 
 function createTrial(lesson: LessonDefinition, attempt: LessonAttemptV2, factors: Record<string, FactorValue>, evaluation: EvaluationOutput, note: string): TrialSnapshotV2 {
   const deterministic = (evaluation.provenance.source === "model" || evaluation.provenance.source === "synthetic") && lesson.protocol.deterministic;

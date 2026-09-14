@@ -1,4 +1,4 @@
-import { useId, type ReactElement } from "react";
+import { memo, useId, useMemo, type ReactElement } from "react";
 import type {
   EvaluationOutput,
   ObservableRecord,
@@ -23,11 +23,12 @@ const visualLabels: Readonly<Record<EvaluationOutput["visualKind"], string>> = {
 const linePatternLabels = ["solid line", "long dashed line", "dotted line", "dash-dot line"] as const;
 const linePatterns = [undefined, "10 7", "2 5", "12 4 2 4"] as const;
 
-export function ResultVisual({ evaluation }: ResultVisualProps): ReactElement {
+export const ResultVisual = memo(function ResultVisual({ evaluation }: ResultVisualProps): ReactElement {
   const instanceId = useId();
-  const series = groupTraceBySeries(evaluation.trace);
-  const plot = plotGeometry(evaluation.trace);
+  const series = useMemo(() => groupTraceBySeries(evaluation.trace), [evaluation.trace]);
+  const plot = useMemo(() => plotGeometry(evaluation.trace), [evaluation.trace]);
   const claimKindLabel = claimKindFromObservables(evaluation.observables);
+  const result = numericLeadingResult(evaluation.result);
 
   return (
     <figure className={`mm-result-visual mm-result-visual--${evaluation.visualKind}`}>
@@ -36,18 +37,22 @@ export function ResultVisual({ evaluation }: ResultVisualProps): ReactElement {
           <span className="mm-result-visual__kind">
             {evaluation.headline || "Figure · Mathematical result"}
           </span>
+        </div>
+        <div className="mm-result-visual__result-line">
+          <h2 id={`${instanceId}-heading`}>
+            {result ? <><span className="mm-result-visual__value">{result.value}</span>{" "}<span className="mm-result-visual__unit">{result.rest}</span></> : evaluation.result}
+          </h2>
           {claimKindLabel ? (
             <span className="mm-result-visual__claim-pill">{claimKindLabel}</span>
           ) : null}
         </div>
-        <h2 id={`${instanceId}-heading`}>{evaluation.result}</h2>
       </figcaption>
 
       <ResultBody evaluation={evaluation} instanceId={instanceId} plot={plot} series={series} />
-      <ResultProvenance evaluation={evaluation} />
+      <details className="mm-result-visual__method"><summary>{formatSource(evaluation.provenance.source)} · {evaluation.provenance.calibration} · Source and method</summary><ResultProvenance evaluation={evaluation} /></details>
     </figure>
   );
-}
+});
 
 type TraceSeries = ReturnType<typeof groupTraceBySeries>;
 type PlotGeometry = NonNullable<ReturnType<typeof plotGeometry>>;
@@ -74,7 +79,7 @@ function TracePlot({ evaluation, instanceId, plot, series }: Readonly<{ evaluati
 }
 
 function TraceLine({ index, item, plot }: Readonly<{ index: number; item: TraceSeries[number]; plot: PlotGeometry }>): ReactElement {
-  const points = item.points.map((point) => `${scale(point.x, plot.minX, plot.maxX, 54, 620)},${scale(point.y, plot.minY, plot.maxY, 226, 18)}`).join(" ");
+  const points = useMemo(() => item.points.map((point) => `${scale(point.x, plot.minX, plot.maxX, 54, 620)},${scale(point.y, plot.minY, plot.maxY, 226, 18)}`).join(" "), [item.points, plot]);
   const point = item.points.at(0);
   return <g className={`mm-result-visual__series mm-result-visual__series--${index % 4}`}>
     <polyline fill="none" points={points} stroke="currentColor" strokeDasharray={linePatterns[index % linePatterns.length]} strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" vectorEffect="non-scaling-stroke" />
@@ -208,4 +213,10 @@ function formatSource(source: EvaluationOutput["provenance"]["source"]): string 
     case "microphone": return "Microphone segment";
     case "file": return "Audio file segment";
   }
+}
+
+function numericLeadingResult(result: string): Readonly<{ value: string; rest: string }> | null {
+  const match = /^(?<value>[+-]?(?:\d+(?:\.\d+)?|\.\d+))\s+(?<rest>.+)$/.exec(result);
+  if (!match?.groups) return null;
+  return { value: match.groups.value, rest: match.groups.rest };
 }

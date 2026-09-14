@@ -1,19 +1,57 @@
 # Musica Mathematica
 
-Musica Mathematica is a browser application for teaching mathematical
-representations of music. It contains 24 lessons across eight domains, a local
-learning portfolio, deterministic lesson evaluators, and optional local audio
-analysis.
+Explore the mathematics of music through 24 interactive lessons. Change a tempo,
+compare tuning systems, build a rhythm, or test how a model ensemble responds
+to delay. Make a prediction, change one factor, and compare what happens.
 
-The application is an alpha teaching workbench. It is not a calibrated
-instrument, transcription system, learning-management system, gradebook, or
-validated assessment. Results describe the selected mathematical model or one
-bounded audio segment. They do not assess a performer or establish a perceptual
-or pedagogical claim.
+Musica Mathematica is designed for music students and teachers, with synthetic
+examples in every lesson and optional microphone or audio-file analysis in
+three lessons. It runs in your browser, without an account or backend. Your
+learning record stays in that browser unless you export it.
 
-## Scope
+This is an alpha teaching tool. Its results describe mathematical models and
+uncalibrated audio observations; they do not grade musical performance.
 
-Each domain contains a foundation lesson, a model lesson, and a critique lesson:
+[Run locally](#run-locally) · [Screenshot tour](#screenshot-tour) ·
+[Pages demo](#github-pages-demo) · [Contribute](CONTRIBUTING.md)
+
+## Screenshot tour
+
+The tour uses the Pages demo with synthetic example data.
+
+### 1. Start with a question
+
+Each lesson starts with a musical question and a model to explore it.
+Write a prediction before revealing the model results.
+
+![From BPM to Period lesson introduction, showing the inquiry stages and the button to start a prediction](docs/assets/screenshots/workbench-overview.png)
+
+### 2. Change one thing
+
+Record a baseline, then adjust a factor. Here, Run A uses 90 BPM and the
+unrecorded preview uses 120 BPM. The beat period changes from about 0.667 to
+0.500 seconds while beats per bar stays at four.
+
+![Experiment notebook with a committed prediction, recorded Run A at 90 BPM, and a preview at 120 BPM](docs/assets/screenshots/experiment.png)
+
+### 3. Compare and explain
+
+The comparison keeps both recorded runs and their units visible. Continue
+with an explanation, a listening or performance activity, and a reflection on
+what the model can tell you.
+
+![Controlled comparison of 90 and 120 BPM, showing beat periods of 0.667 and 0.500 seconds and unchanged beats per bar](docs/assets/screenshots/controlled-comparison.png)
+
+### 4. Explore another idea
+
+Open **Lessons** to browse all eight domains. **My learning** lets you return
+to saved inquiries, export your portfolio, or switch to presentation mode.
+
+![Lesson chooser showing foundation, model, and critique lessons for phase, ensemble dynamics, rhythm, and tuning](docs/assets/screenshots/curriculum.png)
+
+## What you can explore
+
+Each domain has a foundation lesson, a model lesson, and a critique lesson.
 
 | Domain | Foundation | Model | Critique |
 | --- | --- | --- | --- |
@@ -26,240 +64,115 @@ Each domain contains a foundation lesson, a model lesson, and a critique lesson:
 | Probability & Form | Seeded Chance | Markov Memory | Entropy, Surprisal, and Form |
 | Measurement & Inference | Provenance and Uncertainty | Recovering Parameters | Compare Without Grading |
 
-All lessons use the same inquiry sequence: orient, predict, experiment,
-compare, explain, perform, transfer, and debrief. The
-[curriculum guide](docs/MUSICA_MATHEMATICA_CURRICULUM.md) documents lesson
-content and teaching boundaries.
 
-## Current capabilities
+The [curriculum guide](docs/MUSICA_MATHEMATICA_CURRICULUM.md) describes the
+activities, prerequisites, and teaching limits. Every lesson follows eight
+stages: orient, predict, experiment, compare, explain, perform, transfer, and
+debrief.
 
-- Deterministic evaluators for phase, ensemble dynamics, rhythm, tuning,
-  harmony, acoustics, probability, and measurement examples.
-- Hash routes in the form
-  `#/labs/<domain-id>/lessons/<lesson-id>`.
-- Browser-local portfolio persistence, JSON export, and explicit clearing.
-- At most 12 stored trials per lesson and 256 trace points per trial.
-- Claim labels for identities, model results, observations, transcription
-  hypotheses, literature context, heuristics, and recommendations.
-- Optional microphone and file analysis in Recorded-Onset Hypotheses, Chord
-  Hypotheses, and Time-Varying Timbre.
-- Synthetic input for every lesson.
-- Presentation mode for projected use.
+## Run locally
 
-## Limitations
-
-- There is no backend, account, roster, remote storage, LMS integration, course
-  authoring, gradebook, or automatic assessment.
-- Portfolio persistence is limited to one browser origin. The application
-  continues in memory if `localStorage` is unavailable.
-- Portfolio export is download-only. The application does not import or restore
-  exported portfolio JSON.
-- Audio results are uncalibrated and device-dependent. dBFS is not SPL, browser
-  latency settings are not end-to-end measurements, and ranked labels are
-  hypotheses.
-- Pitch estimation is monophonic. Tempo, meter, onset, and chord estimates can
-  be ambiguous or incorrect.
-- Firefox, Safari, hardware microphones, and platform codec behavior have not
-  been verified.
-- No formal accessibility conformance or classroom-effectiveness claim has
-  been established.
-- Only the implemented version 1 to version 2 portfolio migration is supported.
-- The repository is `UNLICENSED`.
-
-See [the scientific basis](docs/SCIENTIFIC_BASIS.md) for the implemented model,
-evidence categories, and prohibited inferences.
-
-## Requirements
-
-- Node.js `^20.19.0` or `>=22.12.0`
-- pnpm `11.6.0`
-- A browser with JavaScript modules
-- Browser `localStorage` for persistence
-
-Microphone input also requires a secure browser context, user permission,
-`getUserMedia`, `AudioWorklet`, and Web Worker support. Loopback development
-addresses are treated as secure contexts by current browsers.
-
-## Installation
-
-Install the locked dependencies:
+Use Node.js `^20.19.0` or `>=22.12.0` and pnpm `11.6.0`.
 
 ```sh
+git clone https://github.com/sebastianspicker/musica-mathematica.git
+cd musica-mathematica
 pnpm install --frozen-lockfile
-```
-
-## Configuration
-
-The application has no runtime environment variables, environment file, API
-key, database, or external service configuration.
-
-`pnpm dev` binds Vite to `127.0.0.1`. The application stores version 2 portfolio
-data under `musicaMathematica.learning.v2`. When no valid version 2 record
-exists, it can copy a valid `ensembleCouplingLab.learning.v1` record into the
-corresponding Ensemble Dynamics lesson. The migration keeps the version 1
-record and marks migrated trials with a legacy protocol identifier.
-
-The Content Security Policy is defined in [index.html](index.html). It permits
-same-origin application resources and loopback WebSocket connections used by
-the development server.
-
-## Usage
-
-Start the development server:
-
-```sh
 pnpm dev
 ```
 
-Open <http://127.0.0.1:5173/>.
+Open the address Vite prints, normally <http://127.0.0.1:5173/>.
+No environment file, API key, database, or external service is needed.
 
-For a typical lesson:
-
-1. Select a domain and lesson.
-2. Review the question, factors, equation, evidence labels, and source notes.
-3. Save a prediction.
-4. Record two trials, changing only the intended factor.
-5. Compare the latest two trials.
-6. Complete the explanation, performance, transfer, and debrief stages.
-7. Export the portfolio or clear local work from the header.
-
-Microphone capture is limited to 5 through 20 seconds. Audio files must use an
-`audio/*` media type, be no larger than 25 MiB, decode to no more than 90
-seconds, and use an analysis range no longer than 30 seconds. Raw audio, file
-names, and device identifiers are not stored in the portfolio or its export.
-See [docs/LOCAL_AUDIO_METHOD.md](docs/LOCAL_AUDIO_METHOD.md) for the processing
-path and interpretation limits.
-
-## Interface
-
-![Lesson workbench with curriculum navigation, result plot, and factors locked until prediction](docs/assets/screenshots/workbench-overview.png)
-
-![Controlled comparison of trials at 90 and 120 BPM](docs/assets/screenshots/controlled-comparison.png)
-
-## Repository structure
-
-| Path | Purpose |
-| --- | --- |
-| `src/main.tsx` | Browser entry point |
-| `src/app/` | Browser composition, hash routing, portfolio adapters, audio coordination, and stateful lesson controllers |
-| `src/ui/` | Presentational lesson-workbench components |
-| `src/curriculum/` | Shared lesson contracts and the canonical domain registry |
-| `src/domains/` | Eight domain definitions, deterministic models, and evaluators |
-| `src/learning/` | Inquiry state, evidence, portfolio schema, migration, and repository functions |
-| `src/audio/analysis/` | Portable signal analysis, features, and hypotheses |
-| `src/audio/protocol/` | Bounded frame queue and Worker/AudioWorklet messages |
-| `src/audio/browser/` | Browser capture, decoding, AudioWorklet, and Worker adapters |
-| `src/shared/` | Cross-domain utilities |
-| `src/styles/` | Application stylesheets |
-| `src/**/*.test.ts(x)` | Colocated Vitest unit and component tests |
-| `public/` | Static assets copied into the build |
-| `docs/` | Architecture, curriculum, audio, and screenshot documentation |
-| `.github/workflows/` | Continuous-integration workflow |
-| `package.json` and `pnpm-lock.yaml` | Package metadata, scripts, and locked dependencies |
-| `vite.config.ts` | Build and unit-test configuration |
-| `tsconfig.json` and `eslint.config.mjs` | TypeScript and lint configuration |
-
-`src/app/` depends on the lower-level curriculum, domain, learning, audio, and
-UI boundaries. Domain and learning rules remain browser-independent; only the
-app and browser-audio layers access routing, storage, media, workers, or DOM
-APIs. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for runtime flows,
-compatibility contracts, and placement guidance.
-
-## Development workflow
-
-1. Install dependencies with the frozen lockfile.
-2. Make a focused change.
-3. Add or update tests for changed behavior.
-4. Run the narrowest relevant check.
-5. Run `pnpm verify` before proposing the change.
-
-Available commands:
-
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | Start Vite on `127.0.0.1:5173`. |
-| `pnpm lint` | Run ESLint over `src`. |
-| `pnpm typecheck` | Run TypeScript without emitting files. |
-| `pnpm test` | Run the Vitest suite through the unit-test alias. |
-| `pnpm test:unit` | Run the colocated Vitest unit and build-contract suite. |
-| `pnpm build` | Type-check and create the static bundle in `dist/`. |
-| `pnpm verify` | Run lint, typecheck, direct unit contracts, and build. |
-| `pnpm audit --prod` | Query the package registry for production dependency advisories. |
-
-## Testing
-
-Vitest covers deterministic domain and ensemble models, portfolio validation
-and migration, audio contracts, worker coordination, evaluator dispatch, and
-production bundle contracts.
-
-The GitHub Actions workflow installs dependencies from the lockfile and runs
-`pnpm verify` on Node 22.
-The workflow is CI only; it does not deploy the application or exercise
-microphone hardware.
-
-## Deployment and operation
-
-Create the static bundle:
+To build for a static host at the origin root:
 
 ```sh
 pnpm build
 ```
 
-Deploy the contents of `dist/` to an HTTPS static host at the origin root. The
-current build uses root-relative asset paths such as `/assets/` and `/fonts/`;
-subpath deployment is not configured. Lesson navigation uses URL fragments, so
-the host does not need a route fallback beyond serving the root `index.html`.
+Serve the contents of `dist/` over HTTPS. Lesson URLs use fragments such as
+`#/labs/phase-proportion/lessons/from-bpm-to-period`, so lesson navigation
+does not need server-side route handling.
 
-The repository does not contain a server process, container configuration,
-hosting manifest, deployment command, or rollback procedure. A deployment must
-provide its own cache policy and HTTP security headers. The HTML meta Content
-Security Policy is not a substitute for response headers.
+## GitHub Pages demo
 
-GitHub Pages is feasible only after deployment work is added and verified. No
-Pages workflow exists in this repository. The current Vite configuration emits
-root-relative assets, so it can be hosted at an origin root (for example, a
-custom domain or a user/organization Pages site) but is not configured for a
-project-site subpath such as `/repository-name/`. A Pages deployment would need
-an explicit build-and-publish workflow, a suitable Vite `base` setting for its
-chosen origin, and a review of the host's cache and response-header behavior.
+The interactive demo is built for
+[the project's Pages address](https://sebastianspicker.github.io/musica-mathematica/).
+Publishing is manual. If the site is unavailable, use the local preview below
+or follow the [deployment guide](docs/DEPLOYMENT.md).
 
-## Troubleshooting
+The demo opens **From BPM to Period** with a prediction and two recorded runs
+at 90 and 120 BPM. You can change factors, try other lessons, and reset the
+example through **My learning**. The **Demo data · separate portfolio** label
+identifies this mode. Demo changes use separate browser storage from ordinary
+learner records.
 
-### Microphone input is unavailable
+Preview the demo locally:
 
-Confirm that the page is in a secure context, permission is granted, and the
-browser supports `getUserMedia`, `AudioWorklet`, and Web Workers. Synthetic mode
-does not require microphone access.
+```sh
+pnpm build:pages
+pnpm exec vite preview --host 127.0.0.1 --port 4175 --strictPort --mode pages
+```
 
-### An audio file is rejected
+Open <http://127.0.0.1:4175/musica-mathematica/>.
+See [deployment instructions](docs/DEPLOYMENT.md) for the manual Pages workflow
+and instructions for forks.
 
-Check the media type, encoded size, browser codec support, decoded duration, and
-selected range. An `audio/*` media type does not guarantee codec support.
+## Your data and audio
 
-### Portfolio changes are not persisted
+The portfolio saves your predictions, notes, inputs, and results in browser
+storage. It keeps up to 12 trials per lesson and 256 chart points per trial.
+**My learning** offers JSON export and clearing. Export is download-only;
+importing a portfolio is not supported. If saving fails, the app continues in
+memory and displays a notice. Export before leaving to keep that work.
 
-The application reports storage failure and continues in memory. Export the
-portfolio before leaving the page. Clearing browser site data removes records
-that were not exported.
+Recorded-Onset Hypotheses, Chord Hypotheses, and Time-Varying Timbre accept
+optional microphone or file input. Audio is processed locally. Raw audio, file
+names, and device identifiers are excluded from portfolio storage and export.
 
-### Port 5173 is unavailable
+Microphone capture requires browser permission and a secure context, and lasts
+5–20 seconds. Files must have an `audio/*` media type, be at most 25 MiB, and
+decode to at most 90 seconds; an analysis selection can cover at most 30 seconds.
+Codec support depends on the browser. See the [audio method](docs/LOCAL_AUDIO_METHOD.md)
+for processing details and interpretation limits.
 
-Stop the process using the port or use Vite's displayed fallback URL.
+## Limits
 
-## Security considerations
+- This is a teaching notebook, with no accounts, course administration,
+  automatic grading, or remote collaboration.
+- Audio estimates can be ambiguous or wrong. Pitch estimation is monophonic;
+  dBFS is not sound pressure level, and chord labels are hypotheses.
+- Automated browser tests cover Chromium, Firefox, and WebKit. They do not
+  establish support for every browser version, codec, or microphone device.
+- Formal accessibility conformance and classroom effectiveness have not been
+  established.
 
-The application processes learner text and optional audio in the browser.
-Review [SECURITY.md](SECURITY.md) for reporting instructions and trust
-boundaries. Do not place secrets in client code or environment files. Treat
-portfolio exports as user data.
+The [scientific basis](docs/SCIENTIFIC_BASIS.md) explains how the models work
+and how to interpret their results. See [release status](RELEASE_STATUS.md) for alpha support
+and licensing limits.
 
-## Contributing
+## Development and documentation
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for test expectations, compatibility
-surfaces, documentation requirements, and pull-request guidance.
+```sh
+pnpm verify
+pnpm exec playwright install chromium firefox webkit
+pnpm test:e2e
+```
+
+`pnpm verify` runs lint, unit tests, type-checking, and the production build.
+The browser suite separately exercises root and Pages builds in all three
+engines. [Contributing](CONTRIBUTING.md) covers focused checks and screenshot
+capture.
+
+- [Architecture](docs/ARCHITECTURE.md): module layout, runtime flows, storage,
+  and browser audio.
+- [Product guide](PRODUCT.md): audience, lesson workflow, and design choices.
+- [Performance checks](docs/PERFORMANCE.md): workloads and benchmark commands.
+- [Security policy](SECURITY.md): data handling and vulnerability reporting.
+- [Changelog](CHANGELOG.md): user-visible changes.
 
 ## License
 
-No project license has been selected. Runtime dependency and font attribution
-is documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and the
-production bundle includes `public/third-party-licenses.txt`.
+No project license has been selected; the package is marked `UNLICENSED`.
+See [third-party notices](THIRD_PARTY_NOTICES.md) for dependency and font
+attribution. The build includes these notices in `third-party-licenses.txt`.

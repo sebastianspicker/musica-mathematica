@@ -1,39 +1,38 @@
 # Scientific basis
 
-Musica Mathematica implements a structured undergraduate inquiry workbench for
-mathematical representations of music. It provides reproducible calculations,
-deterministic teaching models, bounded local signal features, and questions for
-comparing those representations with listening and performing.
+Musica Mathematica uses calculations, simulations, and short audio analyses to
+explore musical questions. This guide explains the implemented models, the
+research behind the lesson design, and the limits of the results.
 
-The project has not been evaluated in a classroom study. It is not a calibrated
-acoustic or timing instrument, a definitive transcription system, a diagnostic
-tool, or evidence that a student, performer, ensemble, or teaching intervention
-is good, accurate, stable, or successful. Unit, integration, and browser tests
-can establish software behavior; they cannot establish pedagogical efficacy,
-perceptual validity, or ecological validity.
+The project has not been evaluated in a classroom study. Software tests check
+that calculations and browser features behave as intended; they cannot show
+that the lessons improve learning or that a model captures musical perception.
+The app is not a calibrated acoustic or timing instrument, diagnostic tool, or
+complete transcription system. Its results do not measure student ability,
+performer quality, or the success of an ensemble or teaching intervention.
 
 ## Claim taxonomy
 
-The application assigns each claim exactly one of the following seven kinds.
+Each claim in the app has one of seven labels. The label tells readers what
+kind of evidence they are looking at and what it can support.
 
-| Claim kind | Project meaning | Forbidden promotion |
+| Claim kind | What it means here | What it does not establish |
 | --- | --- | --- |
-| `definition-or-theorem` | A mathematical identity follows from the displayed definitions for inputs inside their stated domain. | The identity predicts perception, preference, culture, or performance. |
-| `computed-model-result` | The stated deterministic algorithm produced the value from the recorded inputs, seed, duration, and method. | The value is an observation of musicians, a room, or a network. |
-| `measured-observation` | A local algorithm produced a descriptive feature from one bounded browser-audio segment. | The feature is calibrated SPL, clinical or diagnostic evidence, or a stable performer trait. |
-| `transcription-hypothesis` | A lightweight estimator ranked possible tempo, meter, pitch, or chord labels. | The first label is ground truth or a complete polyphonic score. |
-| `empirical-literature` | A study informs a question within its sampled population, task, material, and method. | The publication validates this app or makes its result universal. |
-| `heuristic` | An explicitly identified proxy, multiplier, score, or interpretation band supports comparison. | The proxy is a validated perceptual, musical-quality, or deployment scale. |
-| `recommendation` | The interface proposes another inquiry, listening, or rehearsal action. | The action is proven optimal or improves learning by itself. |
+| `definition-or-theorem` | An identity follows from the displayed definitions within the stated input domain. | How someone perceives, prefers, or performs music. |
+| `computed-model-result` | An algorithm produced a value from the recorded inputs, seed, duration, and method. | An observation of musicians, a room, or a network. |
+| `measured-observation` | A local algorithm extracted a feature from a short browser-audio segment. | Calibrated sound pressure level, a diagnosis, or a stable performer trait. |
+| `transcription-hypothesis` | An estimator ranked possible tempo, meter, pitch, or chord labels. | Ground truth or a complete polyphonic score. |
+| `empirical-literature` | A study informs the question within its population, task, material, and method. | That the app is validated or the finding applies universally. |
+| `heuristic` | A stated proxy, multiplier, score, or interpretation band helps compare cases. | A validated scale of perception, musical quality, or deployment readiness. |
+| `recommendation` | The interface suggests another inquiry, listening, or rehearsal activity. | That the activity is optimal or improves learning by itself. |
 
-This taxonomy is an inference-control mechanism. It does not make a weak model
-stronger; it makes the weakness visible.
+A label makes the basis of a claim visible. It does not strengthen the evidence.
 
 ## Ensemble model
 
-### Canonical reference form
+### Reference equation
 
-A common delayed networked Kuramoto form is:
+A common form of the Kuramoto model with network delays is:
 
 ```text
 d theta_i / dt = omega_i
@@ -43,15 +42,15 @@ d theta_i / dt = omega_i
 Here `theta_i` is oscillator phase, `omega_i` is natural angular frequency,
 `A_ji` defines the interaction graph, `d_i` is an incoming-degree
 normalization, `K` is coupling strength, and `tau_ji` is delay. This equation is
-a mathematical reference family, not a literal theory of everything musicians
-hear, intend, or do.
+a reference for coupled oscillators. It leaves out much of what musicians
+hear, intend, and do.
 
 ### Implemented equation
 
-For oscillator `i`, the lesson evaluator runs eight model seconds with the
-simulation function's default `0.01 s` integration step. The lower-level
-function also accepts an explicit deterministic step size, while the exported
-fixed-step driver uses `0.01 s`:
+The lesson evaluator simulates eight seconds with a default integration step
+of `0.01 s`. The lower-level simulation function also accepts an explicit
+deterministic step size; the exported fixed-step driver uses `0.01 s`. For
+oscillator `i`, the implemented equation is:
 
 ```text
 d theta_i / dt = omega_i
@@ -61,7 +60,7 @@ d theta_i / dt = omega_i
       sin(wrap(Omega_click * t - theta_i(t)))
 ```
 
-The implementation therefore differs materially from the canonical reference:
+Several choices distinguish this implementation from the reference equation:
 
 - it normalizes the incoming peer term by `sqrt(d_i)`, not by `d_i` or `N`;
 - topology sets `K_ji`: all-to-all, leader–follower, or paired sections, with
@@ -73,9 +72,8 @@ The implementation therefore differs materially from the canonical reference:
 - jitter also applies a separate heuristic reliability multiplier; and
 - external click forcing is a separate sinusoidal term, not another peer.
 
-The texture multipliers are published below because they are part of the
-implemented result, but they are heuristics, not measurements fitted to
-performer or repertoire data.
+The texture multipliers below are part of the calculation. They are teaching
+heuristics and have not been fitted to performer or repertoire data.
 
 | Texture | Tempo spread | Peer | Click | Latency budget | Jitter penalty |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -93,11 +91,11 @@ rho_jitter = max(0.08,
                      * 1.35 * m_jitterPenalty(texture))
 ```
 
-This deliberately compounds effective-delay variation with a reliability
-penalty. It is useful for a stress-test lesson, but it is not an empirical model
-of a specific audio codec, network, nervous system, or rehearsal.
+Jitter therefore changes both the effective delay and the coupling reliability.
+This lets students explore a stressed model. It does not reproduce a specific
+audio codec, network, nervous system, or rehearsal.
 
-### Ensemble observables
+### Reading the ensemble results
 
 - The order parameter `r = |N^-1 sum_j exp(i theta_j)|` measures phase
   concentration inside this model. `r = 1` is phase alignment, not musical
@@ -115,9 +113,9 @@ of a specific audio codec, network, nervous system, or rehearsal.
 The illustrative phase budget begins with `pi / (2 omega)`, equivalent to
 `15 / BPM` seconds, and multiplies it by the texture budget above. The labels
 are `plausible` below a delay/budget ratio of `0.55`, `fragile` from `0.55`, and
-`unstable` from `0.85`. These bands are transparent teaching heuristics. They
-must not be quoted as universal mouth-to-ear limits or deployment acceptance
-criteria.
+`unstable` from `0.85`. These bands are teaching
+heuristics, not universal mouth-to-ear delay limits or criteria for accepting
+a network deployment.
 
 ### Omitted phenomena
 
@@ -125,13 +123,13 @@ The phase-only model omits score hierarchy, expressive timing, onset shape,
 instrument attack, room acoustics, visual and bodily cues, attention,
 prediction, expertise, social roles, individual adaptation rules, hearing and
 monitoring differences, packet loss, codec behavior, audio quality, and
-audiovisual skew. Those omissions are central when transferring a model result
-to joint music making.
+audiovisual skew. Consider those omissions before applying a result to musicians
+playing together.
 
 ## Other mathematical domains
 
-The remaining seven domains also separate exact mathematics from musical
-interpretation:
+The other seven domains use the same distinction between a calculation and
+its musical interpretation:
 
 - BPM/period conversion, greatest common divisors, least common multiples,
   wrapped phase, logarithmic cents, modular pitch classes, seeded probability,
@@ -148,18 +146,17 @@ interpretation:
   under subdivisions, missing events, tempo change, expressive timing, and
   onset-detector error.
 - Signed event differences, median, and interquartile range preserve direction
-  and spread. The app intentionally defines no target, score, grade, accuracy
+  and spread. The app does not assign a target, score, grade, accuracy
   class, or better/worse label.
 
-## Local audio and measurement status
+## Local audio
 
-Microphone and file inputs are optional and browser-local. Microphone frames
-move through a credit-bounded `AudioWorklet` and local Web Worker path. Bounded
-file selections transfer directly to a local Web Worker. Raw PCM is transient
-in both paths and is not written to the learning portfolio or app export. Queue
-overflow, stale frames, and sequence gaps are surfaced rather than hidden.
-File and microphone limits, settings, and data flow are documented in
-[LOCAL_AUDIO_METHOD.md](LOCAL_AUDIO_METHOD.md).
+Microphone and file inputs are optional and processed in the browser. An
+`AudioWorklet` sends microphone frames to a local Web Worker using a limited
+number of credits to bound the queue. Selected file samples go directly to a
+local worker. Raw PCM stays in memory and is excluded from the portfolio and
+export. The app reports queue overflow, stale frames, and sequence gaps. See
+the [audio guide](LOCAL_AUDIO_METHOD.md) for limits, settings, and data flow.
 
 All audio-derived values are `uncalibrated`:
 
@@ -168,88 +165,85 @@ All audio-derived values are `uncalibrated`:
 - the noise-floor value is a low-percentile block-RMS estimate, not a calibrated
   room-noise measurement;
 - clipping and silence indicators depend on explicit numerical thresholds;
-- YIN pitch is a monophonic periodicity estimate with confidence, not a note
-  oracle;
+- YIN estimates monophonic periodicity and reports a confidence value; it
+  cannot identify every note in a recording;
 - spectral flux proposes onsets; autocorrelation proposes tempo; repeated
   accent agreement proposes meter; and chroma-template similarity proposes up
   to three major, minor, or no-chord labels;
 - no full polyphonic transcription, source separation, score alignment, SPL
   calibration, or latency calibration is implemented.
 
-Recorded audio is marked non-deterministic. Only the Recorded-Onset Hypotheses
-lesson admits audio-derived A/B snapshots, and only when a fresh analysis changes
-one exposed analysis setting while source and frame settings remain constant.
-Chord and time-varying-timbre audio views are observation appendices rather than
-causal portfolio comparisons.
+Recorded audio is marked non-deterministic. Recorded-Onset Hypotheses is the
+only lesson that saves audio-derived A/B comparisons. Each comparison requires
+a fresh analysis with one exposed analysis setting changed and the source and
+frame settings held constant. Chord and time-varying-timbre audio views provide
+additional observations; they do not form causal portfolio comparisons.
 
-The W3C specifications define browser interfaces and browser constraint
-behavior. They do not validate this project's feature algorithms or musical
-interpretations.
+The W3C specifications describe browser interfaces and how their constraints
+work. They do not validate the app's algorithms or musical interpretations.
 
 ## Pedagogical status and research rationale
 
-The plan–experiment–compare–explain–perform–transfer workflow, layered lesson
-sequence, explicit source cards, and requirement to state inference limits are
-evidence-informed design decisions. The cited work motivates those decisions as
-follows:
+The lesson sequence asks students to predict, experiment, compare, explain,
+perform, and transfer an idea, with preparation and reflection around that
+work. Source notes and interpretation limits help connect the activity to its
+evidence. The following studies informed these design choices. None evaluated
+Musica Mathematica.
 
-- [Zhu et al. (2025)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12637912/)
-  evaluated a structured flipped module in one undergraduate music-theory
-  context. Its quasi-experimental result supports investigating aligned
-  preparation, collaboration, and reflection; it does not establish that this
-  workbench will reproduce those outcomes.
-- [Wang et al. (2025)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12734040/)
-  reviewed 31 metacognition and self-regulated-learning intervention studies in
-  music, with seven in its meta-analysis. Its plan–practice–reflection framing
-  motivates explicit prediction, comparison, and reflection, while its study
-  heterogeneity argues against assuming a universal effect.
+- [Zhu, Jamaludin, and Li (2025)](https://doi.org/10.1371/journal.pone.0337590)
+  studied a flipped music-theory module in a quasi-experiment with two intact
+  undergraduate classes. The study gives one example of structured preparation,
+  collaboration, and reflection. It does not show that this app will reproduce
+  the reported outcomes.
+- [Wang et al. (2025)](https://www.mdpi.com/2079-3200/13/12/162) reviewed 31
+  music metacognition and self-regulated learning studies, with seven included
+  in a meta-analysis. Their findings informed the use of planning, practice,
+  reflection, strategy teaching, and teacher support. Differences among the
+  studies limit conclusions about a universal effect.
 - [Azaryahu, Ariel, and Leikin (2024)](https://www.nature.com/articles/s41599-024-03631-z)
-  reported qualitative perspectives from 16 music, mathematics, and education
-  experts. Their emphasis on structure, representation, creativity, and
-  disciplinary expertise supports an integrated curriculum; the small,
-  context-specific interview study is not an efficacy trial.
+  interviewed 16 Israeli experts in music, mathematics, and education. Their
+  discussion of shared structure, aesthetics, creativity, and disciplinary
+  expertise informed the links between subjects. This was a small qualitative
+  interview study, not a test of educational effectiveness.
 - [Jacoby et al. (2024)](https://www.nature.com/articles/s41562-023-01800-9)
-  found both common small-integer-ratio structure and substantial variation in
-  rhythm priors across 39 participant groups in 15 countries. That result
-  motivates showing alternatives and resisting a single culturally universal
-  meter interpretation.
+  found preferences for integer-ratio rhythms across 39 groups in 15 countries,
+  alongside variation related to local musical traditions. The rhythm lessons
+  therefore ask students to consider alternatives to a single metrical grid.
 - [Marjieh et al. (2024)](https://www.nature.com/articles/s41467-024-45812-z)
-  showed in large-scale behavioral studies that timbral manipulations can
-  reshape consonance preferences. It motivates the timbre–consonance lesson but
-  does not calibrate the app's partial-coincidence or roughness proxies.
+  found that timbral changes can reshape consonance preferences in large-scale
+  behavioral studies. The timbre and consonance lesson takes up that question,
+  but its partial-coincidence and roughness proxies are not calibrated replicas
+  of the studies.
 - [Snyder, Gordon, and Hannon (2024)](https://www.nature.com/articles/s44159-024-00315-y)
   review behavioral, neural, oscillator, and predictive accounts of rhythm,
-  beat, and metre. The coexistence of distinct models motivates comparing
-  representations rather than presenting one onset vector as perception.
-- [Frederick (2023/2024)](https://doi.org/10.1093/mts/mtad017) constructs an
-  abstract diatonic voice-leading transformation space and interprets it as an
-  instrumental space. It provides music-theory context for geometric and
-  transformational inquiry, not validation of this app's simplified graph or
-  assignment metric.
-- [Demos and Palmer (2023)](https://doi.org/10.1016/j.tics.2023.05.005) connect
-  nonlinear and social dynamics in musical group synchrony. Their argument for
-  emergent group properties cautions against reducing ensemble interaction to
-  independent pairwise phase links.
-- [Abalde et al. (2024)](https://doi.org/10.1016/j.neubiorev.2024.105816) frame
-  joint music making around coordination together with knowledge, goals,
-  strategies, and social factors. Those components mark important omissions
-  from the simulator.
-- The [W3C Web Audio API](https://www.w3.org/TR/webaudio/) specifies the
-  `AudioWorklet` processing interface used by the capture path, and
-  [W3C Media Capture and Streams](https://www.w3.org/TR/mediacapture-streams/)
-  specifies permission, tracks, constraints, and reported settings used by the
-  microphone path.
+  beat, and metre. These different accounts are a reason to compare
+  representations instead of equating an onset vector with perception.
+- [Frederick (2024, published online in 2023)](https://doi.org/10.1093/mts/mtad017)
+  constructs a diatonic voice-leading space and relates it to the keyboard.
+  This provides context for exploring transformations and geometry. It does
+  not validate the app's simplified graph or voice-assignment metric.
+- [Demos and Palmer (2023)](https://doi.org/10.1016/j.tics.2023.05.005) examine
+  nonlinear and social dynamics in musical group synchrony. Their review
+  argues that group behavior cannot be fully explained by independent
+  pairwise models, a limit to keep in mind when using the ensemble simulator.
+- [Abalde et al. (2024)](https://doi.org/10.1016/j.neubiorev.2024.105816) place
+  coordination alongside knowledge, goals, strategies, and social factors in
+  joint music making. The simulator omits many of these factors.
+- The [W3C Web Audio API](https://www.w3.org/TR/webaudio/) defines the
+  `AudioWorklet` interface used for capture. [Media Capture and Streams](https://www.w3.org/TR/mediacapture-streams/)
+  defines microphone permissions, tracks, constraints, and reported settings.
 
-Publication metadata and findings were checked on 2026-07-24. Research evolves;
-instructors should re-check sources before treating this list as a current
-literature review.
+This is the research context for the lessons, not a systematic literature
+review. Check the original studies and newer work when planning a course.
 
-## Responsible teaching use
+## Using results in teaching
 
-Use a result to ask a better question: which variables were held constant,
-which representation generated the display, what source or method supports the
-claim, and what listening, score study, performance, or external measurement
-could challenge it? Retain musical and cultural judgment. Do not use the app's
-portfolio as an automatic grade or its outputs as evidence of accreditation,
-classroom effectiveness, performer ability, ensemble quality, or network
-readiness.
+Ask which variables were held constant, which representation produced the
+result, and which source or method supports the conclusion. Then consider
+what listening, score study, performance, or external measurement might add
+or contradict.
+
+The portfolio records that inquiry. It should not become an automatic grade
+or evidence of accreditation, classroom effectiveness, performer ability,
+ensemble quality, or network readiness. Those judgments require evidence
+beyond the app.

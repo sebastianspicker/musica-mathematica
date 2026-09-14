@@ -5,12 +5,13 @@ import { ComparisonTable } from "./ComparisonTable";
 import { EvidencePanel } from "./EvidencePanel";
 import { EvidenceRail } from "./EvidenceRail";
 import { FactorInspector } from "./FactorInspector";
-import { InquiryStage, StageProgress } from "./InquiryStage";
-import { LessonBrief } from "./LessonBrief";
+import { InquiryStage } from "./InquiryStage";
+import { LessonBrief, LessonEquation } from "./LessonBrief";
+import { NotebookReadings } from "./NotebookRun";
 import { ResultVisual } from "./ResultVisual";
-import { InterfaceIcon } from "../Icon";
 import type { BriefStage } from "./LessonBrief";
 import type { LessonWorkbenchRuntimeView } from "./types";
+import { lessonStages } from "../../learning/stages";
 
 export type LessonWorkbenchProps = Readonly<{
   lesson: LessonDefinition;
@@ -19,102 +20,62 @@ export type LessonWorkbenchProps = Readonly<{
   claimIds: readonly string[];
   briefStage: BriefStage;
   domainNumber: number | undefined;
+  domainTitle: string | undefined;
   audioInput: ReactElement | null;
+  transport: ReactElement;
+  debriefActions?: ReactElement;
 }>;
 
 export function LessonWorkbench(props: LessonWorkbenchProps): ReactElement {
-  const { runtime } = props;
+  const { runtime, attempt, lesson } = props;
+  const revealed = attempt.stage !== "orient" && attempt.stage !== "predict";
+  const laterStage = revealed && attempt.stage !== "experiment";
+  const showPrediction = attempt.stage === "experiment" || attempt.stage === "compare" || attempt.stage === "explain";
+  const comparison = <ComparisonTable lesson={lesson} trials={attempt.trials} />;
+  const previewReady = runtime.inputMode === "synthetic" || runtime.audioAnalysisReady === true;
+  const inspector = <InspectorStack experimentActive={runtime.experimentActive} factors={runtime.factors} inputMode={runtime.inputMode} lesson={lesson} onFactorChange={runtime.updateFactor} onInputModeChange={runtime.changeInputMode} compact={attempt.stage === "experiment"} />;
+  const baseline = attempt.trials.at(-1);
+  let stageContent: ReactElement | undefined;
+  if (attempt.stage === "predict") stageContent = <><LessonEquation lesson={lesson} /><NotebookReadings lesson={lesson} factors={runtime.factors} /></>;
+  if (attempt.stage === "experiment") stageContent = <div className="mm-notebook-experiment">
+    {baseline ? <section className="mm-notebook-run mm-notebook-run--recorded" aria-label="Latest recorded run">
+      <h3>{baseline.id.replace(/^run-/i, "Run ")} <span>Recorded</span></h3>
+      <NotebookReadings lesson={lesson} factors={baseline.factors} factorMode="primary" observables={baseline.observables} /><NotebookReadings lesson={lesson} factors={baseline.factors} factorMode="context" />
+      {baseline.note ? <p className="mm-notebook-run__note">{baseline.note}</p> : null}
+    </section> : <p className="mm-notebook-empty">Record your first run, then change one factor for a controlled comparison.</p>}
+    <form onSubmit={(event) => { event.preventDefault(); runtime.recordCurrentRun(); }}>
+    <section className="mm-notebook-run mm-notebook-run--preview" aria-label="Current unrecorded preview">
+      <h3>{runtime.recordLabel} <span>Preview · not recorded</span></h3>
+      <div className="mm-notebook-preview">
+        {inspector}
+        {previewReady ? <NotebookReadings lesson={lesson} observables={runtime.evaluation.observables} /> : <p className="mm-notebook-pending" role="status">No audio analysis yet. Capture or select an audio segment to see its observations.</p>}
+      </div>
+      <NotebookReadings lesson={lesson} factors={runtime.factors} factorMode="context" />
+    </section>
+    <div className="mm-notebook-record-row"><details className="mm-notebook-notes"><summary>Add an optional observation note</summary><label><span>Optional observation note</span><textarea rows={2} value={runtime.note} onChange={(event) => { runtime.setNote(event.currentTarget.value); }} /></label></details>
+    <div className="mm-notebook-record"><button className="mm-primary-action" type="submit">Record {runtime.recordLabel}</button></div></div>
+    </form>
+  </div>;
+  if (attempt.stage === "compare" || attempt.stage === "explain") stageContent = comparison;
 
-  return <section className="mm-workbench" aria-label={`${props.lesson.title} workbench`}>
+  return <section className={`mm-workbench mm-notebook${laterStage ? " mm-notebook--reflection" : ""}`} aria-label={`${lesson.title} workbench`}>
     <div className="mm-workbench__content">
-      <div id="mm-current-task" tabIndex={-1}>
-        <LessonBrief domainNumber={props.domainNumber} lesson={props.lesson} stage={props.briefStage} />
-      </div>
-      <div className="mm-workbench-grid">
-        <ExperimentStage lesson={props.lesson} runtime={runtime} />
-        <aside className="mm-workflow-panel" aria-label="Lesson workflow and factors">
-          <section className={`mm-inquiry mm-inquiry--${props.attempt.stage}`} aria-labelledby="mm-inquiry-heading">
-            <header className="mm-inquiry-header">
-              <div>
-                <p className="mm-inquiry-header__eyebrow">Lesson workflow</p>
-                <h2 id="mm-inquiry-heading" className="mm-inquiry-header__title">Your next step</h2>
-              </div>
-              <button type="button" onClick={runtime.restartLesson}>Restart</button>
-            </header>
-            <StageProgress stage={props.attempt.stage} />
-            {runtime.message ? <p className="mm-inquiry-message" role="status">{runtime.message}</p> : null}
-            <InquiryStage
-              attempt={props.attempt}
-              comparisonReason={runtime.comparison.reason}
-              lesson={props.lesson}
-              note={runtime.note}
-              onBeginPrediction={runtime.beginPrediction}
-              onCompare={runtime.openComparison}
-              onNoteChange={runtime.setNote}
-              onSavePrediction={runtime.savePrediction}
-              onSaveResponse={runtime.saveResponse}
-            />
-          </section>
-          <InspectorStack
-            experimentActive={runtime.experimentActive}
-            factors={runtime.factors}
-            inputMode={runtime.inputMode}
-            lesson={props.lesson}
-            onFactorChange={runtime.updateFactor}
-            onInputModeChange={runtime.changeInputMode}
-            onInterpret={runtime.openInterpretation}
-            onRecord={runtime.recordCurrentRun}
-            stage={props.attempt.stage}
-            recordLabel={runtime.recordLabel}
-            audioInput={props.audioInput}
-          />
-        </aside>
-      </div>
-      <div className="mm-workbench-band" aria-label="Comparison and interpretation">
-        <ComparisonTable lesson={props.lesson} trials={props.attempt.trials} />
+      <div id="mm-current-task" tabIndex={-1}><LessonBrief domainNumber={props.domainNumber} domainTitle={props.domainTitle} lesson={lesson} stage={props.briefStage} /></div>
+      {showPrediction && attempt.prediction ? <div className="mm-notebook-prediction"><strong>My prediction (committed):</strong><p>{attempt.prediction}</p></div> : null}
+      <section className={`mm-inquiry mm-inquiry--${attempt.stage}`} aria-label="Current inquiry stage">
+        <InquiryStage attempt={attempt} comparisonReason={runtime.comparison.reason} lesson={lesson} note={runtime.note} onBeginPrediction={runtime.beginPrediction} onCompare={runtime.openComparison} onNoteChange={runtime.setNote} onSavePrediction={runtime.savePrediction} onSaveResponse={runtime.saveResponse} stageContent={stageContent} />
+        {attempt.stage === "compare" ? <button className="mm-primary-action" type="button" onClick={runtime.openInterpretation}>Interpret the evidence</button> : null}
+        {runtime.message ? <p className={routineMessage(runtime.message) ? "sr-only" : "mm-inquiry-message"} role="status">{runtime.message}</p> : null}
+        {attempt.stage === "debrief" ? <>{comparison}{props.debriefActions}</> : null}
+      </section>
+      {revealed ? <>
         <InterpretationBoundary annotation={runtime.evaluation.annotation} />
-      </div>
-      <details className="mm-evidence-detail">
-        <summary>View detailed claim boundaries and sources</summary>
-        <EvidencePanel claimIds={props.claimIds} sourceIds={props.lesson.sourceIds} />
-      </details>
+        <details className="mm-notebook-detail" open={runtime.inputMode !== "synthetic"}><summary>Explore the model, charts and playback</summary><div className="mm-analysis-stage">{attempt.stage !== "experiment" ? inspector : null}{props.audioInput}<LessonEquation lesson={lesson} />{previewReady ? <ResultVisual evaluation={runtime.evaluation} /> : <p role="status">No audio analysis yet.</p>}{props.transport}</div></details>
+        {attempt.stage === "perform" || attempt.stage === "transfer" ? <details className="mm-notebook-detail"><summary>Review recorded evidence</summary>{comparison}</details> : null}
+      </> : null}
+      <details className="mm-notebook-detail mm-evidence-detail"><summary>View detailed claim boundaries and sources</summary><EvidencePanel claimIds={props.claimIds} sourceIds={lesson.sourceIds} /><EvidenceRail claimIds={props.claimIds} sourceIds={lesson.sourceIds} /></details>
+      <footer className="mm-lesson-footer"><span>Lab {props.domainNumber === undefined ? "–" : String(props.domainNumber).padStart(2, "0")} · {props.domainTitle ?? lesson.domainId} · Lesson {lesson.number} · {lesson.level}<br />Stage {lessonStages.indexOf(attempt.stage) + 1} of {lessonStages.length}</span><button type="button" onClick={runtime.restartLesson}>Restart lesson</button></footer>
     </div>
-    <EvidenceRail claimIds={props.claimIds} sourceIds={props.lesson.sourceIds} />
-  </section>;
-}
-
-type ExperimentStageProps = Readonly<{
-  lesson: LessonDefinition;
-  runtime: LessonWorkbenchRuntimeView;
-}>;
-
-function ExperimentStage({ lesson, runtime }: ExperimentStageProps): ReactElement {
-  const { audio, evaluation } = runtime;
-  return <section className="mm-analysis-stage" aria-label="Interactive mathematical result">
-    <ResultVisual evaluation={evaluation} />
-    <div className="mm-transport" aria-label="Experiment transport">
-      <button disabled={!runtime.experimentActive || !runtime.motionEnabled} type="button" onClick={runtime.togglePlayback}>
-        <InterfaceIcon name={runtime.running ? "pause" : "play"} />
-        <span>{runtime.running ? "Pause" : "Play"}</span>
-      </button>
-      <button disabled={!runtime.experimentActive || runtime.running} type="button" onClick={runtime.stepPlayback}>
-        <InterfaceIcon name="step" />
-        <span>Step 0.5 s</span>
-      </button>
-      <button type="button" onClick={runtime.resetPlayback}>
-        <InterfaceIcon name="reset" />
-        <span>Reset view</span>
-      </button>
-      <div className="mm-transport-time"><span>Protocol</span><strong>{runtime.playhead.toFixed(1)} / {lesson.protocol.durationSeconds.toFixed(1)} s</strong></div>
-      <label className="mm-compact-toggle"><input checked={runtime.motionEnabled} type="checkbox" onChange={(event) => { runtime.setMotionEnabled(event.currentTarget.checked); if (!event.currentTarget.checked) runtime.resetPlayback(); }} />Motion</label>
-      <label className="mm-compact-toggle"><input checked={audio.audioEnabled} type="checkbox" onChange={(event) => {
-        audio.setAudioEnabled(event.currentTarget.checked);
-      }} />Audio</label>
-      <label className="mm-volume-control"><span>Volume</span><input aria-label="Preview volume" disabled={!audio.audioEnabled} min="0" max="100" type="range" value={Math.round(audio.audioVolume * 100)} onChange={(event) => {
-        audio.setAudioVolume(event.currentTarget.valueAsNumber / 100);
-      }} /></label>
-    </div>
-    {audio.audioUnavailableReason ? <p className="mm-audio-message" role="status">{audio.audioUnavailableReason}</p> : null}
   </section>;
 }
 
@@ -125,19 +86,12 @@ type InspectorStackProps = Readonly<{
   lesson: LessonDefinition;
   onFactorChange: (factorId: string, value: FactorValue) => void;
   onInputModeChange: (mode: InputMode) => void;
-  onInterpret: () => void;
-  onRecord: () => void;
-  stage: LessonAttemptV2["stage"];
-  recordLabel: string;
-  audioInput: ReactElement | null;
+  compact?: boolean;
 }>;
 
 function InspectorStack(props: InspectorStackProps): ReactElement {
   return <div className="mm-inspector-stack">
-    <FactorInspector disabled={!props.experimentActive} inputMode={props.inputMode} lesson={props.lesson} onFactorChange={props.onFactorChange} onInputModeChange={props.onInputModeChange} values={props.factors} />
-    {props.stage === "experiment" ? <div className="mm-inspector-action"><button className="mm-primary-action" type="button" onClick={props.onRecord}>Record {props.recordLabel}</button></div> : null}
-    {props.stage === "compare" ? <div className="mm-inspector-action"><button className="mm-primary-action" type="button" onClick={props.onInterpret}>Interpret the evidence</button></div> : null}
-    {props.experimentActive ? props.audioInput : null}
+    <FactorInspector compact={props.compact} disabled={!props.experimentActive} inputMode={props.inputMode} lesson={props.lesson} onFactorChange={props.onFactorChange} onInputModeChange={props.onInputModeChange} values={props.factors} />
     {props.experimentActive && props.inputMode !== "synthetic" && props.lesson.id !== "recorded-onset-hypotheses" ? <p className="mm-audio-message">Audio is an observation appendix here. Controlled portfolio comparisons use the synthetic factors because this lesson does not expose an audio-analysis factor.</p> : null}
   </div>;
 }
@@ -145,11 +99,18 @@ function InspectorStack(props: InspectorStackProps): ReactElement {
 function InterpretationBoundary({ annotation }: Readonly<{ annotation: string }>): ReactElement {
   return (
     <aside className="mm-interpretation-boundary" aria-labelledby="mm-interpretation-boundary-heading">
-      <div className="mm-interpretation-boundary__mark" aria-hidden="true">∂</div>
       <div>
         <h2 id="mm-interpretation-boundary-heading">Interpretation boundary</h2>
         <p>{annotation}</p>
       </div>
     </aside>
   );
+}
+
+function routineMessage(message: string): boolean {
+  return /^Run [A-Z]+ recorded locally\./.test(message)
+    || message === "Experiment unlocked. Record a baseline, change one factor, then record Run B."
+    || message === "Explain the mechanism and state the inference boundary."
+    || message === "Response saved locally."
+    || message === "Lesson inquiry complete. The result is not a score or grade.";
 }

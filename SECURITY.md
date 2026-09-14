@@ -1,58 +1,60 @@
 # Security policy
 
-Musica Mathematica is a static browser application. It has no application
-backend, account system, or remote persistence service.
+Musica Mathematica runs in the browser. It has no application backend,
+accounts, or remote portfolio storage.
 
-## Reporting a vulnerability
+## Report a vulnerability
 
-Use GitHub private vulnerability reporting when it is enabled. If it is not
-available, open a public issue requesting a private contact channel without
-including vulnerability details.
+Use GitHub's private vulnerability reporting option when available. If it is
+unavailable, open an issue asking for a private contact channel. Leave
+vulnerability details out of that public issue.
 
-Include the affected version, browser and operating system, reproduction steps,
-expected behavior, actual behavior, and potential impact.
+In the private report, include the affected version, browser and operating
+system, steps to reproduce the problem, expected and actual behavior, and the
+potential impact. Reports about data handling, exports, microphone access,
+audio processing, dependencies, or static deployment are welcome.
 
-## Trust boundaries
+There is no response-time commitment for alpha releases.
 
-### Browser storage
+## Learning records
 
-The portfolio contains learner-entered text, factor values, derived
-observations, and provenance. It is stored in `localStorage` and can be exported
-as JSON. Treat exported portfolios as user data. Clearing application data does
-not remove files already exported by the browser.
+The portfolio stores written responses, factor values, derived observations,
+and their source information in `localStorage`. Learners can download it as
+JSON. Those exports may contain personal data; clearing the app's storage does
+not delete files that have already been downloaded.
 
-### Microphone and file input
+The Pages demo uses `musicaMathematica.demo.learning.v2` for its example and
+subsequent changes. Its storage adapter cannot access the ordinary
+`musicaMathematica.learning.v2` record or the legacy migration record. Changes
+to the demo must preserve that separation.
 
-Microphone access requires a user action, a secure context, and browser
-permission. The application requests that browser audio processing be disabled,
-but the browser or device may not honor those constraints.
+## Microphone and audio files
 
-Audio files are decoded in the browser. Selected samples and microphone frames
-are processed by local workers. Raw audio, file names, media streams, and device
-identifiers are excluded from portfolio storage and export.
+Microphone access starts with a user action and requires permission in a secure
+browser context. The app requests that the browser disable audio processing,
+but browsers and devices may not honor those settings.
 
-### Client-side code
+Files are decoded in the browser. Local workers process selected samples and
+microphone frames. The portfolio and its export exclude raw audio, file names,
+media streams, and device identifiers. The
+[audio guide](docs/LOCAL_AUDIO_METHOD.md) describes input limits and processing.
 
-All application code and dependencies execute in the browser. Do not place
-secrets, private service credentials, or privileged endpoints in client source
-or build-time configuration.
+## Client code and deployment
 
-`index.html` defines a same-origin Content Security Policy and allows loopback
-WebSocket connections for Vite development. Deployments should also send
-appropriate HTTP security headers. Review the deployed policy rather than
-assuming the HTML meta policy covers every response.
+Client source and build configuration are visible to anyone who receives the
+bundle. Keep secrets, private service credentials, and privileged endpoints
+out of both.
 
-### Dependencies
+[index.html](index.html) defines the Content Security Policy. It allows
+same-origin resources and the loopback WebSocket connections used during Vite
+development. Check the deployed response headers as well; the HTML policy does
+not configure every response. See [Deployment](docs/DEPLOYMENT.md).
 
-Runtime dependencies are recorded in `package.json`, locked in
-`pnpm-lock.yaml`, and attributed in `THIRD_PARTY_NOTICES.md`. Use
-`pnpm audit --prod` when registry access is available. Review lockfile and
-bundle changes when updating dependencies.
+## Dependencies
 
-## Scope
-
-Reports about browser-side data handling, portfolio export, microphone
-permissions, audio processing, dependency vulnerabilities, Content Security
-Policy, or static deployment configuration are in scope.
-
-The project does not publish a response-time commitment for alpha releases.
+[package.json](package.json) declares the dependencies,
+[pnpm-lock.yaml](pnpm-lock.yaml) locks their versions, and
+[third-party notices](THIRD_PARTY_NOTICES.md) cover the browser bundle.
+Run `pnpm audit --prod` to query the registry for production dependency
+advisories. Dependency updates should include a review of lockfile and bundle
+changes.

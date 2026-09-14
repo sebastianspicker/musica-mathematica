@@ -11,6 +11,7 @@ export type PulseAudioView = Readonly<{
 
 export type LessonWorkbenchRuntimeView = Readonly<{
   audio: PulseAudioView;
+  audioAnalysisReady?: boolean;
   comparison: Readonly<{ reason: string }>;
   evaluation: EvaluationOutput;
   experimentActive: boolean;
@@ -19,9 +20,7 @@ export type LessonWorkbenchRuntimeView = Readonly<{
   message: string | null;
   motionEnabled: boolean;
   note: string;
-  playhead: number;
   recordLabel: string;
-  running: boolean;
   beginPrediction: () => void;
   changeInputMode: (mode: InputMode) => void;
   openComparison: () => void;

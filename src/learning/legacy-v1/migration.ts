@@ -4,6 +4,7 @@ import {
   legacyPortfolioStorageKey,
   legacyLessonMapping,
   maximumTrialsPerLesson,
+  maximumRawPortfolioJsonBytes,
   type MigratedEnsembleLessonId,
 } from "../portfolio/constants";
 import type {
@@ -13,6 +14,7 @@ import type {
 } from "../portfolio/schema-v2";
 import { createPortfolio } from "../portfolio/aggregate";
 import { sanitizePortfolio } from "../portfolio/validate";
+import { utf8ByteLength } from "../portfolio/compact";
 import {
   type LearningRecordStorage,
   type LessonAttemptV1,
@@ -49,9 +51,23 @@ export function migrateLegacyRecord(
   try {
     const raw = storage.getItem(legacyPortfolioStorageKey);
     if (raw === null) return undefined;
+    if (utf8ByteLength(raw) > maximumRawPortfolioJsonBytes) return undefined;
+    return migrateLegacyJson(raw, curriculum, now);
+  } catch {
+    return undefined;
+  }
+}
 
+export function migrateLegacyJson(
+  raw: string,
+  curriculum: CurriculumLessonReader,
+  now: string,
+): LearningPortfolioV2 | undefined {
+  try {
     const parsed: unknown = JSON.parse(raw);
-    return isLessonAttemptV1(parsed) ? migrateLessonAttemptV1(parsed, curriculum, now) : undefined;
+    return isLessonAttemptV1(parsed)
+      ? migrateLessonAttemptV1(parsed, curriculum, now)
+      : undefined;
   } catch {
     return undefined;
   }

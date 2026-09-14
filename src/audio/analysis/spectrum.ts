@@ -1,4 +1,4 @@
-import { applyWindow, hannWindow } from "./windowing";
+import { hannWindow } from "./windowing";
 
 export type Spectrum = Readonly<{
   fftSize: number;
@@ -35,24 +35,52 @@ export function createFftJsSpectrumAnalyzer(FFT: FftJsConstructor): SpectrumAnal
 
 class FftJsSpectrumAnalyzer {
   private readonly fftConstructor: FftJsConstructor;
+  private readonly scratchBySize = new Map<number, SpectrumScratch>();
 
   constructor(fftConstructor: FftJsConstructor) {
     this.fftConstructor = fftConstructor;
   }
 
   analyze(samples: ArrayLike<number>, sampleRateHz: number): Spectrum {
-    return buildSpectrum(this.fftConstructor, samples, sampleRateHz);
+    assertSpectrumInput(samples, sampleRateHz);
+    const scratch = this.scratchFor(samples.length);
+    for (let index = 0; index < samples.length; index += 1) {
+      scratch.windowed[index] = samples[index] * scratch.window[index];
+    }
+    scratch.engine.realTransform(scratch.output, scratch.windowed);
+    return spectrumFromTransform(scratch.output, samples.length, sampleRateHz);
+  }
+
+  private scratchFor(size: number): SpectrumScratch {
+    const existing = this.scratchBySize.get(size);
+    if (existing) {
+      this.scratchBySize.delete(size);
+      this.scratchBySize.set(size, existing);
+      return existing;
+    }
+    const engine = new this.fftConstructor(size);
+    const scratch: SpectrumScratch = {
+      engine,
+      output: engine.createComplexArray(),
+      window: hannWindow(size),
+      windowed: new Float64Array(size),
+    };
+    this.scratchBySize.set(size, scratch);
+    while (this.scratchBySize.size > 2) {
+      const oldestSize = this.scratchBySize.keys().next().value as number | undefined;
+      if (oldestSize === undefined) break;
+      this.scratchBySize.delete(oldestSize);
+    }
+    return scratch;
   }
 }
 
-function buildSpectrum(FFT: FftJsConstructor, samples: ArrayLike<number>, sampleRateHz: number): Spectrum {
-  assertSpectrumInput(samples, sampleRateHz);
-  const fftSize = samples.length;
-  const engine = new FFT(fftSize);
-  const output = engine.createComplexArray();
-  engine.realTransform(output, applyWindow(samples, hannWindow(fftSize)));
-  return spectrumFromTransform(output, fftSize, sampleRateHz);
-}
+type SpectrumScratch = Readonly<{
+  engine: FftJsLike;
+  output: ArrayLike<number> & { [index: number]: number };
+  window: Float64Array;
+  windowed: Float64Array;
+}>;
 
 const spectrumFromTransform = (output: ArrayLike<number>, fftSize: number, sampleRateHz: number): Spectrum => {
   const binCount = fftSize / 2 + 1;

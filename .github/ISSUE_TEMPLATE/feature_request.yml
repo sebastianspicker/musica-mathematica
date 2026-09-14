@@ -1,0 +1,17 @@
+name: Idea or lesson suggestion
+description: Suggest an improvement or a musical question to explore.
+body:
+  - type: textarea
+    id: use
+    attributes:
+      label: What would you like to do?
+      description: Tell us what you are studying or teaching and where the app falls short.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Your suggestion
+      description: Describe your idea. If it involves a lesson or model, share any sources and assumptions that would help us understand it.
+    validations:
+      required: true

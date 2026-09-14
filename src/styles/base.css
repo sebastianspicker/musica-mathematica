@@ -15,13 +15,14 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100dvh;
+  transition: background 240ms var(--mm-ease), color 240ms var(--mm-ease);
 }
 
 button,
 input,
 select,
 textarea {
-  color: inherit;
+  color: var(--mm-ink);
   font: inherit;
 }
 
@@ -40,18 +41,19 @@ button {
   color: var(--mm-ink);
   cursor: pointer;
   display: inline-flex;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   gap: 7px;
   justify-content: center;
   letter-spacing: 0.01em;
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 12px;
   touch-action: manipulation;
   transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
+    background 140ms var(--mm-ease),
+    border-color 140ms var(--mm-ease),
+    color 140ms var(--mm-ease),
+    transform 140ms var(--mm-ease);
 }
 
 button:hover {
@@ -87,8 +89,12 @@ textarea:focus-visible,
 summary:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible {
-  outline: 3px solid oklch(0.4 0.09 145 / 0.28);
+  outline: 2px solid var(--mm-blue);
   outline-offset: 2px;
+}
+
+::selection {
+  background: var(--mm-blue-soft);
 }
 
 input,
@@ -100,7 +106,7 @@ textarea {
 
 input[type="number"],
 select {
-  min-height: 40px;
+  min-height: 44px;
   padding: 7px 10px;
 }
 
@@ -138,7 +144,7 @@ input[type="file"]::file-selector-button {
   font: inherit;
   font-weight: 600;
   margin-right: 8px;
-  min-height: 30px;
+  min-height: 44px;
   padding: 0 9px;
 }
 
@@ -157,7 +163,7 @@ table {
 
 caption {
   color: var(--mm-muted);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   padding: 12px 0 8px;
@@ -175,7 +181,7 @@ td {
 
 thead th {
   color: var(--mm-muted);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -183,12 +189,16 @@ thead th {
 
 tbody th,
 tbody td {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 summary {
   cursor: pointer;
+  min-height: 44px;
+  padding-block: 10px;
 }
+
+input[type="checkbox"] { width: 18px; height: 18px; }
 
 a {
   color: var(--mm-blue-deep);
@@ -219,6 +229,7 @@ a {
 }
 
 .skip-link {
+  clip-path: inset(100%);
   background: var(--mm-ink);
   border-radius: 0 0 var(--mm-radius-sm) var(--mm-radius-sm);
   color: white;
@@ -233,9 +244,15 @@ a {
 }
 
 .skip-link:focus-visible {
+  clip-path: none;
   transform: translateY(0);
 }
 
 .mm-text-danger {
   color: var(--mm-danger);
 }
+
+button:disabled { color: var(--mm-muted); }
+[tabindex="-1"] { scroll-margin-block: 24px; }
+
+input[type="range"] { min-height: 44px; }

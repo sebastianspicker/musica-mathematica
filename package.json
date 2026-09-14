@@ -12,19 +12,22 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
+    "build:pages": "tsc --noEmit && vite build --mode pages",
     "lint": "eslint src",
     "test": "pnpm test:unit",
     "test:unit": "vitest run",
+    "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm lint && pnpm test:unit && pnpm build"
   },
   "dependencies": {
     "fft.js": "^4.0.4",
-    "katex": "^0.16.45",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "eslint-plugin-react-hooks": "7.1.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "8.64.0",

@@ -1,8 +1,20 @@
 import { describe, expect, it } from "vitest";
 import type { LessonAttemptV1 } from "../legacy-v1/schema";
 import { createAttemptV2, createPortfolio, updateAttempt } from "./aggregate";
-import { legacyPortfolioStorageKey, portfolioStorageKey } from "./constants";
-import { clearPortfolio, exportPortfolioJson, loadPortfolio, savePortfolio } from "./repository";
+import {
+  legacyPortfolioStorageKey,
+  maximumRawPortfolioJsonBytes,
+  maximumResponseCodePoints,
+  portfolioStorageKey,
+} from "./constants";
+import {
+  clearPortfolio,
+  exportPortfolioJson,
+  loadPortfolio,
+  loadPortfolioDetailed,
+  savePortfolio,
+  savePortfolioDetailed,
+} from "./repository";
 import { testCurriculum } from "./testReader";
 
 const legacyLatencyAttempt: LessonAttemptV1 = {
@@ -38,12 +50,14 @@ const legacyLatencyAttempt: LessonAttemptV1 = {
 
 class MemoryStorage {
   readonly values = new Map<string, string>();
+  setCalls = 0;
 
   getItem(key: string): string | null {
     return this.values.get(key) ?? null;
   }
 
   setItem(key: string, value: string): void {
+    this.setCalls += 1;
     this.values.set(key, value);
   }
 
@@ -77,12 +91,12 @@ describe("portfolio repository", () => {
     expect(storage.getItem(legacyPortfolioStorageKey)).not.toBeNull();
   });
 
-  it("exports sanitized pretty JSON and clears both schema keys", () => {
+  it("exports sanitized compact JSON and clears both schema keys", () => {
     const storage = new MemoryStorage();
     const portfolio = createPortfolio(testCurriculum);
     storage.setItem(portfolioStorageKey, "v2");
     storage.setItem(legacyPortfolioStorageKey, "v1");
-    expect(exportPortfolioJson(portfolio, testCurriculum)).toContain('\n  "version": 2');
+    expect(exportPortfolioJson(portfolio, testCurriculum)).toBe(JSON.stringify(portfolio));
     expect(clearPortfolio(storage)).toBe(true);
     expect(storage.getItem(portfolioStorageKey)).toBeNull();
     expect(storage.getItem(legacyPortfolioStorageKey)).toBeNull();
@@ -91,5 +105,66 @@ describe("portfolio repository", () => {
   it("keeps the established storage keys stable", () => {
     expect(portfolioStorageKey).toBe("musicaMathematica.learning.v2");
     expect(legacyPortfolioStorageKey).toBe("ensembleCouplingLab.learning.v1");
+  });
+
+  it("leaves oversized v2 storage untouched and disables automatic persistence", () => {
+    const storage = new MemoryStorage();
+    const oversized = "x".repeat(maximumRawPortfolioJsonBytes + 1);
+    storage.values.set(portfolioStorageKey, oversized);
+    storage.values.set(legacyPortfolioStorageKey, JSON.stringify(legacyLatencyAttempt));
+
+    const loaded = loadPortfolioDetailed(storage, testCurriculum);
+
+    expect(loaded.normalizationStatus).toBe("blocked");
+    expect(loaded.persistenceStatus).toBe("disabled");
+    expect(loaded.automaticPersistenceEnabled).toBe(false);
+    expect(storage.values.get(portfolioStorageKey)).toBe(oversized);
+    expect(storage.setCalls).toBe(0);
+  });
+
+  it("does not parse or rewrite an oversized legacy record", () => {
+    const storage = new MemoryStorage();
+    const oversized = "x".repeat(maximumRawPortfolioJsonBytes + 1);
+    storage.values.set(legacyPortfolioStorageKey, oversized);
+
+    const loaded = loadPortfolioDetailed(storage, testCurriculum);
+
+    expect(loaded.persistenceStatus).toBe("disabled");
+    expect(loaded.automaticPersistenceEnabled).toBe(false);
+    expect(storage.values.has(portfolioStorageKey)).toBe(false);
+    expect(storage.values.get(legacyPortfolioStorageKey)).toBe(oversized);
+    expect(storage.setCalls).toBe(0);
+  });
+
+  it("returns the normalized saved portfolio and reports storage failures", () => {
+    const storage = new MemoryStorage();
+    const attempt = {
+      ...createAttemptV2(
+        testCurriculum,
+        "phase-proportion",
+        "from-bpm-to-period",
+        "2026-08-28T10:00:00.000Z",
+      ),
+      stage: "experiment" as const,
+      prediction: "🎼".repeat(maximumResponseCodePoints + 1),
+    };
+    const portfolio = {
+      ...createPortfolio(testCurriculum),
+      attempts: { "phase-proportion:from-bpm-to-period": attempt },
+    };
+
+    const saved = savePortfolioDetailed(portfolio, storage, testCurriculum);
+    expect(saved.normalizationStatus).toBe("normalized");
+    expect(saved.persistenceStatus).toBe("saved");
+    expect(Array.from(saved.portfolio?.attempts["phase-proportion:from-bpm-to-period"]
+      ?.prediction ?? "")).toHaveLength(maximumResponseCodePoints);
+
+    const failed = savePortfolioDetailed(portfolio, {
+      getItem: () => null,
+      setItem: () => { throw new Error("quota"); },
+      removeItem: () => undefined,
+    }, testCurriculum);
+    expect(failed.persistenceStatus).toBe("failed");
+    expect(failed.notice).toContain("unavailable");
   });
 });

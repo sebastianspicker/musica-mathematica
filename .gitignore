@@ -32,6 +32,8 @@ pnpm-debug.log*
 /captures/
 /recordings/
 /local-screenshots/
+/output/
+/design-preview/
 
 # Local environment and credentials
 .env
@@ -49,6 +51,13 @@ credentials.local.*
 *.pfx
 *.jks
 *.keystore
+/.npmrc
+/.netrc
+/.ssh/
+/secrets/
+/credentials/
+id_rsa
+id_ed25519
 
 # Editor and operating-system state
 /.idea/

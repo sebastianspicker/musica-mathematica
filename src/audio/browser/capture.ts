@@ -18,6 +18,7 @@ export type MicrophoneSession = Readonly<{
   settings: SafeMediaSettings;
   requestedDurationSeconds: number;
   calibration: "uncalibrated";
+  ended: Promise<"deadline" | "stopped">;
   stop(): void;
 }>;
 
@@ -92,18 +93,32 @@ function createMicrophoneSession(stream: MediaStream, audioTrack: MediaStreamTra
   const cancelScheduledStop = request.cancelScheduledStop ?? globalThis.clearTimeout.bind(globalThis);
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const stop = () => {
+  let resolveEnded: (reason: "deadline" | "stopped") => void = () => undefined;
+  const ended = new Promise<"deadline" | "stopped">((resolve) => {
+    resolveEnded = resolve;
+  });
+  const finish = (reason: "deadline" | "stopped") => {
     if (stopped) return;
     stopped = true;
     if (timer !== undefined) cancelScheduledStop(timer);
     stopTracks(stream);
+    resolveEnded(reason);
   };
-  timer = scheduleStop(stop, Math.min(request.durationSeconds, AUDIO_ANALYSIS_LIMITS.maximumMicrophoneSeconds) * 1000);
+  const stop = () => {
+    finish("stopped");
+  };
+  timer = scheduleStop(
+    () => {
+      finish("deadline");
+    },
+    Math.min(request.durationSeconds, AUDIO_ANALYSIS_LIMITS.maximumMicrophoneSeconds) * 1000,
+  );
   return Object.freeze({
     stream,
     settings: sanitizeMediaTrackSettings(audioTrack.getSettings()),
     requestedDurationSeconds: request.durationSeconds,
     calibration: "uncalibrated" as const,
+    ended,
     stop,
   });
 }

@@ -1,78 +1,65 @@
-# Musica Mathematica Curriculum
+# Curriculum guide
 
-Status: implemented curriculum
+Musica Mathematica contains 24 lessons for undergraduate music students at
+universities and conservatoires. Each lesson connects a musical question to a
+mathematical representation, then asks students what that representation
+explains and what it leaves out. The current lesson content is in English.
 
-Audience: undergraduate university and conservatoire music students
+## How the lessons fit together
 
-Language: English
+Each of the eight domains has three levels:
 
-## Purpose
+1. Foundation introduces the notation, units, and definitions.
+2. Model uses those definitions in a reproducible calculation or simulation.
+3. Critique examines ambiguity, recorded sound, musical context, or a missing
+   part of the model.
 
-Musica Mathematica treats mathematics as a way to construct, inspect, and
-criticize musical representations. It is not a sequence of formula drills and
-does not assume that a numerical result settles a question of perception,
-culture, interpretation, or performance.
+Students can start with the foundations and work toward circular variables,
+delayed dynamics, spectra, logarithmic tuning, graphs, Markov chains,
+information theory, and statistical estimation. A numerical result is one
+part of that work. Listening, cultural context, interpretation, and performance
+still require musical judgment.
 
-The curriculum contains 24 lessons in eight domains. Within every domain,
-students encounter three layers:
+## Learning aims
 
-1. `Foundation`: establish notation, units, and exact definitions;
-2. `Model`: combine definitions into a reproducible representation or
-   simulation; and
-3. `Critique`: test the representation against ambiguity, measured sound,
-   musical context, or an omitted mechanism.
+The lessons ask students to:
 
-This progression is intended to support students with different mathematical
-backgrounds while still reaching undergraduate topics such as circular
-variables, delayed nonlinear dynamics, discrete spectra, logarithmic tuning,
-modular and graph spaces, Fourier analysis, Markov chains, information theory,
-quantile summaries, and estimator bias.
+- turn a musical question into variables, units, assumptions, and operations;
+- distinguish definitions, model results, observations, hypotheses, research
+  findings, heuristics, and recommendations;
+- calculate tempo and period, pulse return times, phase, cents, pitch classes,
+  probabilities, entropy, and descriptive statistics;
+- explain how coupling, delay, topology, spectra, sampling, resonance, graph
+  distance, Markov memory, and estimation affect a result;
+- use a prediction and a controlled comparison to support or revise an
+  explanation;
+- identify what a representation preserves and omits;
+- interpret audio features as uncalibrated observations or ranked hypotheses;
+- propose a listening, score-study, performance, or measurement task that
+  could challenge a conclusion.
 
-## Curriculum-wide learning outcomes
+These are teaching aims. The project has not measured whether students achieve
+them or sought accreditation for the curriculum.
 
-After completing a substantial selection of the lessons, a student should be
-able to:
+## Working through a lesson
 
-- translate between a musical question and explicit variables, units,
-  assumptions, and mathematical operations;
-- distinguish an identity, model output, observation, transcription
-  hypothesis, literature claim, heuristic, and recommendation;
-- calculate and interpret tempo–period relations, integer return times,
-  circular phase, cents, equal divisions, modular pitch classes, probability,
-  entropy, and descriptive statistics;
-- reason about delayed oscillator coupling, topology, external forcing,
-  autocorrelation, spectra, graph distance, resonance, sampling, aliasing,
-  Markov memory, and parameter recovery;
-- record a prediction before changing a factor and use a controlled A/B
-  comparison to support or revise an explanation;
-- identify what a mathematical representation preserves and what it discards;
-- interpret locally derived audio features as bounded, uncalibrated
-  observations or ranked hypotheses; and
-- propose a score-based, listening, performance, or measurement task that could
-  challenge a model-derived conclusion.
+Every lesson follows the same eight stages.
 
-These are intended learning outcomes, not measured outcomes of this software.
-The project has no accreditation or classroom-validation claim.
+| Stage | What the student does |
+| --- | --- |
+| Orient | Read the question, equation, factors, and evidence labels. Identify the model's assumptions. |
+| Predict | Write what should change and why, before viewing results. |
+| Experiment | Record trials with one changed factor. |
+| Compare | Examine the inputs and observations from the two latest runs. |
+| Explain | Connect the difference to a definition or mechanism. |
+| Perform | Try or discuss the idea through playing, singing, tapping, listening, or score study. |
+| Transfer | Apply the reasoning to another piece or musical situation. |
+| Debrief | State the limits, alternatives, and evidence still needed. |
 
-## Lesson protocol
-
-All lessons use the same eight-stage inquiry record.
-
-| Stage | Learner action | Evidence purpose |
-| --- | --- | --- |
-| Orient | Read the question, equation, factors, and claim labels. | Establish the representation and its boundary. |
-| Predict | Commit to a directional or comparative expectation. | Make prior reasoning visible before observing output. |
-| Experiment | Record controlled trials, normally changing one factor. | Create reproducible evidence rather than an untracked demonstration. |
-| Compare | Inspect at least two normalized trial snapshots. | Separate changed factors from observed changes. |
-| Explain | Connect the difference to a mechanism or definition. | Require a warranted inference rather than a visual impression. |
-| Perform | Test or discuss the idea through playing, singing, tapping, listening, or score study. | Reconnect the abstraction to musicianship. |
-| Transfer | Apply the representation in a new repertoire or analytic context. | Probe whether the reasoning travels. |
-| Debrief | State limits, alternatives, and next evidence needed. | Prevent the model from becoming an automatic conclusion. |
-
-The browser enforces the ordering needed for a useful record: a prediction is
-required before experiment; at least two trials are required before comparison
-and explanation; later reflection stages require written responses. This is
-formative scaffolding, not automatic assessment.
+The app requires a prediction before an experiment and at least two trials
+before comparison and explanation. Later stages require written responses.
+These checks help students keep a complete record; they do not assess the
+quality of their reasoning.
 
 ## Domain 1: Phase & Proportion
 
@@ -93,15 +80,15 @@ return, then change accent or articulation without changing the onset lattice.
 | Delay, Jitter, and Topology | Model | Compare delayed coupling graphs, square-root degree normalization, deterministic pseudo-jitter, and terminal phase statistics. | Distinguish a configured model stressor from an observation of a rehearsal or network route. |
 | External Pulse or Peer Adaptation | Critique | Compare peer coupling with separate sinusoidal forcing and inspect configured peer share. | Choose a musical criterion before discussing click or peer-led strategies; no strategy is declared universally better. |
 
-The Ensemble Coupling Lab compatibility schema contains seven scenarios that
-map into these three lessons. Its identifiers migrate into the v2 portfolio,
-while the phase-only simulator and its public configuration contract remain the
-model core. The exact implemented equation and heuristic multipliers are
-published in [the scientific basis](SCIENTIFIC_BASIS.md#ensemble-model).
+Older Ensemble Coupling Lab records use seven scenario identifiers, which map
+to these three lessons when copied into a version 2 portfolio. Migrated trials
+retain a separate legacy protocol identifier. See the
+[scientific basis](SCIENTIFIC_BASIS.md#ensemble-model) for the implemented
+simulation equation and its heuristic multipliers.
 
-Suggested performance task: rehearse a short passage with two reversible cueing
-policies, then compare musical criteria selected before the trial. Do not use
-the simulator's latency bands as a network acceptance test.
+Suggested performance task: choose musical criteria, then rehearse a short
+passage with two cueing approaches and compare what you hear. The simulator's
+latency bands cannot tell you whether a real network is suitable for rehearsal.
 
 ## Domain 3: Rhythm & Meter
 
@@ -112,12 +99,11 @@ the simulator's latency bands as a network acceptance test.
 | Recorded-Onset Hypotheses | Critique | Use positive spectral flux, peak selection, and ranked tempo and meter candidates. | Compare alternatives with listening, tapping, and score evidence; input-derived events remain hypotheses. |
 
 [Jacoby et al. (2024)](https://www.nature.com/articles/s41562-023-01800-9)
-reported both small-integer-ratio commonalities and variation reflecting local
-musical practice across 39 groups in 15 countries. The lesson therefore asks
-students to compare representations instead of treating one metrical grid as
-culturally universal. [Snyder, Gordon, and Hannon (2024)](https://www.nature.com/articles/s44159-024-00315-y)
-review multiple behavioral, neural, oscillator, and predictive accounts of
-rhythm, beat, and metre, further motivating model comparison.
+found shared preferences for integer-ratio rhythms alongside variation linked
+to local musical traditions across 39 groups in 15 countries. Students can use
+this finding to question whether one metrical grid describes every listener. [Snyder, Gordon, and Hannon (2024)](https://www.nature.com/articles/s44159-024-00315-y)
+review behavioral, neural, oscillator, and predictive accounts of rhythm, beat,
+and metre. The different accounts give students reasons to compare models.
 
 ## Domain 4: Pitch & Tuning
 
@@ -128,9 +114,9 @@ rhythm, beat, and metre, further motivating model comparison.
 | Timbre Changes Consonance | Critique | Construct harmonic partial spectra and compare transparent coincidence and roughness proxies. | Discuss timbre-dependent experience without scoring consonance or universalizing preference. |
 
 [Marjieh et al. (2024)](https://www.nature.com/articles/s41467-024-45812-z)
-found that timbral manipulation can reshape consonance preferences. This
-motivates holding interval constant while changing spectra; it does not
-calibrate the lesson's simplified proxies.
+found that changing timbre can reshape consonance preferences. In this lesson,
+students hold the interval constant and change the spectrum. The study informs
+that question; it does not calibrate the app's coincidence or roughness proxies.
 
 ## Domain 5: Harmony & Geometry
 
@@ -140,11 +126,10 @@ calibrate the lesson's simplified proxies.
 | Tonnetz and Voice-Leading | Model | Compute a minimum voice assignment and an illustrative shortest path through a triadic graph. | A short path under one metric does not prove tonal function or perceptual proximity. |
 | Chord Hypotheses | Critique | Compare chroma with major, minor, and no-chord templates using cosine similarity; inspect the top three. | Rankings omit voicing, inversion, function, non-triadic harmony, and complete score context. |
 
-[Frederick (2023/2024)](https://doi.org/10.1093/mts/mtad017) demonstrates how
-an abstract diatonic voice-leading space can be interpreted as an instrumental
-space. It supplies scholarly context for relating algebra, geometry, and
-embodied chord shapes, while the app's smaller graph and assignment metric
-remain teaching representations.
+[Frederick (2024, published online in 2023)](https://doi.org/10.1093/mts/mtad017)
+relates an abstract diatonic voice-leading space to the keyboard. The paper
+connects algebra and geometry to physical chord shapes. The app uses a smaller
+teaching graph and its own assignment metric.
 
 ## Domain 6: Timbre & Acoustics
 
@@ -156,7 +141,7 @@ remain teaching representations.
 
 Suggested performance task: record or synthesize two articulations of one pitch,
 compare a time-varying feature, and then write what attentive listening adds or
-contradicts. The raw sound must remain outside the portfolio.
+contradicts. Keep the audio itself outside the portfolio.
 
 ## Domain 7: Probability & Form
 
@@ -177,95 +162,98 @@ then identify formal features that the transition probabilities fail to encode.
 | Recovering Parameters | Model | Estimate BPM from the median inter-onset interval and calculate signed recovery error for synthetic known-truth fixtures. | Subdivision, missing events, timing change, and onset errors can make a plausible estimate wrong. |
 | Compare Without Grading | Critique | Pair event sets; calculate signed differences, median, quartiles, and IQR. | Describe earlier/later and spread without defining a target, quality score, grade, or better/worse verdict. |
 
-This domain supplies a common critical vocabulary for the other seven. Students
-should be asked whether a value is a known generating parameter, a model result,
-an observation, or an estimator of something unavailable.
+Use this domain to revisit results from the other seven: is a number a known
+input, a model result, an observation, or an estimate of something you cannot
+observe directly?
 
-## Local audio lessons
+## Lessons with audio input
 
-Only three critique lessons expose microphone and file modes:
+Three critique lessons offer optional microphone and file input:
 
 - Recorded-Onset Hypotheses
 - Chord Hypotheses
 - Time-Varying Timbre
 
-Synthetic mode is always available. Microphone and file work is optional and
-must follow [the local audio method](LOCAL_AUDIO_METHOD.md). Derived features can
-support listening and comparison, but no audio label becomes a grade or a
-definitive transcription.
+Every lesson also works with synthetic input. See the
+[audio guide](LOCAL_AUDIO_METHOD.md) for recording limits and processing
+methods. Audio features can help students compare what they hear, but the
+labels are neither grades nor definitive transcriptions.
 
-Only Recorded-Onset Hypotheses uses recorded audio in a portfolio A/B: learners
-reanalyze a fresh bounded segment after changing onset threshold or candidate
-family while holding source and frame settings constant. Chord Hypotheses and
-Time-Varying Timbre use recorded audio as observation appendices; their
-controlled portfolio comparisons remain synthetic because the displayed
-synthetic factors do not control incoming sound.
+Recorded-Onset Hypotheses can save audio-derived A/B comparisons. Students
+change the onset threshold or candidate family, run a fresh analysis, and
+hold the source and frame settings constant. In Chord Hypotheses and
+Time-Varying Timbre, recorded audio provides additional observations. Their
+portfolio comparisons use synthetic input because the model's factors do not
+control the incoming sound.
 
 ## Teaching formats
 
-These are recommendations to test and adapt, not validated delivery schedules.
+These are starting points to adapt to a course, not tested delivery schedules.
 
-### Full 24-session sequence
+### One lesson per session
 
-Use one lesson per 60–90 minute session. Teach each three-lesson domain as a
-foundation–model–critique arc. This pattern gives time for a prediction, two
-trials, performance or listening transfer, and debrief in every meeting.
+Allow 60–90 minutes for each of the 24 lessons. Work through each domain's
+foundation, model, and critique lessons in order, leaving time for a
+prediction, two trials, listening or performance, and reflection.
 
 ### Twelve-week seminar
 
-Pair lessons in some weeks and reserve four sessions for critique lessons using
-student-chosen repertoire. Require students to identify the evidence kind and
-one omitted mechanism in every submission. Use the portfolio as a source of
-artifacts, then assess reasoning with a separate instructor-authored rubric.
+Select and pair lessons to suit the available sessions, reserving four
+sessions for critique with repertoire chosen by students. Ask students to
+identify the evidence type and one missing mechanism in each submission.
+Their portfolios can supply examples for assessment with a separate rubric
+written by the instructor.
 
-### Embedded sampler
+### A short sequence within another course
 
-Select one foundation, one model, and one critique lesson that serve an existing
-course topic. For example, a theory course might combine Ratios, Logs, and Cents;
-Tonnetz and Voice-Leading; and Timbre Changes Consonance. An ensemble seminar
-might combine From BPM to Period; Delay, Jitter, and Topology; and Compare
-Without Grading.
+Choose a foundation, model, and critique lesson that fit the course topic.
+For a theory course, try Ratios, Logs, and Cents; Tonnetz and Voice-Leading;
+and Timbre Changes Consonance. For an ensemble seminar, try From BPM to
+Period; Delay, Jitter, and Topology; and Compare Without Grading.
 
-## Instructor practice
+## Before, during, and after class
 
-Before class, choose the musical question and decide which factors students may
-change. During class, require predictions before revealing comparisons and ask
-students to name each claim kind aloud. After class, ask for one model-supported
-statement, one unsupported inference, and one next observation or performance
-test.
+Before class, choose the musical question and the factors students will change.
+During the lesson, ask for predictions before results and discuss what kind of
+evidence each result provides. Afterwards, ask students for one conclusion the
+model supports, one it does not, and a next step involving observation or
+performance.
 
-The app's presentation mode supports projection. The current alpha working tree
-does not provide course authoring, accounts, roster views, LMS exchange, remote
-monitoring, automatic scoring, or gradebook integration. Portfolio JSON may be
-exported by the learner, but interpretation and any formal assessment remain
-outside the app.
+Presentation mode supports projection. Learners can export their portfolios as
+JSON, but the app has no course authoring, accounts, rosters, LMS exchange,
+remote monitoring, automatic scoring, or gradebook integration. Assessment
+remains the instructor's responsibility.
 
-## Why the pedagogy is evidence-informed, not validated
+## Research behind the teaching approach
 
-[Zhu et al. (2025)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12637912/) provide
-one recent undergraduate music-theory example of structured preparation,
-collaboration, and reflection. [Wang et al. (2025)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12734040/)
-review 31 interventions in music metacognition and self-regulated learning and
-identify plan–practice–reflection, explicit strategy, technological feedback,
-and teacher support as recurring mechanisms. [Azaryahu, Ariel, and Leikin
-(2024)](https://www.nature.com/articles/s41599-024-03631-z) show that experts
-connect music and mathematics through structure, representation, creativity,
-and learning opportunities while also emphasizing the expertise needed to
-integrate the disciplines.
+[Zhu et al. (2025)](https://doi.org/10.1371/journal.pone.0337590) studied a flipped
+music-theory module with structured preparation, collaboration, and reflection
+in one undergraduate setting. [Wang et al. (2025)](https://www.mdpi.com/2079-3200/13/12/162)
+reviewed 31 music metacognition and self-regulated learning studies, including
+seven in a meta-analysis. They identified structured learning support, strategy
+teaching, technology, and teacher support as recurring themes.
 
-Those sources motivate aligned tasks, explicit predictions, controlled
-comparisons, reflection, and instructor mediation. They do not evaluate Musica
-Mathematica, its 24 lessons, or its portfolio. A future validation study would
-need preregistered outcomes, suitable comparison conditions, representative
-students and repertoire, implementation-fidelity evidence, accessibility
-reporting, and analysis that distinguishes software effects from instructor and
-course-design effects.
+[Azaryahu, Ariel, and Leikin (2024)](https://www.nature.com/articles/s41599-024-03631-z)
+interviewed 16 experts about connections between music and mathematics. Their
+responses emphasized shared structure, aesthetics, creativity, and learning
+opportunities, as well as the disciplinary expertise needed to bring them
+together.
 
-## Language and accessibility boundary
+These studies helped shape the prediction, comparison, reflection, and teaching
+activities. None evaluated Musica Mathematica or its lessons. Testing the app's
+educational effects would require preregistered outcomes, suitable comparison
+conditions, representative students and repertoire, checks on how lessons were
+taught, and accessibility reporting. The study would also need to distinguish
+the software's effects from those of the teacher and course design. The
+[scientific basis](SCIENTIFIC_BASIS.md#pedagogical-status-and-research-rationale)
+provides more detail on the studies and their limits.
 
-The current lesson content is English-only. Stable domain and lesson identifiers
-are separate from display titles, which reduces future migration risk, but no
-translation catalog, locale switcher, or translated curriculum is implemented.
-The interface uses semantic controls, visible focus, responsive layouts,
-reduced-motion support, opt-in audio, and a presentation view. These are
-accessibility-oriented implementation choices, not a formal conformance claim.
+## Language and accessibility
+
+Lessons are in English. Display titles are separate from the stable domain and
+lesson identifiers, but there is no translation catalog, language switcher, or
+translated curriculum.
+
+The interface provides semantic controls, visible keyboard focus, responsive
+layouts, reduced-motion support, optional audio, and presentation mode. These
+features have not been assessed for formal accessibility conformance.

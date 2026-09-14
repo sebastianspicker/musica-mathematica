@@ -79,6 +79,7 @@ describe("browser audio capture boundary", () => {
     });
     expect(session.settings).toEqual({ sampleRate: 48_000 });
     scheduledStop?.();
+    await expect(session.ended).resolves.toBe("deadline");
     expect(stop).toHaveBeenCalledOnce();
     expect(secondStop).toHaveBeenCalledOnce();
   });

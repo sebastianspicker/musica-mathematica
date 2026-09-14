@@ -61,8 +61,9 @@ describe("analysis worker", () => {
     expect(postedMessages()).toMatchObject([{
       type: "selection-result",
       requestId: "selection-1",
-      result: { frameSize: 2_048, sampleRateHz: 48_000 },
+      result: { frameSize: 2_048, sampleRateHz: 48_000, frameCount: 1 },
     }]);
+    expect(postedMessages()[0]).not.toHaveProperty("result.frames");
   });
 
   it("returns selection errors with the originating request id", () => {
@@ -131,6 +132,43 @@ describe("analysis worker", () => {
       message: "audio frame must contain samples",
     }]);
     expect(postedMessages()[0]).not.toHaveProperty("requestId");
+    expect(port.postMessage).toHaveBeenLastCalledWith({ type: "credits", count: 1 });
+  });
+
+  it("processes and restores credit for every frame while publishing at bounded audio-time cadence and completion", () => {
+    const port = new InputPortHarness();
+    dispatch({ type: "attach-input", port, queueCapacity: 4 });
+
+    for (let sequence = 0; sequence < 25; sequence += 1) {
+      const message = frame();
+      port.emit({
+        ...message,
+        frame: {
+          ...message.frame,
+          sequence,
+          startSample: sequence * 1_024,
+        },
+      });
+    }
+    port.emit({ type: "audio-stream-end" });
+
+    expect(postedMessages().filter(({ type }) => type === "analysis-result")).toHaveLength(3);
+    expect(postedMessages().at(-1)).toMatchObject({
+      type: "analysis-complete",
+      result: { sequence: 24 },
+      queue: { accepted: true, queuedFrames: 0 },
+    });
+    expect(port.postMessage.mock.calls.filter(([message]) => (
+      (message as { type?: string }).type === "credits"
+      && (message as { count?: number }).count === 1
+    ))).toHaveLength(25);
+
+    const postsBeforeLateFrame = scope.postMessage.mock.calls.length;
+    port.emit({
+      ...frame(),
+      frame: { ...frame().frame, sequence: 25, startSample: 25 * 1_024 },
+    });
+    expect(scope.postMessage).toHaveBeenCalledTimes(postsBeforeLateFrame);
     expect(port.postMessage).toHaveBeenLastCalledWith({ type: "credits", count: 1 });
   });
 });

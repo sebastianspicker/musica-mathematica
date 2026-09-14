@@ -1,6 +1,13 @@
 /// <reference lib="webworker" />
 
-import { analyzeAudioFrame, analyzeAudioSelection, analyzeFluxHistory } from "../analysis/analysis";
+import {
+  analyzeAudioFrame,
+  analyzeAudioSelection,
+  analyzeFluxHistory,
+  summarizeAudioSelection,
+  type FrameAnalysis,
+  type TemporalHypotheses,
+} from "../analysis/analysis";
 import { AUDIO_ANALYSIS_LIMITS } from "../analysis/contracts";
 import { spectralFlux } from "../analysis/features";
 import { analyzeSpectrumWithFftJs } from "../analysis/fftJsAdapter";
@@ -10,6 +17,7 @@ import type {
   WorkerAttachMessage,
   WorkerFrameMessage,
   WorkerSelectionMessage,
+  WorkerStreamEndMessage,
   WorkletCreditMessage,
 } from "../protocol/messages";
 
@@ -26,6 +34,10 @@ function isWorkerFrameMessage(message: unknown): message is WorkerFrameMessage {
   return numericFields.every((value) => typeof value === "number") && frame.samples instanceof Float32Array;
 }
 
+function isWorkerStreamEndMessage(message: unknown): message is WorkerStreamEndMessage {
+  return isObjectRecord(message) && message.type === "audio-stream-end";
+}
+
 function postAnalysisError(error: unknown, requestId?: string): void {
   const message: AnalysisWorkerMessage = {
     type: "analysis-error",
@@ -37,7 +49,7 @@ function postAnalysisError(error: unknown, requestId?: string): void {
 
 function handleSelectionAnalysis(message: WorkerSelectionMessage): void {
   try {
-    const result = analyzeAudioSelection(
+    const analysis = analyzeAudioSelection(
       message.samples,
       message.sampleRateHz,
       analyzeSpectrumWithFftJs,
@@ -46,7 +58,7 @@ function handleSelectionAnalysis(message: WorkerSelectionMessage): void {
     const response: AnalysisWorkerMessage = {
       type: "selection-result",
       requestId: message.requestId,
-      result,
+      result: summarizeAudioSelection(analysis),
     };
     workerScope.postMessage(response);
   } catch (error) {
@@ -59,11 +71,25 @@ type StreamingAnalysisSession = {
   readonly queue: BoundedAudioFrameQueue;
   readonly fluxHistory: number[];
   readonly onsetSensitivity?: number;
+  accepting: boolean;
   previousMagnitudes: Float64Array | null;
+  latestResult: FrameAnalysis | null;
+  latestTemporal: TemporalHypotheses;
+  lastPublishedStartSeconds: number | null;
+  sampleRateHz: number | null;
+  hopSize: number | null;
 };
+
+const TEMPORAL_PUBLICATION_INTERVAL_SECONDS = 0.25;
+const EMPTY_TEMPORAL: TemporalHypotheses = Object.freeze({
+  onsetTimesSeconds: Object.freeze([]),
+  tempoHypotheses: Object.freeze([]),
+  meterHypotheses: Object.freeze([]),
+});
 
 function handleStreamingFrame(session: StreamingAnalysisSession, message: WorkerFrameMessage): void {
   try {
+    if (!session.accepting) return;
     const queueStatus = session.queue.push(message.frame);
     const nextFrame = session.queue.shift();
     if (queueStatus.accepted && nextFrame) {
@@ -80,19 +106,10 @@ function handleStreamingFrame(session: StreamingAnalysisSession, message: Worker
         session.fluxHistory.splice(0, session.fluxHistory.length - maximumHistoryFrames);
       }
       session.previousMagnitudes = result.spectrum.magnitudes;
-      const temporal = analyzeFluxHistory(
-        session.fluxHistory,
-        nextFrame.sampleRateHz,
-        nextFrame.samples.length / 2,
-        session.onsetSensitivity,
-      );
-      const response: AnalysisWorkerMessage = {
-        type: "analysis-result",
-        result,
-        temporal,
-        queue: session.queue.getStatus(),
-      };
-      workerScope.postMessage(response);
+      session.latestResult = result;
+      session.sampleRateHz = nextFrame.sampleRateHz;
+      session.hopSize = nextFrame.samples.length / 2;
+      if (shouldPublishTemporal(session, result.startSeconds)) publishStreamingResult(session);
     }
   } catch (error) {
     postAnalysisError(error);
@@ -102,17 +119,67 @@ function handleStreamingFrame(session: StreamingAnalysisSession, message: Worker
   }
 }
 
+function shouldPublishTemporal(session: StreamingAnalysisSession, startSeconds: number): boolean {
+  return session.lastPublishedStartSeconds === null
+    || startSeconds - session.lastPublishedStartSeconds >= TEMPORAL_PUBLICATION_INTERVAL_SECONDS;
+}
+
+function updateTemporal(session: StreamingAnalysisSession): TemporalHypotheses {
+  if (session.sampleRateHz === null || session.hopSize === null) return EMPTY_TEMPORAL;
+  session.latestTemporal = analyzeFluxHistory(
+    session.fluxHistory,
+    session.sampleRateHz,
+    session.hopSize,
+    session.onsetSensitivity,
+  );
+  return session.latestTemporal;
+}
+
+function publishStreamingResult(session: StreamingAnalysisSession): void {
+  const result = session.latestResult;
+  if (!result) return;
+  const response: AnalysisWorkerMessage = {
+    type: "analysis-result",
+    result,
+    temporal: updateTemporal(session),
+    queue: session.queue.getStatus(),
+  };
+  session.lastPublishedStartSeconds = result.startSeconds;
+  workerScope.postMessage(response);
+}
+
+function completeStreamingAnalysis(session: StreamingAnalysisSession): void {
+  if (!session.accepting) return;
+  session.accepting = false;
+  const response: AnalysisWorkerMessage = {
+    type: "analysis-complete",
+    result: session.latestResult,
+    temporal: updateTemporal(session),
+    queue: session.queue.getStatus(),
+  };
+  workerScope.postMessage(response);
+}
+
 function attachStreamingAnalysis(message: WorkerAttachMessage): void {
   const session: StreamingAnalysisSession = {
     inputPort: message.port,
     queue: new BoundedAudioFrameQueue(message.queueCapacity),
     fluxHistory: [],
     onsetSensitivity: message.onsetSensitivity,
+    accepting: true,
     previousMagnitudes: null,
+    latestResult: null,
+    latestTemporal: EMPTY_TEMPORAL,
+    lastPublishedStartSeconds: null,
+    sampleRateHz: null,
+    hopSize: null,
   };
   session.inputPort.onmessage = (frameEvent: MessageEvent<unknown>) => {
-    if (!isWorkerFrameMessage(frameEvent.data)) return;
-    handleStreamingFrame(session, frameEvent.data);
+    if (isWorkerFrameMessage(frameEvent.data)) {
+      handleStreamingFrame(session, frameEvent.data);
+    } else if (isWorkerStreamEndMessage(frameEvent.data)) {
+      completeStreamingAnalysis(session);
+    }
   };
   session.inputPort.start();
   const initialCredit: WorkletCreditMessage = { type: "credits", count: message.queueCapacity };

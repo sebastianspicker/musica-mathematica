@@ -1,4 +1,4 @@
-import { useId, type ReactElement } from "react";
+import { memo, useId, type ReactElement } from "react";
 import type {
   FactorDefinition,
   FactorValue,
@@ -12,7 +12,7 @@ export type ComparisonTableProps = Readonly<{
   trials: readonly TrialSnapshotV2[];
 }>;
 
-export function ComparisonTable({ lesson, trials }: ComparisonTableProps): ReactElement {
+export const ComparisonTable = memo(function ComparisonTable({ lesson, trials }: ComparisonTableProps): ReactElement {
   const headingId = useId();
   const pair = trials.slice(-2);
 
@@ -53,7 +53,10 @@ export function ComparisonTable({ lesson, trials }: ComparisonTableProps): React
         </p>
       </div>
 
-      <ComparisonSummary
+
+
+      <ComparisonDetails
+        summary={<ComparisonSummary
         changedFactorIds={changedFactorIds}
         factorIds={factorIds}
         leftFactors={leftFactors}
@@ -63,9 +66,7 @@ export function ComparisonTable({ lesson, trials }: ComparisonTableProps): React
         rightFactors={rightFactors}
         rightObservable={rightObservable}
         definitions={lesson.factors}
-      />
-
-      <ComparisonDetails
+      />}
         changedFactorIds={changedFactorIds}
         definitions={lesson.factors}
         factorIds={factorIds}
@@ -81,7 +82,7 @@ export function ComparisonTable({ lesson, trials }: ComparisonTableProps): React
       </p>
     </section>
   );
-}
+});
 
 type ComparisonSummaryProps = Readonly<{
   changedFactorIds: readonly string[];
@@ -96,14 +97,20 @@ type ComparisonSummaryProps = Readonly<{
 }>;
 
 function ComparisonSummary({ changedFactorIds, definitions, factorIds, leftFactors, leftObservable, primaryFactor, primaryFactorId, rightFactors, rightObservable }: ComparisonSummaryProps): ReactElement {
+  const leftValue = leftFactors.get(primaryFactorId);
+  const rightValue = rightFactors.get(primaryFactorId);
+  const numericDelta = factorDelta(leftValue, rightValue, primaryFactor);
+  const changed = changedFactorIds.includes(primaryFactorId);
+
   return <div className="mm-comparison-summary" aria-label="Latest controlled comparison summary">
-    <div><span>Run A</span><strong>{formatFactorValue(leftFactors.get(primaryFactorId), primaryFactor)}</strong><small>{formatObservable(leftObservable)}</small></div>
-    <div className="mm-comparison-summary__change"><span>{factorLabel(definitions, primaryFactorId)}</span><strong>{changedFactorIds.includes(primaryFactorId) ? "Changed" : "Held constant"}</strong><small>{heldFactorSummary(factorIds, changedFactorIds, definitions)}</small></div>
-    <div><span>Run B</span><strong>{formatFactorValue(rightFactors.get(primaryFactorId), primaryFactor)}</strong><small>{formatObservable(rightObservable)}</small></div>
+    <div><span>Run A</span><strong>{formatFactorValue(leftValue, primaryFactor)}</strong><small>{formatObservable(leftObservable)}</small></div>
+    <div className="mm-comparison-summary__change"><span>{factorLabel(definitions, primaryFactorId)} · {changed ? "changed factor" : "held constant"}</span><strong>{numericDelta ?? (changed ? "Changed" : "Held constant")}</strong><small>{heldFactorSummary(factorIds, changedFactorIds, definitions)}</small></div>
+    <div><span>Run B</span><strong>{formatFactorValue(rightValue, primaryFactor)}</strong><small>{formatObservable(rightObservable)}</small></div>
   </div>;
 }
 
 type ComparisonDetailsProps = Readonly<{
+  summary?: ReactElement;
   changedFactorIds: readonly string[];
   definitions: readonly FactorDefinition[];
   factorIds: readonly string[];
@@ -115,11 +122,14 @@ type ComparisonDetailsProps = Readonly<{
 }>;
 
 function ComparisonDetails(props: ComparisonDetailsProps): ReactElement {
-  return <details className="mm-comparison-table__details">
-    <summary>View detailed factor and observable tables</summary>
-    <FactorComparisonTable {...props} />
+  return <div className="mm-comparison-table__details">
     <ObservableComparisonTable left={props.left} observableIds={props.observableIds} right={props.right} />
-  </details>;
+    <details><summary>View all recorded factors</summary>{props.summary}<FactorComparisonTable {...props} /></details>
+    {props.left.note || props.right.note ? <dl className="mm-notebook-trial-notes">
+      {props.left.note ? <div><dt>Run A observation</dt><dd>{props.left.note}</dd></div> : null}
+      {props.right.note ? <div><dt>Run B observation</dt><dd>{props.right.note}</dd></div> : null}
+    </dl> : null}
+  </div>;
 }
 
 function FactorComparisonTable({ changedFactorIds, definitions, factorIds, left, leftFactors, right, rightFactors }: ComparisonDetailsProps): ReactElement {
@@ -192,7 +202,7 @@ function factorValuesEqual(left: FactorValue | undefined, right: FactorValue | u
   return left === right;
 }
 
-function formatFactorValue(value: FactorValue | undefined, definition?: FactorDefinition): string {
+export function formatFactorValue(value: FactorValue | undefined, definition?: FactorDefinition): string {
   if (value === undefined) return "Not recorded";
   if (typeof value === "boolean") return value ? "On" : "Off";
   if (typeof value === "string") {
@@ -207,7 +217,14 @@ function formatFactorValue(value: FactorValue | undefined, definition?: FactorDe
     : formatted;
 }
 
-function formatObservable(observable: ObservableRecord | undefined): string {
+function factorDelta(left: FactorValue | undefined, right: FactorValue | undefined, definition: FactorDefinition | undefined): string | null {
+  if (definition?.kind !== "number" || typeof left !== "number" || typeof right !== "number") return null;
+  const delta = right - left;
+  const signed = `${delta >= 0 ? "+" : ""}${formatNumber(delta)}`;
+  return definition.unit ? `${signed} ${definition.unit}` : signed;
+}
+
+export function formatObservable(observable: ObservableRecord | undefined): string {
   if (!observable) return "Not recorded";
   const value = typeof observable.value === "number"
     ? formatNumber(observable.value, observable.precision)

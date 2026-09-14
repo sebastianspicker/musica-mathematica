@@ -1,14 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { TrialSnapshotV2 } from "./schema-v2";
 import {
+  activeAttempt,
   advanceAttempt,
   createAttemptV2,
   createPortfolio,
   recordTrial,
   setAttemptPrediction,
   setAttemptResponse,
+  updateAttempt,
 } from "./aggregate";
-import { maximumTracePointsPerTrial } from "./constants";
+import { maximumResponseCodePoints, maximumTracePointsPerTrial } from "./constants";
 import { testCurriculum } from "./testReader";
 
 describe("portfolio aggregate", () => {
@@ -56,6 +58,46 @@ describe("portfolio aggregate", () => {
     const curriculum = { ...testCurriculum, defaultLesson: rhythmLesson };
 
     expect(createPortfolio(curriculum).active).toEqual({ labId: "rhythm-meter", lessonId: "cycles-and-euclidean-rhythm" });
+  });
+
+  it("advances an immutably updated prediction regardless of property insertion order", () => {
+    const attempt = createAttemptV2(
+      testCurriculum,
+      "phase-proportion",
+      "from-bpm-to-period",
+      "2026-08-28T10:00:00.000Z",
+    );
+    const predicted = setAttemptPrediction(
+      attempt,
+      "The period halves.",
+      "2026-08-28T10:01:00.000Z",
+    );
+
+    expect(advanceAttempt(predicted, "experiment", "2026-08-28T10:02:00.000Z").stage)
+      .toBe("experiment");
+  });
+
+  it("normalizes oversized new responses while preserving inquiry progression", () => {
+    const oversized = "🎼".repeat(maximumResponseCodePoints + 1);
+    const orient = createAttemptV2(
+      testCurriculum,
+      "phase-proportion",
+      "from-bpm-to-period",
+      "2026-08-28T10:00:00.000Z",
+    );
+    const predicted = setAttemptPrediction(orient, oversized);
+    const experiment = advanceAttempt(predicted, "experiment");
+    const oneTrial = recordTrial(testCurriculum, experiment, trial("Run A"));
+    const twoTrials = recordTrial(testCurriculum, oneTrial, trial("Run B"));
+    const compare = advanceAttempt(twoTrials, "compare");
+    const explain = advanceAttempt(compare, "explain");
+    const explained = setAttemptResponse(explain, "explanation", oversized);
+    const updated = updateAttempt(testCurriculum, createPortfolio(testCurriculum), explained);
+    const stored = activeAttempt(testCurriculum, updated);
+
+    expect(Array.from(stored.prediction ?? "")).toHaveLength(maximumResponseCodePoints);
+    expect(Array.from(stored.explanation ?? "")).toHaveLength(maximumResponseCodePoints);
+    expect(advanceAttempt(stored, "perform").stage).toBe("perform");
   });
 });
 

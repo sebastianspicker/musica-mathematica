@@ -1,9 +1,10 @@
-import { useId, type ChangeEvent, type ReactElement } from "react";
+import { useId, useState, type ChangeEvent, type ReactElement } from "react";
 import type {
   FactorDefinition,
   FactorValue,
   InputMode,
   LessonDefinition,
+  NumberFactor,
 } from "../../curriculum/contracts";
 
 export type FactorInspectorProps = Readonly<{
@@ -13,6 +14,7 @@ export type FactorInspectorProps = Readonly<{
   onFactorChange: (factorId: string, value: FactorValue) => void;
   onInputModeChange: (mode: InputMode) => void;
   disabled?: boolean;
+  compact?: boolean;
 }>;
 
 const inputModeLabels = new Map<InputMode, string>([
@@ -28,8 +30,10 @@ export function FactorInspector({
   onFactorChange,
   onInputModeChange,
   disabled = false,
+  compact = false,
 }: FactorInspectorProps): ReactElement {
   const instanceId = useId();
+  const [otherFactorsOpen, setOtherFactorsOpen] = useState(false);
   const valuesById = new Map(Object.entries(values));
 
   return (
@@ -37,27 +41,29 @@ export function FactorInspector({
       <div className="mm-factor-inspector__heading">
         <div>
           <span>Factor inspector</span>
-          <h2 id={`${instanceId}-heading`}>Factors</h2>
+          <h2 id={`${instanceId}-heading`}>Model factors</h2>
         </div>
         <strong className={disabled ? "mm-factor-inspector__lock" : undefined}>
-          {disabled ? "Locked until prediction" : `${lesson.factors.length} controlled`}
+          {disabled ? "Locked" : "Editable"}
         </strong>
       </div>
 
-      <InputSourceControl
+      {disabled ? <p className="mm-factor-inspector__guidance">Make a prediction to unlock the factors.</p> : null}
+      {!compact || lesson.inputModes.length > 1 ? <InputSourceControl
         disabled={disabled}
         inputMode={inputMode}
         inputModes={lesson.inputModes}
         inputId={`${instanceId}-input-mode`}
         onInputModeChange={onInputModeChange}
-      />
+      /> : null}
       <FactorControls
         disabled={disabled}
-        factors={lesson.factors}
+        factors={compact ? lesson.factors.slice(0, 1) : lesson.factors}
         instanceId={instanceId}
         onFactorChange={onFactorChange}
         valuesById={valuesById}
       />
+      {compact && lesson.factors.length > 1 ? <details className="mm-other-factors" open={otherFactorsOpen} onToggle={(event) => { setOtherFactorsOpen(event.currentTarget.open); }} onInvalidCapture={() => { setOtherFactorsOpen(true); }}><summary>Adjust other factors</summary><FactorControls disabled={disabled} factors={lesson.factors.slice(1)} instanceId={instanceId} onFactorChange={onFactorChange} valuesById={valuesById} /></details> : null}
     </aside>
   );
 }
@@ -69,6 +75,7 @@ function InputSourceControl({ disabled, inputId, inputMode, inputModes, onInputM
   inputModes: readonly InputMode[];
   onInputModeChange: (mode: InputMode) => void;
 }>): ReactElement {
+  if (inputModes.length === 1) return <p className="mm-model-source">Synthetic factors directly control the published deterministic model.</p>;
   return <fieldset className="mm-factor-inspector__source" disabled={disabled}>
     <legend>Input source</legend>
     <label htmlFor={inputId}>Analysis source</label>
@@ -159,36 +166,43 @@ function FactorControl({
     );
   }
 
-  const numberValue = typeof value === "number" ? value : factor.defaultValue;
+  return <NumberFactorControl factor={factor} value={typeof value === "number" ? value : factor.defaultValue} inputId={inputId} helpId={helpId} onChange={onChange} />;
+}
 
+function NumberFactorControl({ factor, value, inputId, helpId, onChange }: Readonly<{
+  factor: NumberFactor; value: number; inputId: string; helpId: string;
+  onChange: (factorId: string, value: FactorValue) => void;
+}>): ReactElement {
+  const [state, setState] = useState({ source: value, draft: String(value), invalid: false });
+  if (state.source !== value) setState({ source: value, draft: String(value), invalid: false });
+  const errorId = `${inputId}-error`;
   function handleNumberChange(event: ChangeEvent<HTMLInputElement>): void {
     const input = event.currentTarget;
-    if (input.value.trim() === "" || !input.validity.valid) return;
-    const nextValue = validNumberFactorValue(input.valueAsNumber, factor);
-    if (nextValue !== null) onChange(factor.id, nextValue);
+    const next = validNumberFactorValue(input.valueAsNumber, factor);
+    const invalid = input.value.trim() === "" || !input.validity.valid || next === null;
+    setState({ source: invalid ? value : input.valueAsNumber, draft: input.value, invalid });
+    if (!invalid && next !== null) onChange(factor.id, next);
   }
-
-  return (
-    <div className="mm-factor-control">
-      <label htmlFor={inputId}>{factor.label}</label>
-      <div className="mm-factor-control__number">
-        <input
-          aria-describedby={helpId}
-          id={inputId}
-          max={factor.max}
-          min={factor.min}
-          onChange={handleNumberChange}
-          step={factor.step}
-          type="number"
-          value={numberValue}
-        />
-        {factor.unit ? <span aria-hidden="true">{factor.unit}</span> : null}
-      </div>
-      <p id={helpId}>
-        {factor.help}{factor.unit ? ` Unit: ${factor.unit}.` : ""}
-      </p>
+  function step(direction: -1 | 1): void {
+    const next = stepNumberFactorValue(value, factor, direction);
+    setState({ source: next, draft: String(next), invalid: false });
+    onChange(factor.id, next);
+  }
+  return <div className="mm-factor-control">
+    <label htmlFor={inputId}>{factor.label}</label>
+    <div className="mm-factor-control__number mm-number-stepper">
+      <button type="button" aria-label={`Decrease ${factor.label}`} disabled={state.invalid || value <= factor.min} onClick={() => { step(-1); }}>−</button>
+      <input aria-describedby={`${helpId}${state.invalid ? ` ${errorId}` : ""}`} aria-invalid={state.invalid || undefined} id={inputId} max={factor.max} min={factor.min} onChange={handleNumberChange} step={factor.step} type="number" required value={state.draft} />
+      <button type="button" aria-label={`Increase ${factor.label}`} disabled={state.invalid || value >= factor.max} onClick={() => { step(1); }}>+</button>
+      {factor.unit ? <span aria-hidden="true">{factor.unit}</span> : null}
     </div>
-  );
+    <p id={helpId}>Range: {factor.min}–{factor.max}{factor.unit ? ` ${factor.unit}` : ""}. Step: {factor.step}. <span className="mm-factor-help">{factor.help}</span></p>
+    {state.invalid ? <p className="mm-factor-error" id={errorId} role="alert">Enter a number from {factor.min} to {factor.max} in steps of {factor.step} before recording.</p> : null}
+  </div>;
+}
+
+export function stepNumberFactorValue(value: number, factor: NumberFactor, direction: -1 | 1): number {
+  return Math.min(factor.max, Math.max(factor.min, Number((value + direction * factor.step).toPrecision(12))));
 }
 
 export function validNumberFactorValue(value: number, factor: FactorDefinition): number | null {

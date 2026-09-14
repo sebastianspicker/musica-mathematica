@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { FrameAnalysis, TemporalHypotheses } from "../../audio/analysis/analysis";
+import type { AudioSelectionSummary, FrameAnalysis, TemporalHypotheses } from "../../audio/analysis/analysis";
 import type { QueueStatus } from "../../audio/analysis/contracts";
-import { microphoneFrameToEvaluation } from "./mapAudioEvaluation";
+import { microphoneFrameToEvaluation, selectionToEvaluation } from "./mapAudioEvaluation";
 
 const frame: FrameAnalysis = {
   sequence: 5,
@@ -72,5 +72,44 @@ describe("audio-to-evaluation provenance", () => {
     }, queue, { meterBias: "duple" });
 
     expect(evaluation.observables.find(({ id }) => id === "meter")?.value).toContain("2 beats");
+  });
+
+  it("maps compact selection means and independently timed flux into the evaluation", () => {
+    const summary: AudioSelectionSummary = {
+      calibration: "uncalibrated",
+      sampleRateHz: 48_000,
+      frameSize: 2_048,
+      hopSize: 1_024,
+      durationSeconds: 30,
+      frameCount: 1_405,
+      means: {
+        frameLevelDbfs: -20,
+        spectralCentroidHz: 500,
+        spectralFlatness: 0.2,
+        spectralRolloffHz: 1_200,
+        spectralHarmonicity: 0.7,
+        pitchHz: 220,
+      },
+      waveform: [{ startSample: 0, endSampleExclusive: 1_024, minimum: -0.5, maximum: 0.5, rms: 0.2 }],
+      estimatedNoiseFloorDbfs: -60,
+      spectralFlux: [{ timeSeconds: 29.952, value: 0.8 }],
+      onsetTimesSeconds: [1],
+      tempoHypotheses: [],
+      meterHypotheses: [],
+      chordHypotheses: [],
+    };
+
+    const evaluation = selectionToEvaluation(summary, {
+      source: "file",
+      sampleRateHz: 48_000,
+      channelCount: 1,
+      decodedDurationSeconds: 30,
+      analyzedRange: { startSeconds: 0, endSeconds: 30 },
+      calibration: "uncalibrated",
+    });
+
+    expect(evaluation.result).toBe("1405 frames · 1 onset candidates");
+    expect(evaluation.observables.find(({ id }) => id === "pitch")?.value).toBe("220.00 Hz");
+    expect(evaluation.trace).toContainEqual({ x: 29.952, y: 0.8, series: "Spectral flux" });
   });
 });

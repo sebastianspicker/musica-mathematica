@@ -17,6 +17,7 @@ import {
   stepEnsemble,
 } from "./ensemble";
 import { defaultConfig } from "./defaultConfig";
+import { delayedOscillatorPhase } from "./ensembleRuntime";
 
 function bpmToRadPerSecond(tempoBpm: number): number {
   return (tempoBpm / 60) * Math.PI * 2;
@@ -58,12 +59,12 @@ describe("ensemble simulation invariants", () => {
       [],
       {},
       { ...defaultConfig, musicianCount: 2.5 },
-      { ...defaultConfig, tempoBpm: 181 },
+      { ...defaultConfig, tempoBpm: 221 },
       { ...defaultConfig, tempoSpreadBpm: -0.5 },
       { ...defaultConfig, couplingStrength: Number.NaN },
-      { ...defaultConfig, latencySeconds: 0.181 },
+      { ...defaultConfig, latencySeconds: 0.251 },
       { ...defaultConfig, jitterSeconds: -0.001 },
-      { ...defaultConfig, clickTrackStrength: 3.01 },
+      { ...defaultConfig, clickTrackStrength: 4.01 },
       { ...defaultConfig, topology: "invented" },
       { ...defaultConfig, repertoireTexture: "invented" },
     ];
@@ -410,7 +411,7 @@ describe("ensemble simulation invariants", () => {
   it("accepts model config values at the supported UI boundaries", () => {
     const minConfig: EnsembleConfig = {
       musicianCount: 2,
-      tempoBpm: 50,
+      tempoBpm: 40,
       tempoSpreadBpm: 0,
       couplingStrength: 0,
       latencySeconds: 0,
@@ -420,21 +421,44 @@ describe("ensemble simulation invariants", () => {
       clickTrackStrength: 0,
     };
     const maxConfig: EnsembleConfig = {
-      musicianCount: 16,
-      tempoBpm: 180,
-      tempoSpreadBpm: 24,
-      couplingStrength: 3,
-      latencySeconds: 0.18,
-      jitterSeconds: 0.06,
+      musicianCount: 24,
+      tempoBpm: 220,
+      tempoSpreadBpm: 30,
+      couplingStrength: 4,
+      latencySeconds: 0.25,
+      jitterSeconds: 0.08,
       topology: "click-track",
       repertoireTexture: "dense-rhythm",
-      clickTrackStrength: 3,
+      clickTrackStrength: 4,
     };
 
     expect(createInitialState(minConfig).oscillators).toHaveLength(2);
-    expect(createInitialState(maxConfig).oscillators).toHaveLength(16);
+    expect(createInitialState(maxConfig).oscillators).toHaveLength(24);
     expect(() => simulateEnsemble(minConfig, 0.02)).not.toThrow();
     expect(() => simulateEnsemble(maxConfig, 0.02)).not.toThrow();
+  });
+
+  it.each([
+    "all-to-all",
+    "leader-follower",
+    "sections",
+    "click-track",
+  ] as const)("simulates the expanded endpoint combination for %s topology", (topology) => {
+    const result = simulateEnsemble({
+      ...defaultConfig,
+      musicianCount: 24,
+      tempoBpm: 220,
+      tempoSpreadBpm: 30,
+      couplingStrength: 4,
+      latencySeconds: 0.25,
+      jitterSeconds: 0.08,
+      clickTrackStrength: 4,
+      topology,
+    }, 0.3);
+
+    expect(result.finalState.oscillators).toHaveLength(24);
+    expect(result.finalMetrics.coherence).toBeGreaterThanOrEqual(0);
+    expect(result.finalMetrics.coherence).toBeLessThanOrEqual(1);
   });
 
   it("rejects invalid model config boundaries before simulation", () => {
@@ -523,6 +547,19 @@ describe("ensemble simulation invariants", () => {
 
     expect(nextFromEmptyHistory.oscillators[0]?.phase).toBeGreaterThan(0);
     expect(nextFromBeforeZero.oscillators[0]?.phase).toBeGreaterThan(0);
+  });
+
+  it("selects the latest delayed state at or before the requested time", () => {
+    const history = [0.1, 0.2, 0.2, 0.4].map((time, index) => ({
+      time,
+      oscillators: [{ phase: index + 1, omega: 0 }],
+    }));
+    const fallback = { time: 0.5, oscillators: [{ phase: 9, omega: 0 }] };
+
+    expect(delayedOscillatorPhase(history, fallback, 0, 0.05)).toBe(9);
+    expect(delayedOscillatorPhase(history, fallback, 0, 0.2)).toBe(3);
+    expect(delayedOscillatorPhase(history, fallback, 0, 0.3)).toBe(3);
+    expect(delayedOscillatorPhase(history, fallback, 0, 0.5)).toBe(4);
   });
 
   it("rejects mismatched delayed-coupling history instead of falling back to oscillator zero", () => {

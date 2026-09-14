@@ -21,13 +21,13 @@ export type EnsembleConfig = {
 };
 
 export const ensembleConfigBounds = {
-  musicianCount: { min: 2, max: 16, step: 1 },
-  tempoBpm: { min: 50, max: 180, step: 1 },
-  tempoSpreadBpm: { min: 0, max: 24, step: 0.5 },
-  couplingStrength: { min: 0, max: 3, step: 0.05 },
-  latencySeconds: { min: 0, max: 0.18, step: 0.001 },
-  jitterSeconds: { min: 0, max: 0.06, step: 0.001 },
-  clickTrackStrength: { min: 0, max: 3, step: 0.05 },
+  musicianCount: { min: 2, max: 24, step: 1 },
+  tempoBpm: { min: 40, max: 220, step: 1 },
+  tempoSpreadBpm: { min: 0, max: 30, step: 0.5 },
+  couplingStrength: { min: 0, max: 4, step: 0.05 },
+  latencySeconds: { min: 0, max: 0.25, step: 0.001 },
+  jitterSeconds: { min: 0, max: 0.08, step: 0.001 },
+  clickTrackStrength: { min: 0, max: 4, step: 0.05 },
 } as const;
 
 export type TextureProfile = {

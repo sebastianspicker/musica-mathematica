@@ -26,5 +26,5 @@ it("keeps the v2 golden field names and schema version", () => {
     },
   };
 
-  expect(exportPortfolioJson(portfolio, testCurriculum)).toBe(JSON.stringify(golden, null, 2));
+  expect(exportPortfolioJson(portfolio, testCurriculum)).toBe(JSON.stringify(golden));
 });

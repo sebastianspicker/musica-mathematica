@@ -1,0 +1,140 @@
+/* Guided notebook: sequential inquiry, recorded evidence, then reflection. */
+.mm-notebook { font-family: var(--mm-display); color: var(--mm-ink); }
+.mm-notebook #mm-current-task { margin-bottom: 22px; }
+.mm-notebook .mm-lesson-brief h1 { font-size: clamp(2.4rem, 4vw, 3.6rem); line-height: 1.12; font-weight: 400; letter-spacing: -.025em; }
+.mm-notebook .mm-lesson-brief__question { font-size: clamp(1.15rem, 2vw, 1.75rem); line-height: 1.4; margin: 8px 0 0; }
+.mm-notebook .mm-lesson-brief__crumb { margin-top: 10px; font-family: var(--mm-sans, sans-serif); font-size: .75rem; }
+.mm-notebook-prediction { display: flex; align-items: baseline; gap: 14px; padding: 14px 24px; border-left: 4px solid var(--mm-primary); border-radius: 3px; background: var(--mm-blue-soft); font-size: 1.2rem; line-height: 1.5; margin-bottom: 20px; }
+.mm-notebook-prediction strong { flex-shrink: 0; font-weight: 500; }
+.mm-notebook-prediction p { margin: 0; overflow-wrap: anywhere; }
+.mm-notebook .mm-inquiry { padding: 16px 0 0; background: transparent; border: 0; border-top: 1px solid var(--mm-line-strong); border-radius: 0; }
+.mm-notebook .mm-stage-card h2 { font-size: clamp(1.8rem, 2.6vw, 2.5rem); font-weight: 400; margin: 0 0 10px; }
+.mm-notebook .mm-stage-card > p, .mm-notebook .mm-stage-card label > span { font-size: 1.2rem; line-height: 1.5; }
+.mm-notebook .mm-stage-card > label { margin-top: 24px; }
+.mm-notebook .mm-stage-card textarea { width: 100%; font-family: var(--mm-display); font-size: 1.2rem; line-height: 1.55; padding: 14px 18px; min-height: 150px; }
+.mm-notebook .mm-primary-action { display: block; width: fit-content; min-width: 228px; max-width: 100%; margin: 20px auto; padding: 10px 28px; font-family: var(--mm-display); font-size: 1.2rem; font-weight: 400; border-radius: 5px; }
+.mm-notebook-run { border-radius: 7px; padding: 15px 22px; margin-top: 12px; background: var(--mm-surface-subtle); }
+.mm-notebook-run--preview { background: var(--mm-blue-soft); }
+.mm-notebook-run h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 0 0 12px; font-weight: 500; font-size: 1.7rem; }
+.mm-notebook-run--preview h3 { color: var(--mm-primary); }
+.mm-notebook-run h3 span { padding: 4px 14px; border-radius: 20px; background: var(--mm-line); font-family: var(--mm-display); font-size: .8rem; font-weight: 400; }
+.mm-notebook-readings { display: flex; flex-wrap: wrap; gap: 18px 0; margin: 14px 0; }
+.mm-notebook-readings > div { flex: 1 1 180px; min-width: 0; padding: 0 22px; border-left: 1px solid var(--mm-line-strong); }
+.mm-notebook-readings > div:first-child { border-left: 0; padding-left: 0; }
+.mm-notebook-readings dt { font-size: .95rem; color: var(--mm-ink-soft); line-height: 1.4; margin-bottom: 6px; }
+.mm-notebook-readings dd { font-family: var(--mm-mono); font-size: 1.25rem; line-height: 1.5; margin: 0; overflow-wrap: anywhere; }
+.mm-notebook-preview { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr); gap: 24px; }
+.mm-notebook-preview > .mm-notebook-readings { align-content: start; }
+.mm-notebook .mm-factor-inspector__heading { display: none; }
+.mm-notebook .mm-factor-inspector__factors { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+.mm-notebook .mm-factor-control { padding-top: 8px; }
+.mm-notebook .mm-factor-control > label { display: block; font-size: .95rem; }
+.mm-notebook .mm-factor-inspector input[type="number"] { font-family: var(--mm-mono); font-size: 1.2rem; }
+.mm-notebook .mm-factor-inspector select { font-family: var(--mm-display); }
+.mm-notebook .mm-model-source { font-size: .8rem; margin-bottom: 6px; }
+.mm-notebook .mm-factor-control > p { font-family: var(--mm-display); font-size: .8rem; }
+.mm-notebook .mm-inline-actions { justify-content: center; }
+.mm-notebook .mm-inline-actions button { width: auto; font-family: var(--mm-display); font-size: 1rem; }
+.mm-notebook .mm-comparison-readiness { text-align: center; border: 0; padding: 0; }
+.mm-notebook-notes { margin-top: 12px; }
+.mm-notebook-notes summary, .mm-notebook-detail summary { cursor: pointer; padding: 14px 0; font-size: 1rem; color: var(--mm-ink-soft); }
+.mm-notebook-notes label { margin-bottom: 16px; }
+.mm-notebook .mm-interpretation-boundary { margin: 24px 0 0; padding: 16px 0; border-top: 1px solid var(--mm-line-strong); background: transparent; border-radius: 0; text-align: center; }
+.mm-notebook .mm-interpretation-boundary h2 { font-weight: 400; font-size: .8rem; }
+.mm-notebook .mm-interpretation-boundary p { font-family: var(--mm-display); font-size: 1.1rem; line-height: 1.5; }
+.mm-notebook-detail { border-top: 1px solid var(--mm-line); }
+.mm-notebook .mm-analysis-stage { border: 0; background: transparent; padding: 12px 0 24px; }
+.mm-notebook .mm-lesson-brief__equation { margin: 20px 0; padding: 20px; }
+.mm-notebook .mm-comparison-table { margin: 22px 0; }
+.mm-notebook .mm-comparison-table h2 { font-size: 1.25rem; }
+.mm-notebook .mm-comparison-summary { background: var(--mm-surface-subtle); }
+.mm-notebook .mm-comparison-table table { font-family: var(--mm-display); font-size: 1rem; }
+.mm-notebook .mm-stage-card--complete dl > div { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; padding-block: 18px; font-size: 1.2rem; line-height: 1.5; }
+.mm-notebook .mm-stage-card--complete dt { font-weight: 400; }
+.mm-lesson-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--mm-line); margin-top: 12px; padding: 12px 0; color: var(--mm-muted); font-size: .875rem; }
+.mm-lesson-footer button { background: transparent; border-color: transparent; color: var(--mm-muted); font: inherit; }
+.mm-notebook :is(button, summary, input, select, textarea):focus-visible { outline: 2px solid var(--mm-primary); outline-offset: 3px; }
+@media (max-width: 760px) {
+  .mm-notebook-prediction { display: block; padding: 12px 16px; font-size: 1.05rem; }
+  .mm-notebook-prediction p { margin-top: 5px; }
+  .mm-notebook-preview { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .mm-notebook-run { padding: 16px; }
+  .mm-notebook-readings > div { flex-basis: 140px; padding: 0 12px; }
+  .mm-notebook-readings dd { font-size: 1.1rem; }
+  .mm-notebook .mm-stage-card--complete dl > div { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .mm-notebook .mm-primary-action { width: 100%; min-width: 0; }
+}
+
+.mm-notebook .mm-notebook-preview { grid-template-columns: minmax(180px, .8fr) minmax(0, 3fr); gap: 30px; }
+.mm-notebook-preview .mm-notebook-readings { margin-top: 8px; }
+.mm-notebook .mm-number-stepper { display: flex; gap: 8px; }
+.mm-notebook .mm-number-stepper input { width: 82px; min-width: 0; text-align: center; padding-inline: 4px; }
+.mm-notebook .mm-number-stepper button { min-width: 40px; min-height: 42px; padding: 3px 8px; background: var(--mm-surface); font-size: 1.3rem; font-weight: 400; }
+.mm-notebook .mm-number-stepper input::-webkit-inner-spin-button { appearance: none; }
+.mm-notebook .mm-number-stepper input { appearance: textfield; }
+.mm-notebook .mm-notebook-context { justify-content: center; margin: 12px 0 0; padding-top: 8px; }
+.mm-notebook-context > div { flex: 0 1 auto; padding-inline: 36px; }
+.mm-notebook-context dd { font-size: 1rem; }
+.mm-notebook .mm-other-factors summary { font-size: .85rem; cursor: pointer; padding-top: 8px; }
+.mm-notebook .mm-factor-error { color: var(--mm-primary); font-size: .875rem; }
+.mm-notebook .mm-notebook-preview .mm-factor-help { display: none; }
+.mm-notebook .mm-other-factors[open] { grid-column: 1 / -1; }
+.mm-notebook .mm-other-factors[open] .mm-factor-help { display: inline; }
+.mm-notebook-run .mm-notebook-run__note { font-size: .875rem; margin: 12px 0 0; }
+@media (max-width: 760px) {
+  .mm-notebook .mm-notebook-preview { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .mm-notebook-context > div { flex: 1 1 140px; padding-inline: 12px; }
+}
+
+/* Match the reference's compact recorded / preview bands. */
+.mm-notebook #mm-current-task { margin-bottom: 14px; }
+.mm-notebook .mm-lesson-brief__question { margin-top: 3px; line-height: 1.3; }
+.mm-notebook-prediction { padding-block: 11px; margin-bottom: 16px; }
+.mm-notebook .mm-inquiry { padding-top: 12px; }
+.mm-notebook .mm-stage-card > p { margin-bottom: 12px; }
+.mm-notebook-run { padding: 12px 22px; }
+.mm-notebook-run h3 { line-height: 1.2; margin-bottom: 8px; }
+.mm-notebook-run .mm-notebook-readings { margin-block: 8px; gap: 12px 0; }
+.mm-notebook-run .mm-notebook-readings > div { padding-inline: 16px; }
+.mm-notebook-run .mm-notebook-readings > div:first-child { padding-left: 0; }
+.mm-notebook-run .mm-notebook-readings dt { font-size: .875rem; line-height: 1.3; margin-bottom: 5px; }
+.mm-notebook-run .mm-notebook-readings dd { font-size: 1.5rem; line-height: 1.3; }
+.mm-notebook-run .mm-notebook-context { padding-top: 4px; margin: 8px 0 0; }
+.mm-notebook-run .mm-notebook-context > div { display: flex; align-items: baseline; gap: 10px; padding-inline: 24px; }
+.mm-notebook-run .mm-notebook-context dt { margin: 0; }
+.mm-notebook-run .mm-notebook-context dd { font-size: 1.05rem; white-space: nowrap; }
+.mm-notebook .mm-notebook-preview { gap: 22px; grid-template-columns: minmax(210px, .8fr) minmax(0, 3fr); }
+.mm-notebook .mm-notebook-preview .mm-factor-control { padding-top: 0; }
+.mm-notebook .mm-notebook-preview .mm-factor-control > label { font-size: .875rem; line-height: 1.3; }
+.mm-notebook .mm-notebook-preview .mm-factor-control > p { margin-top: 5px; line-height: 1.3; }
+.mm-notebook .mm-notebook-preview .mm-number-stepper input { font-size: 1.5rem; }
+.mm-notebook .mm-other-factors summary { padding-top: 5px; line-height: 1.3; }
+.mm-notebook-record-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 20px; padding-top: 12px; }
+.mm-notebook-record-row .mm-notebook-notes { margin: 0; grid-column: 1; }
+.mm-notebook-record-row .mm-notebook-notes summary { padding-block: 10px; font-size: .875rem; }
+.mm-notebook-record-row .mm-notebook-notes[open] { grid-column: 1 / -1; }
+.mm-notebook-record-row .mm-notebook-record { grid-column: 2; }
+.mm-notebook .mm-notebook-record-row .mm-primary-action { margin: 0; }
+.mm-notebook .mm-inline-actions { margin-top: 10px; }
+.mm-notebook .mm-stage-card .mm-comparison-readiness { margin-top: 8px !important; }
+@media (max-width: 760px) {
+  .mm-notebook .mm-notebook-preview { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .mm-notebook-run .mm-notebook-readings dd { font-size: 1.2rem; }
+  .mm-notebook-run .mm-notebook-context > div { flex: 1 1 100%; padding: 0; border: 0; }
+  .mm-notebook-record-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .mm-notebook-record-row .mm-notebook-record, .mm-notebook-record-row .mm-notebook-notes { grid-column: 1; }
+}
+
+/* Reflections lead with the current question; lesson identity remains context. */
+.mm-notebook--reflection { max-width: 900px; margin-inline: auto; }
+.mm-notebook--reflection .mm-lesson-brief h1 { font-size: 1.1rem; line-height: 1.4; letter-spacing: 0; }
+.mm-notebook--reflection .mm-lesson-brief__question { display: none; }
+.mm-notebook--reflection .mm-stage-card > h2 { font-size: 2.5rem; line-height: 1.2; }
+.mm-notebook--reflection .mm-stage-card > p, .mm-notebook--reflection .mm-stage-card label > span { font-size: 1.25rem; }
+.mm-notebook form.mm-stage-card > .mm-primary-action:first-of-type { margin-top: 20px; }
+.mm-notebook--reflection #mm-current-task:focus-visible { outline: 2px solid var(--mm-primary); outline-offset: 6px; }
+@media (max-width: 760px) {
+  .mm-notebook--reflection .mm-stage-card > h2 { font-size: 2rem; }
+  .mm-notebook .mm-comparison-summary { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .mm-notebook .mm-comparison-summary > div { border: 0; padding: 8px 0; }
+}

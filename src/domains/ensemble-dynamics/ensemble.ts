@@ -90,11 +90,13 @@ type SimulationProgress = {
 type AdvanceSimulationInput = Readonly<{
   progress: SimulationProgress;
   config: EnsembleConfig;
-  edges: readonly CouplingEdge[];
+  incomingEdges: OrderedIncomingEdges;
   stepSeconds: number;
   canonicalTime: number;
   sampleInterval: number;
 }>;
+
+type OrderedIncomingEdges = readonly (readonly CouplingEdge[])[];
 
 function coherence(oscillators: readonly Oscillator[]): number {
   if (oscillators.length === 0) {
@@ -343,10 +345,35 @@ export function stepEnsemble(
   dtSeconds: number,
 ): EnsembleState {
   assertValidEnsembleConfig(config);
-  assertValidCouplingEdges(edges, state.oscillators.length);
+  const incomingEdges = prepareIncomingEdges(edges, state.oscillators.length);
+  return stepEnsembleWithIncoming(state, config, incomingEdges, history, dtSeconds);
+}
+
+function prepareIncomingEdges(
+  edges: readonly CouplingEdge[],
+  oscillatorCount: number,
+): OrderedIncomingEdges {
+  assertValidCouplingEdges(edges, oscillatorCount);
+  const incomingEdges: CouplingEdge[][] = Array.from(
+    { length: oscillatorCount },
+    () => [],
+  );
+  for (const edge of edges) {
+    incomingEdges[edge.to]?.push(edge);
+  }
+  return incomingEdges;
+}
+
+function stepEnsembleWithIncoming(
+  state: EnsembleState,
+  config: EnsembleConfig,
+  incomingEdges: OrderedIncomingEdges,
+  history: readonly EnsembleState[],
+  dtSeconds: number,
+): EnsembleState {
   const profile = textureProfile(config.repertoireTexture);
   const nextOscillators = state.oscillators.map((oscillator, index) => {
-    const incoming = edges.filter((edge) => edge.to === index);
+    const incoming = incomingEdges[index] ?? [];
     const peerPull = incoming.reduce((sum, edge) => {
       const delay = effectiveDelaySeconds(edge, config, state.time);
       const delayedPhase = delayedOscillatorPhase(history, state, edge.from, state.time - delay);
@@ -391,6 +418,7 @@ export function advanceFixedStepSimulation(
   assertFiniteNonNegative("accumulatorSeconds", simulation.accumulatorSeconds);
 
   const edges = createCouplingEdges(config);
+  const incomingEdges = prepareIncomingEdges(edges, simulation.state.oscillators.length);
   const history = [...simulation.history];
   let state = simulation.state;
   let accumulatorSeconds = simulation.accumulatorSeconds + elapsedSeconds;
@@ -398,7 +426,13 @@ export function advanceFixedStepSimulation(
   while (accumulatorSeconds + FIXED_STEP_EPSILON_SECONDS >= fixedSimulationStepSeconds) {
     history.push(state);
     trimHistory(history, Math.max(1, config.latencySeconds + config.jitterSeconds + 0.5));
-    state = stepEnsemble(state, config, edges, history, fixedSimulationStepSeconds);
+    state = stepEnsembleWithIncoming(
+      state,
+      config,
+      incomingEdges,
+      history,
+      fixedSimulationStepSeconds,
+    );
     accumulatorSeconds -= fixedSimulationStepSeconds;
   }
 
@@ -411,16 +445,16 @@ export function advanceFixedStepSimulation(
 }
 
 function advanceSimulationStep(input: AdvanceSimulationInput): SimulationProgress {
-  const { progress, config, edges, stepSeconds, canonicalTime, sampleInterval } = input;
+  const { progress, config, incomingEdges, stepSeconds, canonicalTime, sampleInterval } = input;
   progress.history.push(progress.state);
   trimHistory(
     progress.history,
     Math.max(1, config.latencySeconds + config.jitterSeconds + 0.5),
   );
-  const advanced = stepEnsemble(
+  const advanced = stepEnsembleWithIncoming(
     progress.state,
     config,
-    edges,
+    incomingEdges,
     progress.history,
     stepSeconds,
   );
@@ -447,6 +481,7 @@ export function simulateEnsemble(
   assertFinitePositive("dtSeconds", dtSeconds);
 
   const edges = createCouplingEdges(config);
+  const incomingEdges = prepareIncomingEdges(edges, config.musicianCount);
   const sampleInterval = 0.1;
   let progress: SimulationProgress = {
     state: createInitialState(config),
@@ -462,7 +497,7 @@ export function simulateEnsemble(
     progress = advanceSimulationStep({
       progress,
       config,
-      edges,
+      incomingEdges,
       stepSeconds: dtSeconds,
       canonicalTime: Math.min(durationSeconds, (stepIndex + 1) * dtSeconds),
       sampleInterval,
@@ -474,7 +509,7 @@ export function simulateEnsemble(
     progress = advanceSimulationStep({
       progress,
       config,
-      edges,
+      incomingEdges,
       stepSeconds: remainderSeconds,
       canonicalTime: durationSeconds,
       sampleInterval,

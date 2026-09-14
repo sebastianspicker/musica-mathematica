@@ -1,4 +1,4 @@
-import { useId, type ReactElement } from "react";
+import { memo, useId, type ReactElement } from "react";
 import { claimsByIds, evidenceLabels, sourceById } from "../../learning/evidence/index";
 
 export type EvidencePanelProps = Readonly<{
@@ -6,7 +6,7 @@ export type EvidencePanelProps = Readonly<{
   sourceIds: readonly string[];
 }>;
 
-export function EvidencePanel({ claimIds, sourceIds }: EvidencePanelProps): ReactElement {
+export const EvidencePanel = memo(function EvidencePanel({ claimIds, sourceIds }: EvidencePanelProps): ReactElement {
   const headingId = useId();
   const records = claimsByIds(claimIds);
   const citedSourceIds = unique([
@@ -25,7 +25,7 @@ export function EvidencePanel({ claimIds, sourceIds }: EvidencePanelProps): Reac
       <SourceReferences headingId={headingId} sourceIds={citedSourceIds} />
     </aside>
   );
-}
+});
 
 function ClaimsList({ records }: Readonly<{ records: ReturnType<typeof claimsByIds> }>): ReactElement {
   if (records.length === 0) return <p className="mm-evidence-panel__empty">No claim boundary is registered for this lesson.</p>;

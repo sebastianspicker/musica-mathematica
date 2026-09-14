@@ -1,6 +1,7 @@
 /** Public pure-analysis boundary characterization. */
 import { describe, expect, it } from "vitest";
-import { analyzeAudioSelection } from "./analysis";
+import { analyzeAudioSelection, summarizeAudioSelection, type AudioSelectionAnalysis } from "./analysis";
+import { analyzeSpectrumWithFftJs } from "./fftJsAdapter";
 import type { SpectrumAnalyzer } from "./spectrum";
 
 const fixtureSpectrum: SpectrumAnalyzer = (samples, sampleRateHz) => {
@@ -55,4 +56,78 @@ describe("bounded selection analysis", () => {
     expect(() => analyzeAudioSelection(new Float32Array(1_024), 48_000, fixtureSpectrum)).toThrow("at least 2048");
     expect(() => analyzeAudioSelection(new Float32Array(31 * 2_048), 2_048, fixtureSpectrum)).toThrow("at most 30 seconds");
   });
+
+  it.each([2_048, 4_096] as const)("summarizes every %i-sample frame without changing full analysis", (frameSize) => {
+    const sampleRateHz = 8_192;
+    const samples = Float32Array.from({ length: sampleRateHz * 2 }, (_, index) => (
+      0.4 * Math.sin(2 * Math.PI * 220 * index / sampleRateHz)
+    ));
+
+    const analysis = analyzeAudioSelection(samples, sampleRateHz, fixtureSpectrum, { frameSize });
+    const summary = summarizeAudioSelection(analysis);
+
+    expect(analysis.frames.length).toBeGreaterThan(0);
+    expect(summary.frameCount).toBe(analysis.frames.length);
+    expect(summary.means.frameLevelDbfs).toBeCloseTo(mean(analysis.frames.map(({ level }) => level.dbfs)));
+    expect(summary.means.spectralCentroidHz).toBeCloseTo(mean(analysis.frames.map(({ spectral }) => spectral.centroidHz)));
+    expect(summary.means.pitchHz).toBeCloseTo(220, 0);
+    expect(summary.waveform).toBe(analysis.waveform);
+    expect(summary.spectralFlux).toHaveLength(analysis.spectralFlux.length);
+  });
+
+  it("represents silence and pitched signals without inventing a pitch for silence", () => {
+    const sampleRateHz = 8_192;
+    const silence = new Float32Array(sampleRateHz);
+    const pitched = Float32Array.from({ length: sampleRateHz }, (_, index) => (
+      0.5 * Math.sin(2 * Math.PI * 220 * index / sampleRateHz)
+    ));
+
+    const silenceSummary = summarizeAudioSelection(analyzeAudioSelection(
+      silence,
+      sampleRateHz,
+      analyzeSpectrumWithFftJs,
+    ));
+    const pitchSummary = summarizeAudioSelection(analyzeAudioSelection(
+      pitched,
+      sampleRateHz,
+      analyzeSpectrumWithFftJs,
+    ));
+
+    expect(silenceSummary.means.pitchHz).toBeNull();
+    expect(silenceSummary.means.frameLevelDbfs).toBeNull();
+    expect(pitchSummary.means.pitchHz).toBeCloseTo(220, 0);
+  });
+
+  it("bounds a 30-second flux trace, preserving its real first and last frame timestamps", () => {
+    const frameCount = Math.floor((30 * 48_000 - 2_048) / 1_024) + 1;
+    const analysis = {
+      calibration: "uncalibrated",
+      sampleRateHz: 48_000,
+      frameSize: 2_048,
+      hopSize: 1_024,
+      durationSeconds: 30,
+      waveform: [],
+      estimatedNoiseFloorDbfs: -80,
+      frames: [],
+      spectralFlux: Array.from({ length: frameCount }, (_, index) => index),
+      onsetTimesSeconds: [],
+      tempoHypotheses: [],
+      meterHypotheses: [],
+      chordHypotheses: [],
+    } satisfies AudioSelectionAnalysis;
+
+    const summary = summarizeAudioSelection(analysis);
+
+    expect(summary.spectralFlux).toHaveLength(256);
+    expect(summary.spectralFlux[0]).toEqual({ timeSeconds: 0, value: 0 });
+    expect(summary.spectralFlux.at(-1)).toEqual({
+      timeSeconds: (frameCount - 1) * 1_024 / 48_000,
+      value: frameCount - 1,
+    });
+    expect(new TextEncoder().encode(JSON.stringify(summary)).byteLength).toBeLessThan(128 * 1_024);
+  });
 });
+
+function mean(values: readonly number[]): number {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}

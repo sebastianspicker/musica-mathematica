@@ -1,4 +1,10 @@
-import type { WorkletAttachMessage, WorkletCreditMessage, WorkerFrameMessage } from "../../protocol/messages";
+import type {
+  WorkletAttachMessage,
+  WorkletCreditMessage,
+  WorkletStopMessage,
+  WorkerFrameMessage,
+  WorkerStreamEndMessage,
+} from "../../protocol/messages";
 
 declare const sampleRate: number;
 declare abstract class AudioWorkletProcessor {
@@ -22,6 +28,12 @@ function isWorkletCreditMessage(message: unknown): message is WorkletCreditMessa
     && (message as { type?: unknown }).type === "credits";
 }
 
+function isWorkletStopMessage(message: unknown): message is WorkletStopMessage {
+  return typeof message === "object"
+    && message !== null
+    && (message as { type?: unknown }).type === "stop-capture";
+}
+
 class CaptureProcessor extends AudioWorkletProcessor {
   private readonly frameSize: 2048 | 4096;
   private readonly hopSize: number;
@@ -32,6 +44,8 @@ class CaptureProcessor extends AudioWorkletProcessor {
   private sequence = 0;
   private credits = 0;
   private droppedFrames = 0;
+  private accepting = true;
+  private endPosted = false;
 
   constructor(options: AudioWorkletNodeOptions) {
     super(options);
@@ -40,24 +54,41 @@ class CaptureProcessor extends AudioWorkletProcessor {
     this.hopSize = this.frameSize / 2;
     this.ring = new Float32Array(this.frameSize);
     this.port.onmessage = (event: MessageEvent<unknown>) => {
-      if (!isWorkletAttachMessage(event.data)) return;
-      this.outputPort = event.data.port;
-      this.outputPort.onmessage = (creditEvent: MessageEvent<unknown>) => {
-        if (isWorkletCreditMessage(creditEvent.data) && Number.isSafeInteger(creditEvent.data.count)) {
-          this.credits += Math.max(0, creditEvent.data.count);
-        }
-      };
-      this.outputPort.start();
+      if (isWorkletStopMessage(event.data)) {
+        this.accepting = false;
+        this.postEndMarker();
+      } else if (isWorkletAttachMessage(event.data)) {
+        this.attachOutput(event.data.port);
+      }
     };
   }
 
   process(inputs: Float32Array[][]): boolean {
+    if (!this.accepting) return true;
     const channel = inputs.at(0)?.at(0);
     if (!channel) return true;
     for (let index = 0; index < channel.length; index += 1) {
       this.captureSample(channel.at(index) ?? 0);
     }
     return true;
+  }
+
+  private attachOutput(port: MessagePort): void {
+    this.outputPort = port;
+    this.outputPort.onmessage = (creditEvent: MessageEvent<unknown>) => {
+      if (isWorkletCreditMessage(creditEvent.data) && Number.isSafeInteger(creditEvent.data.count)) {
+        this.credits += Math.max(0, creditEvent.data.count);
+      }
+    };
+    this.outputPort.start();
+    this.postEndMarker();
+  }
+
+  private postEndMarker(): void {
+    if (this.accepting || this.endPosted || !this.outputPort) return;
+    this.endPosted = true;
+    const message: WorkerStreamEndMessage = { type: "audio-stream-end" };
+    this.outputPort.postMessage(message);
   }
 
   private captureSample(sample: number): void {

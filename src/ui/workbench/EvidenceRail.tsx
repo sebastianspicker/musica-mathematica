@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import { memo, type ReactElement } from "react";
 import { claimsByIds, evidenceLabels, sourceById } from "../../learning/evidence/index";
 import { InterfaceIcon } from "../Icon";
 
@@ -7,7 +7,7 @@ export type EvidenceRailProps = Readonly<{
   sourceIds: readonly string[];
 }>;
 
-export function EvidenceRail({ claimIds, sourceIds }: EvidenceRailProps): ReactElement {
+export const EvidenceRail = memo(function EvidenceRail({ claimIds, sourceIds }: EvidenceRailProps): ReactElement {
   const claims = claimsByIds(claimIds);
   const primaryClaim = claims.find((claim) => claim.kind === "computed-model-result") ?? claims.at(0);
   const source = sourceById(sourceIds[0]);
@@ -18,7 +18,7 @@ export function EvidenceRail({ claimIds, sourceIds }: EvidenceRailProps): ReactE
     <div className="mm-evidence-rail__item mm-evidence-rail__item--forbidden"><InterfaceIcon name="warning" /><strong>Do not infer</strong><p>{primaryClaim?.forbiddenInference ?? "Performance quality or calibrated measurement."}</p></div>
     <div className="mm-evidence-rail__item mm-evidence-rail__item--source"><InterfaceIcon name="source" /><strong>Source</strong><p>{source ? shortSource(source.authors, source.year) : "Published equation and documented method"}</p></div>
   </aside>;
-}
+});
 
 function shortSource(authors: string, year: number): string {
   return `${authors.replace(" and colleagues", "")} ${year}`;

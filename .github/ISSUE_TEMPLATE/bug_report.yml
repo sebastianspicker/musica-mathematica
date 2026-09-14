@@ -1,0 +1,35 @@
+name: Bug report
+description: Report a problem with a lesson, the interface, or local audio.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use a synthetic example if you can. Do not attach private audio,
+        learning records, credentials, or device identifiers. To report a vulnerability,
+        follow the repository's SECURITY.md without posting details here.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe what you expected and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can we reproduce it?
+      description: Tell us which lesson and stage you used, the factor values, and whether the input was synthetic, a file, or a microphone.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and app version
+      description: Browser version, operating system, and whether you used the Pages demo or a local build. Include the commit if known.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or redacted errors
+      description: Optional. Check for personal data before sharing.

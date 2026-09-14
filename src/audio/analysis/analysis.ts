@@ -65,6 +65,41 @@ export type AudioSelectionAnalysis = Readonly<{
   chordHypotheses: readonly ChordHypothesis[];
 }>;
 
+export type TimedSpectralFluxPoint = Readonly<{
+  timeSeconds: number;
+  value: number;
+}>;
+
+export type AudioSelectionFeatureMeans = Readonly<{
+  frameLevelDbfs: number | null;
+  spectralCentroidHz: number | null;
+  spectralFlatness: number | null;
+  spectralRolloffHz: number | null;
+  spectralHarmonicity: number | null;
+  pitchHz: number | null;
+}>;
+
+/**
+ * Transfer-safe derived selection data. It deliberately excludes per-frame
+ * spectra, chroma, and pitch details so the worker response stays bounded.
+ */
+export type AudioSelectionSummary = Readonly<{
+  calibration: "uncalibrated";
+  sampleRateHz: number;
+  frameSize: 2048 | 4096;
+  hopSize: number;
+  durationSeconds: number;
+  frameCount: number;
+  means: AudioSelectionFeatureMeans;
+  waveform: readonly WaveformEnvelopePoint[];
+  estimatedNoiseFloorDbfs: number;
+  spectralFlux: readonly TimedSpectralFluxPoint[];
+  onsetTimesSeconds: readonly number[];
+  tempoHypotheses: readonly TempoHypothesis[];
+  meterHypotheses: readonly MeterHypothesis[];
+  chordHypotheses: readonly ChordHypothesis[];
+}>;
+
 export type AudioSelectionAnalysisOptions = Readonly<{
   frameSize?: 2048 | 4096;
   onsetSensitivity?: number;
@@ -132,6 +167,71 @@ export function analyzeAudioSelection(
   const hopSize = Math.round(frameSize * (1 - AUDIO_ANALYSIS_LIMITS.overlapRatio));
   const frames = analyzeSelectionFrames(samples, sampleRateHz, frameSize, hopSize, analyzeSpectrum);
   return buildSelectionAnalysis(samples, sampleRateHz, frameSize, hopSize, frames, options);
+}
+
+export function summarizeAudioSelection(analysis: AudioSelectionAnalysis): AudioSelectionSummary {
+  const pitchedFrames = analysis.frames.filter((frame) => (
+    frame.pitch.frequencyHz !== null && frame.pitch.confidence >= 0.6
+  ));
+  return Object.freeze({
+    calibration: analysis.calibration,
+    sampleRateHz: analysis.sampleRateHz,
+    frameSize: analysis.frameSize,
+    hopSize: analysis.hopSize,
+    durationSeconds: analysis.durationSeconds,
+    frameCount: analysis.frames.length,
+    means: Object.freeze({
+      frameLevelDbfs: meanFinite(analysis.frames.map((frame) => frame.level.dbfs)),
+      spectralCentroidHz: meanFinite(analysis.frames.map((frame) => frame.spectral.centroidHz)),
+      spectralFlatness: meanFinite(analysis.frames.map((frame) => frame.spectral.flatness)),
+      spectralRolloffHz: meanFinite(analysis.frames.map((frame) => frame.spectral.rolloffHz)),
+      spectralHarmonicity: meanFinite(analysis.frames.map((frame) => frame.spectral.harmonicity)),
+      pitchHz: meanFinite(pitchedFrames.flatMap((frame) => (
+        frame.pitch.frequencyHz === null ? [] : [frame.pitch.frequencyHz]
+      ))),
+    }),
+    waveform: analysis.waveform,
+    estimatedNoiseFloorDbfs: analysis.estimatedNoiseFloorDbfs,
+    spectralFlux: Object.freeze(timedFluxSample(
+      analysis.spectralFlux,
+      analysis.sampleRateHz,
+      analysis.hopSize,
+    )),
+    onsetTimesSeconds: analysis.onsetTimesSeconds,
+    tempoHypotheses: analysis.tempoHypotheses,
+    meterHypotheses: analysis.meterHypotheses,
+    chordHypotheses: analysis.chordHypotheses,
+  });
+}
+
+const MAXIMUM_TRANSFERRED_FLUX_POINTS = 256;
+
+function timedFluxSample(
+  flux: readonly number[],
+  sampleRateHz: number,
+  hopSize: number,
+): TimedSpectralFluxPoint[] {
+  if (flux.length === 0) return [];
+  const pointCount = Math.min(flux.length, MAXIMUM_TRANSFERRED_FLUX_POINTS);
+  if (pointCount === 1) return [Object.freeze({ timeSeconds: 0, value: flux[0] })];
+  return Array.from({ length: pointCount }, (_, pointIndex) => {
+    const frameIndex = Math.round(pointIndex * (flux.length - 1) / (pointCount - 1));
+    return Object.freeze({
+      timeSeconds: frameIndex * hopSize / sampleRateHz,
+      value: flux[frameIndex],
+    });
+  });
+}
+
+function meanFinite(values: readonly number[]): number | null {
+  let sum = 0;
+  let count = 0;
+  for (const value of values) {
+    if (!Number.isFinite(value)) continue;
+    sum += value;
+    count += 1;
+  }
+  return count === 0 ? null : sum / count;
 }
 
 function analyzeSelectionFrames(

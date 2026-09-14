@@ -1,5 +1,8 @@
 import type { DomainDefinition, ThreeLessons } from "../../curriculum/contracts";
 import { lesson, numberFactor, selectFactor } from "../support/construction";
+import { ensembleConfigBounds } from "./ensembleConfig";
+
+const milliseconds = (seconds: number): number => seconds * 1000;
 
 const lessons = [
       lesson("ensemble-dynamics", 1, {
@@ -16,10 +19,10 @@ const lessons = [
         interpretationPrompt: "Explain model lock-in and name at least one missing human coordination cue.",
         transferPrompt: "Design a listening cue that could be tested separately with players.",
         factors: [
-          numberFactor("musicianCount", "Musicians", 8, 2, 24, 1, "", "Number of model oscillators."),
-          numberFactor("tempoBpm", "Tempo", 104, 40, 220, 1, "BPM", "Mean natural tempo."),
-          numberFactor("tempoSpreadBpm", "Tempo spread", 12, 0, 30, 0.5, "BPM", "Deterministic spread of natural tempi."),
-          numberFactor("couplingStrength", "Peer coupling", 0.25, 0, 4, 0.05, "", "Mutual phase-adjustment strength."),
+          numberFactor("musicianCount", "Musicians", 8, ensembleConfigBounds.musicianCount.min, ensembleConfigBounds.musicianCount.max, ensembleConfigBounds.musicianCount.step, "", "Number of model oscillators."),
+          numberFactor("tempoBpm", "Tempo", 104, ensembleConfigBounds.tempoBpm.min, ensembleConfigBounds.tempoBpm.max, ensembleConfigBounds.tempoBpm.step, "BPM", "Mean natural tempo."),
+          numberFactor("tempoSpreadBpm", "Tempo spread", 12, ensembleConfigBounds.tempoSpreadBpm.min, ensembleConfigBounds.tempoSpreadBpm.max, ensembleConfigBounds.tempoSpreadBpm.step, "BPM", "Deterministic spread of natural tempi."),
+          numberFactor("couplingStrength", "Peer coupling", 0.25, ensembleConfigBounds.couplingStrength.min, ensembleConfigBounds.couplingStrength.max, ensembleConfigBounds.couplingStrength.step, "", "Mutual phase-adjustment strength."),
         ],
         claimIds: ["model.ensemble", "heuristic.transparent", "literature.context", "recommendation.inquiry"],
         sourceIds: ["demos-palmer-2023", "abalde-2024"],
@@ -38,9 +41,9 @@ const lessons = [
         interpretationPrompt: "Distinguish a model stressor from a diagnosis of a real route or rehearsal.",
         transferPrompt: "List the route measurements needed before making a deployment claim.",
         factors: [
-          numberFactor("latencyMs", "One-way delay", 55, 0, 250, 1, "ms", "Configured model delay, not measured latency."),
-          numberFactor("jitterMs", "Delay variation", 18, 0, 80, 1, "ms", "Qualitative jitter control."),
-          numberFactor("couplingStrength", "Peer coupling", 1.1, 0, 4, 0.05, "", "Peer phase-adjustment strength."),
+          numberFactor("latencyMs", "One-way delay", 55, milliseconds(ensembleConfigBounds.latencySeconds.min), milliseconds(ensembleConfigBounds.latencySeconds.max), milliseconds(ensembleConfigBounds.latencySeconds.step), "ms", "Configured model delay, not measured latency."),
+          numberFactor("jitterMs", "Delay variation", 18, milliseconds(ensembleConfigBounds.jitterSeconds.min), milliseconds(ensembleConfigBounds.jitterSeconds.max), milliseconds(ensembleConfigBounds.jitterSeconds.step), "ms", "Qualitative jitter control."),
+          numberFactor("couplingStrength", "Peer coupling", 1.1, ensembleConfigBounds.couplingStrength.min, ensembleConfigBounds.couplingStrength.max, ensembleConfigBounds.couplingStrength.step, "", "Peer phase-adjustment strength."),
           selectFactor("topology", "Listening topology", "leader-follower", [
             { value: "all-to-all", label: "All-to-all" },
             { value: "leader-follower", label: "Leader–follower" },
@@ -64,10 +67,10 @@ const lessons = [
         interpretationPrompt: "Choose a musical criterion before interpreting the trade-off.",
         transferPrompt: "Draft a reversible click policy for one passage.",
         factors: [
-          numberFactor("clickTrackStrength", "External pulse", 2.2, 0, 4, 0.05, "", "Strength of the common external phase force."),
-          numberFactor("couplingStrength", "Peer coupling", 0.35, 0, 4, 0.05, "", "Strength of mutual adjustment."),
-          numberFactor("tempoSpreadBpm", "Tempo spread", 10, 0, 30, 0.5, "BPM", "Deterministic natural-tempo variation."),
-          numberFactor("tempoBpm", "Tempo", 116, 40, 220, 1, "BPM", "Mean natural tempo and external pulse rate."),
+          numberFactor("clickTrackStrength", "External pulse", 2.2, ensembleConfigBounds.clickTrackStrength.min, ensembleConfigBounds.clickTrackStrength.max, ensembleConfigBounds.clickTrackStrength.step, "", "Strength of the common external phase force."),
+          numberFactor("couplingStrength", "Peer coupling", 0.35, ensembleConfigBounds.couplingStrength.min, ensembleConfigBounds.couplingStrength.max, ensembleConfigBounds.couplingStrength.step, "", "Strength of mutual adjustment."),
+          numberFactor("tempoSpreadBpm", "Tempo spread", 10, ensembleConfigBounds.tempoSpreadBpm.min, ensembleConfigBounds.tempoSpreadBpm.max, ensembleConfigBounds.tempoSpreadBpm.step, "BPM", "Deterministic natural-tempo variation."),
+          numberFactor("tempoBpm", "Tempo", 116, ensembleConfigBounds.tempoBpm.min, ensembleConfigBounds.tempoBpm.max, ensembleConfigBounds.tempoBpm.step, "BPM", "Mean natural tempo and external pulse rate."),
         ],
         claimIds: ["model.ensemble", "heuristic.transparent", "literature.context", "recommendation.inquiry"],
         sourceIds: ["demos-palmer-2023", "abalde-2024"],

@@ -1,19 +1,24 @@
 import type { MutableRefObject } from "react";
-import { startMicrophoneSession } from "../../audio/browser/capture";
+import type { EvaluationOutput } from "../../curriculum/contracts";
+import { AUDIO_ANALYSIS_LIMITS, type SafeMediaSettings } from "../../audio/analysis/contracts";
+import { startMicrophoneSession, type MicrophoneSession } from "../../audio/browser/capture";
+import { decodeAudioSelection } from "../../audio/browser/fileInput";
+import {
+  analyzeSelectionInWorker,
+  prepareMicrophoneAnalysisPipeline,
+  type AnalysisPipeline,
+  type PreparedAnalysisPipeline,
+} from "../../audio/browser/workerClient";
 import {
   captureProcessorModuleUrl,
   createSelectionAnalysisWorker,
   createStreamingAnalysisWorker,
 } from "../../audio/browser/runtime";
-import { AUDIO_ANALYSIS_LIMITS, type SafeMediaSettings } from "../../audio/analysis/contracts";
-import { decodeAudioSelection } from "../../audio/browser/fileInput";
-import { analyzeSelectionInWorker, createMicrophoneAnalysisPipeline } from "../../audio/browser/workerClient";
 import {
   microphoneFrameToEvaluation,
   selectionToEvaluation,
   type AudioEvaluationSettings,
 } from "./mapAudioEvaluation";
-import type { EvaluationOutput } from "../../curriculum/contracts";
 
 type AnalysisStateSetters = Readonly<{
   onAnalysis: (evaluation: EvaluationOutput | null) => void;
@@ -39,7 +44,7 @@ type MicrophoneAnalysisRequest = Readonly<{
 export async function startMicrophoneAnalysis(request: MicrophoneAnalysisRequest): Promise<void> {
   const { analysisSettings, durationSeconds, frameSize, gate, setSettings, state } = request;
   const { onAnalysis, setBusy, setStatus } = state;
-  beginAnalysis(state, "Requesting a local microphone segment…");
+  beginAnalysis(state, "Preparing local audio analysis…");
   const context = createAudioContext();
   if (!context) {
     setBusy(false);
@@ -49,28 +54,49 @@ export async function startMicrophoneAnalysis(request: MicrophoneAnalysisRequest
   const resources = createMicrophoneResources(context);
   const { cleanup } = resources;
   gate.registerCleanup(cleanup);
+  let analysisFailed = false;
   try {
-    const started = await prepareMicrophoneCapture({
-      analysisSettings,
-      context,
-      durationSeconds,
+    const preparation = prepareMicrophoneAnalysisPipeline(context, {
       frameSize,
-      gate,
-      onAnalysis,
-      resources,
-      setSettings,
-      setStatus,
+      queueCapacity: AUDIO_ANALYSIS_LIMITS.defaultQueueCapacity,
+      onsetSensitivity: analysisSettings.onsetSensitivity,
+      workletModuleUrl: captureProcessorModuleUrl,
+      workerFactory: createStreamingAnalysisWorker,
+      onResult: (frame, queue, temporal) => {
+        if (!gate.isCurrent() || analysisFailed) return;
+        onAnalysis(microphoneFrameToEvaluation(frame, temporal, queue, analysisSettings));
+        setStatus(`Capturing locally · ${Math.max(0, durationSeconds).toFixed(0)} s maximum · ${queue.sequenceGaps + queue.overflowFrames + queue.staleFrames} reported frame gaps`);
+      },
+      onError: (message) => {
+        if (!gate.isCurrent()) return;
+        analysisFailed = true;
+        cleanup();
+        gate.clearCleanup(cleanup);
+        setBusy(false);
+        setStatus(`Analysis worker: ${message}`);
+      },
     });
-    if (!started) {
+    resources.setPreparation(preparation);
+    if (analysisFailed) return;
+    setStatus("Requesting a local microphone segment…");
+    const session = await startMicrophoneSession({ userInitiated: true, durationSeconds });
+    resources.setSessionStop(session.stop);
+    if (!gate.isCurrent() || analysisFailed) return;
+    setSettings(session.settings);
+    const pipeline = await connectBeforeDeadline(context, preparation, session);
+    if (!pipeline) {
       cleanup();
+      gate.clearCleanup(cleanup);
+      if (gate.isCurrent()) {
+        setBusy(false);
+        setStatus("Microphone capture ended before local analysis setup completed.");
+      }
       return;
     }
-    resources.setTimer(window.setTimeout(
-      () => {
-        finishMicrophoneCapture({ cleanup, gate, setBusy, setStatus });
-      },
-      durationSeconds * 1000,
-    ));
+    resources.setPipeline(pipeline);
+    if (!gate.isCurrent()) return;
+    setStatus(`Capturing locally · ${durationSeconds.toFixed(0)} s maximum · 0 reported frame gaps`);
+    void finishAtSessionEnd({ cleanup, gate, pipeline, session, setBusy, setStatus });
   } catch (error) {
     cleanup();
     gate.clearCleanup(cleanup);
@@ -82,9 +108,9 @@ export async function startMicrophoneAnalysis(request: MicrophoneAnalysisRequest
 
 type MicrophoneResources = Readonly<{
   cleanup: () => void;
-  setPipeline: (pipeline: Awaited<ReturnType<typeof createMicrophoneAnalysisPipeline>>) => void;
+  setPipeline: (pipeline: AnalysisPipeline) => void;
+  setPreparation: (preparation: PreparedAnalysisPipeline) => void;
   setSessionStop: (stop: () => void) => void;
-  setTimer: (timer: number) => void;
 }>;
 
 function beginAnalysis(state: AnalysisStateSetters, status: string): void {
@@ -100,32 +126,35 @@ function createAudioContext(): AudioContext | null {
 
 function createMicrophoneResources(context: AudioContext): MicrophoneResources {
   let stopSession: (() => void) | undefined;
-  let pipeline: Awaited<ReturnType<typeof createMicrophoneAnalysisPipeline>> | undefined;
-  let timer: number | undefined;
+  let preparation: PreparedAnalysisPipeline | undefined;
+  let pipeline: AnalysisPipeline | undefined;
+  let cleaned = false;
   const closeContext = createContextCloser(context);
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    pipeline?.stop();
+    preparation?.stop();
+    stopSession?.();
+    pipeline = undefined;
+    preparation = undefined;
+    stopSession = undefined;
+    closeContext();
+  };
   return {
     setSessionStop: (nextStop) => {
-      stopSession = nextStop;
+      if (cleaned) nextStop();
+      else stopSession = nextStop;
+    },
+    setPreparation: (nextPreparation) => {
+      if (cleaned) nextPreparation.stop();
+      else preparation = nextPreparation;
     },
     setPipeline: (nextPipeline) => {
-      pipeline = nextPipeline;
+      if (cleaned) nextPipeline.stop();
+      else pipeline = nextPipeline;
     },
-    setTimer: (nextTimer) => {
-      timer = nextTimer;
-    },
-    cleanup: () => {
-      if (timer !== undefined) {
-        window.clearTimeout(timer);
-        timer = undefined;
-      }
-      const activePipeline = pipeline;
-      pipeline = undefined;
-      activePipeline?.stop();
-      const stopActiveSession = stopSession;
-      stopSession = undefined;
-      stopActiveSession?.();
-      closeContext();
-    },
+    cleanup,
   };
 }
 
@@ -138,55 +167,58 @@ function createContextCloser(context: AudioContext): () => void {
   };
 }
 
-async function prepareMicrophoneCapture(request: Readonly<{
-  analysisSettings: AudioEvaluationSettings;
-  context: AudioContext;
-  durationSeconds: number;
-  frameSize: 2048 | 4096;
-  gate: AnalysisRequestGate;
-  onAnalysis: AnalysisStateSetters["onAnalysis"];
-  resources: MicrophoneResources;
-  setSettings: (settings: SafeMediaSettings | null) => void;
-  setStatus: AnalysisStateSetters["setStatus"];
-}>): Promise<boolean> {
-  const { analysisSettings, context, durationSeconds, frameSize, gate, onAnalysis, resources, setSettings, setStatus } = request;
-  const session = await startMicrophoneSession({ userInitiated: true, durationSeconds });
-  resources.setSessionStop(session.stop);
-  if (!gate.isCurrent()) return false;
-  setSettings(session.settings);
-  if (context.state === "suspended") await context.resume();
-  if (!gate.isCurrent()) return false;
-  const pipeline = await createMicrophoneAnalysisPipeline(context, session.stream, {
-    frameSize,
-    queueCapacity: AUDIO_ANALYSIS_LIMITS.defaultQueueCapacity,
-    onsetSensitivity: analysisSettings.onsetSensitivity,
-    workletModuleUrl: captureProcessorModuleUrl,
-    workerFactory: createStreamingAnalysisWorker,
-    onResult: (frame, queue, temporal) => {
-      if (!gate.isCurrent()) return;
-      onAnalysis(microphoneFrameToEvaluation(frame, temporal, queue, analysisSettings));
-      setStatus(`Capturing locally · ${Math.max(0, durationSeconds).toFixed(0)} s maximum · ${queue.sequenceGaps + queue.overflowFrames + queue.staleFrames} reported frame gaps`);
-    },
-    onError: (message) => {
-      if (gate.isCurrent()) setStatus(`Analysis worker: ${message}`);
-    },
+type ConnectionOutcome =
+  | Readonly<{ kind: "connected"; pipeline: AnalysisPipeline }>
+  | Readonly<{ kind: "ended" }>
+  | Readonly<{ kind: "failed"; error: unknown }>;
+
+async function connectBeforeDeadline(
+  context: AudioContext,
+  preparation: PreparedAnalysisPipeline,
+  session: MicrophoneSession,
+): Promise<AnalysisPipeline | null> {
+  let sessionEnded = false;
+  const ended = session.ended.then<ConnectionOutcome>(() => {
+    sessionEnded = true;
+    return { kind: "ended" };
   });
-  resources.setPipeline(pipeline);
-  return gate.isCurrent();
+  const connection = (async (): Promise<ConnectionOutcome> => {
+    if (context.state === "suspended") await context.resume();
+    if (sessionEnded) return { kind: "ended" };
+    return { kind: "connected", pipeline: await preparation.connect(session.stream) };
+  })().catch<ConnectionOutcome>((error: unknown) => ({ kind: "failed", error }));
+  const outcome = await Promise.race([connection, ended]);
+  if (outcome.kind === "connected") return outcome.pipeline;
+  if (outcome.kind === "failed") throw outcome.error;
+  preparation.stop();
+  return null;
 }
 
-function finishMicrophoneCapture(request: Readonly<{
+async function finishAtSessionEnd(request: Readonly<{
   cleanup: () => void;
   gate: AnalysisRequestGate;
+  pipeline: AnalysisPipeline;
+  session: MicrophoneSession;
   setBusy: (busy: boolean) => void;
   setStatus: (status: string) => void;
-}>): void {
-  const { cleanup, gate, setBusy, setStatus } = request;
-  cleanup();
-  gate.clearCleanup(cleanup);
-  if (!gate.isCurrent()) return;
-  setBusy(false);
-  setStatus("Microphone segment complete. Only the displayed derived features can be recorded.");
+}>): Promise<void> {
+  const { cleanup, gate, pipeline, session, setBusy, setStatus } = request;
+  const reason = await session.ended;
+  if (reason !== "deadline" || !gate.isCurrent()) return;
+  try {
+    await pipeline.finish();
+    if (gate.isCurrent()) {
+      setStatus("Microphone segment complete. Only the displayed derived features can be recorded.");
+    }
+  } catch (error) {
+    if (gate.isCurrent()) {
+      setStatus(error instanceof Error ? error.message : "Microphone analysis could not finish.");
+    }
+  } finally {
+    cleanup();
+    gate.clearCleanup(cleanup);
+    if (gate.isCurrent()) setBusy(false);
+  }
 }
 
 type FileAnalysisRequest = Readonly<{
@@ -271,5 +303,5 @@ function publishFileAnalysis(request: Readonly<{
   const { analysis, analysisSettings, fileRef, onAnalysis, provenance, setStatus } = request;
   onAnalysis(selectionToEvaluation(analysis, provenance, analysisSettings));
   fileRef.current = null;
-  setStatus(`Local analysis complete: ${analysis.durationSeconds.toFixed(2)} s, ${analysis.frames.length} frames. Raw audio was discarded.`);
+  setStatus(`Local analysis complete: ${analysis.durationSeconds.toFixed(2)} s, ${analysis.frameCount} frames. Raw audio was discarded.`);
 }

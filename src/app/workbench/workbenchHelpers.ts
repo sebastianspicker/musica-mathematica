@@ -1,10 +1,14 @@
 import { defaultFactorsFor, type EvaluationOutput, type FactorValue, type InputMode, type LessonDefinition } from "../../curriculum/contracts";
-import type { LessonAttemptV2 } from "../../learning/portfolio/schema-v2";
+import type { LessonAttemptV2, TrialSnapshotV2 } from "../../learning/portfolio/schema-v2";
 import type { BriefStage } from "../../ui/workbench/LessonBrief";
 
-export function factorsForAttempt(lesson: LessonDefinition, attempt: LessonAttemptV2): Record<string, FactorValue> {
+export function factorsForAttempt(
+  lesson: LessonDefinition,
+  attempt: LessonAttemptV2,
+  initialFactors?: Readonly<Record<string, FactorValue>>,
+): Record<string, FactorValue> {
   const defaults = defaultFactorsFor(lesson);
-  const latest = attempt.trials.at(-1)?.factors;
+  const latest = initialFactors ?? attempt.trials.at(-1)?.factors;
   if (!latest) return defaults;
   return Object.fromEntries(lesson.factors.map((factor) => [factor.id, latest[factor.id] ?? defaults[factor.id]]));
 }
@@ -56,4 +60,15 @@ export function evidenceClaimIdsFor(
     claimId !== "measurement.local" && claimId !== "hypothesis.transcription"
   ) || resultClaims.has(claimId));
   return [...new Set([...contextual, ...resultClaims])];
+}
+
+/** Detect reductions made when accepting a run, before persistence sees it. */
+export function recordedRunWasTrimmed(previous: LessonAttemptV2, submitted: TrialSnapshotV2, next: LessonAttemptV2): boolean {
+  const saved = next.trials.at(-1);
+  return saved !== undefined && (
+    next.trials.length < previous.trials.length + 1
+    || (saved.note?.length ?? 0) < (submitted.note?.length ?? 0)
+    || saved.trace.length < submitted.trace.length
+    || saved.observables.length < submitted.observables.length
+  );
 }

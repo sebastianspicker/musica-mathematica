@@ -1,5 +1,5 @@
 import type { AudioProvenance, QueueStatus } from "../../audio/analysis/contracts";
-import type { AudioSelectionAnalysis, FrameAnalysis, TemporalHypotheses } from "../../audio/analysis/analysis";
+import type { AudioSelectionSummary, FrameAnalysis, TemporalHypotheses } from "../../audio/analysis/analysis";
 import type { EvaluationOutput, ObservableRecord, TracePoint } from "../../curriculum/contracts";
 
 export type AudioEvaluationSettings = Readonly<{
@@ -19,39 +19,33 @@ function chordHypothesisObservables(candidates: readonly ChordHypothesis[]): Obs
 }
 
 export function selectionToEvaluation(
-  analysis: AudioSelectionAnalysis,
+  analysis: AudioSelectionSummary,
   provenance: AudioProvenance,
   settings: AudioEvaluationSettings = {},
 ): EvaluationOutput {
-  const frameCount = analysis.frames.length;
-  const meanDbfs = meanFinite(analysis.frames.map((frame) => frame.level.dbfs));
-  const meanCentroid = meanFinite(analysis.frames.map((frame) => frame.spectral.centroidHz));
-  const meanFlatness = meanFinite(analysis.frames.map((frame) => frame.spectral.flatness));
-  const meanRolloff = meanFinite(analysis.frames.map((frame) => frame.spectral.rolloffHz));
-  const meanHarmonicity = meanFinite(analysis.frames.map((frame) => frame.spectral.harmonicity));
-  const pitchFrames = analysis.frames.filter((frame) => frame.pitch.frequencyHz !== null && frame.pitch.confidence >= 0.6);
-  const meanPitch = meanFinite(pitchFrames.flatMap((frame) => frame.pitch.frequencyHz === null ? [] : [frame.pitch.frequencyHz]));
+  const frameCount = analysis.frameCount;
   const topTempo = analysis.tempoHypotheses.at(0);
   const topMeter = selectMeterHypotheses(analysis.meterHypotheses, settings.meterBias).at(0);
   const observables: ObservableRecord[] = [
-    observed("meanDbfs", "Mean frame level", finiteLabel(meanDbfs, 1), "dBFS"),
+    observed("meanDbfs", "Mean frame level", finiteLabel(analysis.means.frameLevelDbfs, 1), "dBFS"),
     observed("noiseFloor", "Estimated noise floor", finiteLabel(analysis.estimatedNoiseFloorDbfs, 1), "dBFS"),
-    observed("centroid", "Mean spectral centroid", finiteLabel(meanCentroid, 1), "Hz"),
-    observed("flatness", "Mean spectral flatness", finiteLabel(meanFlatness, 3), null),
-    observed("rolloff", "Mean 85% roll-off", finiteLabel(meanRolloff, 1), "Hz"),
-    observed("harmonicity", "Mean harmonicity", finiteLabel(meanHarmonicity, 3), null),
-    hypothesis("pitch", "Monophonic pitch candidate", meanPitch === null ? "insufficient periodic evidence" : `${meanPitch.toFixed(2)} Hz`),
+    observed("centroid", "Mean spectral centroid", finiteLabel(analysis.means.spectralCentroidHz, 1), "Hz"),
+    observed("flatness", "Mean spectral flatness", finiteLabel(analysis.means.spectralFlatness, 3), null),
+    observed("rolloff", "Mean 85% roll-off", finiteLabel(analysis.means.spectralRolloffHz, 1), "Hz"),
+    observed("harmonicity", "Mean harmonicity", finiteLabel(analysis.means.spectralHarmonicity, 3), null),
+    hypothesis("pitch", "Monophonic pitch candidate", analysis.means.pitchHz === null ? "insufficient periodic evidence" : `${analysis.means.pitchHz.toFixed(2)} Hz`),
     hypothesis("tempo1", "Tempo candidate 1", topTempo ? `${topTempo.bpm.toFixed(1)} BPM · ${topTempo.confidence.toFixed(2)}` : "no stable candidate"),
     hypothesis("meter1", "Meter candidate 1", topMeter ? `${topMeter.beatsPerBar} beats · ${topMeter.confidence.toFixed(2)}` : "no stable candidate"),
     ...chordHypothesisObservables(analysis.chordHypotheses),
   ];
-  const trace = analysis.waveform.flatMap((point, index): TracePoint[] => [
+  const trace = analysis.waveform.flatMap((point): TracePoint[] => [
     { x: point.startSample / analysis.sampleRateHz, y: point.minimum, series: "Waveform minimum" },
     { x: point.startSample / analysis.sampleRateHz, y: point.maximum, series: "Waveform maximum" },
-    ...(index < analysis.spectralFlux.length
-      ? [{ x: point.startSample / analysis.sampleRateHz, y: analysis.spectralFlux[index], series: "Spectral flux" }]
-      : []),
-  ]);
+  ]).concat(analysis.spectralFlux.map((point): TracePoint => ({
+    x: point.timeSeconds,
+    y: point.value,
+    series: "Spectral flux",
+  })));
   return {
     headline: "Local audio observation",
     result: `${frameCount} frames · ${analysis.onsetTimesSeconds.length} onset candidates`,
@@ -144,11 +138,6 @@ function observed(id: string, label: string, value: number | string, unit: strin
 
 function hypothesis(id: string, label: string, value: string): ObservableRecord {
   return { id, label, value, unit: null, aggregation: "distribution", claimId: "hypothesis.transcription" };
-}
-
-function meanFinite(values: readonly number[]): number | null {
-  const finite = values.filter(Number.isFinite);
-  return finite.length === 0 ? null : finite.reduce((sum, value) => sum + value, 0) / finite.length;
 }
 
 function finiteLabel(value: number | null, precision: number): string {

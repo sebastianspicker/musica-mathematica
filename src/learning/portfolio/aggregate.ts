@@ -7,8 +7,8 @@ import type {
   TrialSnapshotV2,
 } from "./schema-v2";
 import {
-  isLessonAttemptV2,
   isTrialSnapshotV2,
+  normalizeLessonAttempt,
   sanitizePortfolio,
   sanitizeTrial,
 } from "./validate";
@@ -67,13 +67,14 @@ export function updateAttempt(
   portfolio: LearningPortfolioV2,
   attempt: LessonAttemptV2,
 ): LearningPortfolioV2 {
-  if (!isLessonAttemptV2(attempt, curriculum)) return portfolio;
+  const normalizedAttempt = normalizeLessonAttempt(attempt, curriculum);
+  if (!normalizedAttempt) return portfolio;
   return sanitizePortfolio({
     ...portfolio,
-    active: { labId: attempt.labId, lessonId: attempt.lessonId },
+    active: { labId: normalizedAttempt.labId, lessonId: normalizedAttempt.lessonId },
     attempts: {
       ...portfolio.attempts,
-      [attemptKey(attempt.labId, attempt.lessonId)]: attempt,
+      [attemptKey(normalizedAttempt.labId, normalizedAttempt.lessonId)]: normalizedAttempt,
     },
   }, curriculum);
 }
@@ -118,7 +119,7 @@ export function recordTrial(
 ): LessonAttemptV2 {
   if (attempt.stage !== "experiment" || !attempt.prediction) return attempt;
 
-  const normalizedTrial = sanitizeTrial(trial);
+  const normalizedTrial = sanitizeTrial(trial, curriculum);
   if (!isTrialForAttempt(normalizedTrial, attempt, curriculum)) return attempt;
   return {
     ...attempt,

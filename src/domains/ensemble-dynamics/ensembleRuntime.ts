@@ -14,12 +14,19 @@ export function delayedOscillatorPhase(
     return oscillatorPhaseOrZero(fallback, oscillatorIndex);
   }
 
-  let candidate: EnsembleState | undefined;
-  for (const entry of history) {
-    if (entry.time > targetTime) break;
-    candidate = entry;
+  let lower = 0;
+  let upper = history.length;
+  while (lower < upper) {
+    const middle = lower + Math.floor((upper - lower) / 2);
+    const entry = history[middle];
+    if (entry && entry.time <= targetTime) {
+      lower = middle + 1;
+    } else {
+      upper = middle;
+    }
   }
 
+  const candidate = history[lower - 1];
   if (!candidate) return oscillatorPhaseOrZero(fallback, oscillatorIndex);
   const oscillator = candidate.oscillators.at(oscillatorIndex);
   if (!oscillator) {
