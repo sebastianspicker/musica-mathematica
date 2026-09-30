@@ -10,6 +10,12 @@ import {
   demoPortfolioStorageKey,
 } from "./demoStorage";
 
+describe("demo storage key", () => {
+  it("pins the isolated demo namespace literal", () => {
+    expect(demoPortfolioStorageKey).toBe("musicaMathematica.demo.learning.v2");
+  });
+});
+
 describe("createDemoStorage", () => {
   it("seeds and persists only through the demo namespace", () => {
     const values = new Map<string, string>([
