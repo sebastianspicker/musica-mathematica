@@ -2,18 +2,22 @@
 // retain per-step edge filtering and the original linear history lookup.
 // Shared initialization, math, and metrics are tested separately; keeping both
 // implementations on the same runtime makes complete result equality portable.
+import { textureProfile } from "./config";
+import type { EnsembleConfig } from "./config";
 import {
+  circularDifference,
+  clickTrackPull,
   createCouplingEdges,
   createInitialState,
+  effectiveDelaySeconds,
+  feedbackReliability,
   metricsFor,
-  type EnsembleConfig,
+  normalizePhase,
+  trimHistory,
+  type CouplingEdge,
   type EnsembleState,
   type SimulationResult,
-} from "./ensemble";
-import { textureProfile } from "./ensembleConfig";
-import { circularDifference, normalizePhase } from "./ensembleMath";
-import { clickTrackPull, effectiveDelaySeconds, feedbackReliability, trimHistory } from "./ensembleRuntime";
-import type { CouplingEdge } from "./ensembleTypes";
+} from "./model";
 
 function linearDelayedPhase(
   history: readonly EnsembleState[],

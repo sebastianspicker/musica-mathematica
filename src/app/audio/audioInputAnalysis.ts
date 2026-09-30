@@ -1,5 +1,5 @@
 import type { MutableRefObject } from "react";
-import type { EvaluationOutput } from "../../curriculum/contracts";
+import type { AudioAnalysisSettings, EvaluationOutput } from "../../curriculum/contracts";
 import { AUDIO_ANALYSIS_LIMITS, type SafeMediaSettings } from "../../audio/analysis/contracts";
 import { startMicrophoneSession, type MicrophoneSession } from "../../audio/browser/capture";
 import { decodeAudioSelection } from "../../audio/browser/fileInput";
@@ -17,7 +17,6 @@ import {
 import {
   microphoneFrameToEvaluation,
   selectionToEvaluation,
-  type AudioEvaluationSettings,
 } from "./mapAudioEvaluation";
 
 type AnalysisStateSetters = Readonly<{
@@ -33,7 +32,7 @@ export type AnalysisRequestGate = Readonly<{
 }>;
 
 type MicrophoneAnalysisRequest = Readonly<{
-  analysisSettings: AudioEvaluationSettings;
+  analysisSettings: AudioAnalysisSettings;
   durationSeconds: number;
   frameSize: 2048 | 4096;
   gate: AnalysisRequestGate;
@@ -222,7 +221,7 @@ async function finishAtSessionEnd(request: Readonly<{
 }
 
 type FileAnalysisRequest = Readonly<{
-  analysisSettings: AudioEvaluationSettings;
+  analysisSettings: AudioAnalysisSettings;
   fileRef: MutableRefObject<File | null>;
   frameSize: 2048 | 4096;
   gate: AnalysisRequestGate;
@@ -278,7 +277,7 @@ function isCurrentFileAnalysis(gate: AnalysisRequestGate, controller: AbortContr
 }
 
 async function analyzeDecodedFile(request: Readonly<{
-  analysisSettings: AudioEvaluationSettings;
+  analysisSettings: AudioAnalysisSettings;
   controller: AbortController;
   decoded: Awaited<ReturnType<typeof decodeAudioSelection>>;
   frameSize: 2048 | 4096;
@@ -294,7 +293,7 @@ async function analyzeDecodedFile(request: Readonly<{
 
 function publishFileAnalysis(request: Readonly<{
   analysis: Awaited<ReturnType<typeof analyzeSelectionInWorker>>;
-  analysisSettings: AudioEvaluationSettings;
+  analysisSettings: AudioAnalysisSettings;
   fileRef: MutableRefObject<File | null>;
   onAnalysis: AnalysisStateSetters["onAnalysis"];
   provenance: Awaited<ReturnType<typeof decodeAudioSelection>>["provenance"];

@@ -72,21 +72,6 @@ export function additivePartials(
   return raw.map((partial) => Object.freeze({ ...partial, amplitude: partial.amplitude / total }));
 }
 
-/** One normalized sample of the declared additive model. */
-export function additiveWaveSample(timeSeconds: number, partials: readonly AdditivePartial[]): number {
-  if (!Number.isFinite(timeSeconds)) throw new RangeError("timeSeconds must be finite");
-  if (partials.length === 0) throw new RangeError("partials must not be empty");
-  let sample = 0;
-  let amplitudeTotal = 0;
-  for (const partial of partials) {
-    assertPositiveFinite("partial.frequencyHz", partial.frequencyHz);
-    assertNonNegativeFinite("partial.amplitude", partial.amplitude);
-    sample += partial.amplitude * Math.sin(2 * Math.PI * partial.frequencyHz * timeSeconds);
-    amplitudeTotal += partial.amplitude;
-  }
-  return amplitudeTotal > 0 ? sample / amplitudeTotal : 0;
-}
-
 /** Folds a sinusoid into the non-negative principal alias below Nyquist. */
 export function aliasFrequencyHz(frequencyHz: number, sampleRateHz: number): number {
   assertNonNegativeFinite("frequencyHz", frequencyHz);

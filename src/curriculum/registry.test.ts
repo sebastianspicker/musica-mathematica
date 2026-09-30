@@ -4,6 +4,7 @@ import {
   createCurriculumRegistry,
   defineDomain,
 } from "./registry";
+import type { ClaimRecord, ResearchSource } from "./evidence";
 
 const evaluation: EvaluationOutput = {
   headline: "Synthetic result",
@@ -162,6 +163,50 @@ describe("curriculum registry", () => {
     expect(() => moduleFrom(replaceFirstLesson(domain("timbre-acoustics"), {
       protocol: { ...domain("timbre-acoustics").lessons[0].protocol, durationSeconds: 0 },
     }))).toThrow("finite positive protocol duration");
+  });
+
+  it("resolves lesson and claim evidence references when evidence is supplied", () => {
+    const claim = { id: "model.deterministic", sourceIds: ["synthetic"] } as unknown as ClaimRecord;
+    const evidence = {
+      claimById: (id: string) => (id === claim.id ? claim : undefined),
+      sourceById: (id: string) => (id === "synthetic" ? ({ id } as unknown as ResearchSource) : undefined),
+    };
+
+    expect(() => createCurriculumRegistry([module("timbre-acoustics")], { evidence })).not.toThrow();
+    expect(() => createCurriculumRegistry([moduleFrom(replaceFirstLesson(domain("timbre-acoustics"), { claimIds: ["missing"] }))], { evidence }))
+      .toThrow("references unknown claim: missing");
+    expect(() => createCurriculumRegistry([moduleFrom(replaceFirstLesson(domain("timbre-acoustics"), { sourceIds: ["missing"] }))], { evidence }))
+      .toThrow("references unknown source: missing");
+    expect(() => createCurriculumRegistry([module("timbre-acoustics")], {
+      evidence: { ...evidence, claimById: () => ({ ...claim, sourceIds: ["missing"] }) },
+    })).toThrow("Claim model.deterministic references unknown source: missing");
+  });
+
+  it("validates audio settings against input modes, factor kinds, and uniqueness", () => {
+    const numberFactor = {
+      id: "threshold", kind: "number" as const, label: "Threshold", min: 0, max: 1, step: 0.1, defaultValue: 0.5, help: "Synthetic.",
+      audioSetting: "onsetSensitivity" as const,
+    };
+    const selectFactor = {
+      id: "bias", kind: "select" as const, label: "Bias", defaultValue: "mixed", help: "Synthetic.",
+      options: [{ value: "mixed", label: "Mixed" }, { value: "duple", label: "Duple" }, { value: "triple", label: "Triple" }],
+      audioSetting: "meterBias" as const,
+    };
+    const audio = { inputModes: ["synthetic" as const, "file" as const] };
+    const lessonWith = (patch: Partial<LessonDefinition>) => moduleFrom(replaceFirstLesson(domain("timbre-acoustics"), patch));
+
+    expect(() => lessonWith({ ...audio, factors: [numberFactor, selectFactor] })).not.toThrow();
+    expect(() => lessonWith({ factors: [numberFactor] })).toThrow("accepts neither microphone nor file input");
+    expect(() => lessonWith({ ...audio, factors: [numberFactor, { ...numberFactor, id: "other" }] }))
+      .toThrow("more than one factor");
+    expect(() => lessonWith({ ...audio, factors: [{ ...selectFactor, audioSetting: "onsetSensitivity" } as never] }))
+      .toThrow("requires a number factor");
+    expect(() => lessonWith({ ...audio, factors: [{ ...numberFactor, audioSetting: "meterBias" } as never] }))
+      .toThrow("requires a select factor");
+    expect(() => lessonWith({
+      ...audio,
+      factors: [{ ...selectFactor, options: [{ value: "mixed", label: "Mixed" }, { value: "quadruple", label: "Quad" }] }],
+    })).toThrow("only mixed, duple, or triple options");
   });
 
   it("accepts only supported aggregation values and bounded integer precision", () => {

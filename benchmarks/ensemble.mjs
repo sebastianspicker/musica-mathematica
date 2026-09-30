@@ -7,8 +7,8 @@ const server = await createServer({
   server: { middlewareMode: true },
 });
 try {
-  const { defaultConfig } = await server.ssrLoadModule("/src/domains/ensemble-dynamics/defaultConfig.ts");
-  const { simulateEnsemble } = await server.ssrLoadModule("/src/domains/ensemble-dynamics/ensemble.ts");
+  const { defaultConfig } = await server.ssrLoadModule("/src/domains/ensemble-dynamics/config.ts");
+  const { simulateEnsemble } = await server.ssrLoadModule("/src/domains/ensemble-dynamics/model.ts");
   const config = {
     ...defaultConfig, musicianCount: 16, tempoBpm: 180, tempoSpreadBpm: 24,
     couplingStrength: 3, latencySeconds: 0.18, jitterSeconds: 0.06,

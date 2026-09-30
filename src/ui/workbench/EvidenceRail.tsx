@@ -1,5 +1,5 @@
 import { memo, type ReactElement } from "react";
-import { claimsByIds, evidenceLabels, sourceById } from "../../learning/evidence/index";
+import { claimsByIds, evidenceLabels, sourceById } from "../../curriculum/evidence";
 import { InterfaceIcon } from "../Icon";
 
 export type EvidenceRailProps = Readonly<{

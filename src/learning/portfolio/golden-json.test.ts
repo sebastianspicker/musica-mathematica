@@ -9,8 +9,8 @@ import {
   updateAttempt,
 } from "./aggregate";
 import { exportPortfolioJson } from "./repository";
-import type { TrialSnapshotV2 } from "./schema-v2";
-import { testCurriculum } from "./testReader";
+import type { TrialSnapshotV2 } from "./schema";
+import { testCurriculum } from "./curriculumFixture.test-helper";
 
 function trial(id: string, bpm: number, overrides: Partial<TrialSnapshotV2>): TrialSnapshotV2 {
   return {

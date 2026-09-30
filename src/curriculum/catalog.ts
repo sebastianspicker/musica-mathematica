@@ -1,3 +1,4 @@
+import { claimById, sourceById } from "./evidence";
 import { createCurriculumRegistry } from "./registry";
 import { ensembleDynamicsDomain } from "../domains/ensemble-dynamics";
 import { harmonyGeometryDomain } from "../domains/harmony-geometry";
@@ -18,7 +19,7 @@ export const curriculumRegistry = createCurriculumRegistry([
   timbreAcousticsDomain,
   probabilityFormDomain,
   measurementInferenceDomain,
-]);
+], { evidence: { claimById, sourceById } });
 
 export const curriculumCatalog = curriculumRegistry.catalog;
 export const defaultLesson = curriculumRegistry.defaultLesson;

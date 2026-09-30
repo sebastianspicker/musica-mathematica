@@ -1,25 +1,23 @@
-import type { CurriculumLessonReader, FactorValue, ObservableRecord } from "../../curriculum/contracts";
+import type {
+  CurriculumLessonReader,
+  FactorValue,
+  ObservableRecord,
+} from "../../../curriculum/contracts";
 import {
   attemptKey,
   legacyPortfolioStorageKey,
-  legacyLessonMapping,
   maximumTrialsPerLesson,
-  maximumRawPortfolioJsonBytes,
-  type MigratedEnsembleLessonId,
-} from "../portfolio/constants";
-import type {
-  LearningPortfolioV2,
-  LessonAttemptV2,
-  TrialSnapshotV2,
-} from "../portfolio/schema-v2";
-import { createPortfolio } from "../portfolio/aggregate";
-import { sanitizePortfolio } from "../portfolio/validate";
-import { utf8ByteLength } from "../portfolio/compact";
-import {
-  type LearningRecordStorage,
-  type LessonAttemptV1,
-} from "./schema";
+  type LearningPortfolioV2,
+  type LessonAttemptV2,
+  type TrialSnapshotV2,
+} from "../schema";
+import { createPortfolio } from "../aggregate";
+import { sanitizePortfolio } from "../validate";
+import { type LessonAttemptV1 } from "./schema";
 import { isLessonAttemptV1 } from "./validate";
+
+export const legacyLessonMapping = Object.freeze({ "lock-in": "lock-in-and-order", latency: "delay-jitter-topology", "low-latency-route": "delay-jitter-topology", "diagnose-instability": "delay-jitter-topology", click: "external-pulse-or-peer-adaptation", "click-or-peer-coupling": "external-pulse-or-peer-adaptation", "compose-with-latency": "external-pulse-or-peer-adaptation" } as const);
+type MigratedEnsembleLessonId = (typeof legacyLessonMapping)[keyof typeof legacyLessonMapping];
 
 const migratedDomainId = "ensemble-dynamics" as const;
 
@@ -41,21 +39,6 @@ export function migrateLessonAttemptV1(
     active: { labId: migratedDomainId, lessonId },
     attempts: { [attemptKey(migratedDomainId, lessonId)]: migratedAttempt },
   }, curriculum);
-}
-
-export function migrateLegacyRecord(
-  storage: LearningRecordStorage,
-  curriculum: CurriculumLessonReader,
-  now: string,
-): LearningPortfolioV2 | undefined {
-  try {
-    const raw = storage.getItem(legacyPortfolioStorageKey);
-    if (raw === null) return undefined;
-    if (utf8ByteLength(raw) > maximumRawPortfolioJsonBytes) return undefined;
-    return migrateLegacyJson(raw, curriculum, now);
-  } catch {
-    return undefined;
-  }
 }
 
 export function migrateLegacyJson(

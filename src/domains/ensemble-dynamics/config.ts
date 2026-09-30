@@ -1,4 +1,4 @@
-/** Configuration contract for the ensemble-dynamics domain model. */
+/** Configuration contract, bounds, and validation for the ensemble-dynamics domain model. */
 export type Topology = "all-to-all" | "leader-follower" | "sections" | "click-track";
 
 export type RepertoireTexture =
@@ -116,19 +116,6 @@ export function assertValidEnsembleConfig(config: EnsembleConfig): void {
   }
 }
 
-/** Returns whether an unknown serialized value is a supported ensemble configuration. */
-export function isEnsembleConfig(value: unknown): value is EnsembleConfig {
-  if (!isRecord(value)) return false;
-
-  try {
-    assertValidEnsembleConfig(value as EnsembleConfig);
-    return true;
-  } catch (error) {
-    if (error instanceof RangeError) return false;
-    throw error;
-  }
-}
-
 function assertBoundedNumber(
   name: string,
   value: number,
@@ -154,6 +141,15 @@ const validTextureValues = new Set<RepertoireTexture>([
   "dense-rhythm",
 ]);
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+/** The live default configuration used by the ensemble-dynamics evaluators. */
+export const defaultConfig: EnsembleConfig = {
+  musicianCount: 8,
+  tempoBpm: 120,
+  tempoSpreadBpm: 7,
+  couplingStrength: 1.4,
+  latencySeconds: 0.018,
+  jitterSeconds: 0,
+  topology: "all-to-all",
+  repertoireTexture: "pulse",
+  clickTrackStrength: 0,
+};

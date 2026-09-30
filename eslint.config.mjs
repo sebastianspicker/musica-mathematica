@@ -1,8 +1,9 @@
 import typescriptPlugin from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
 import reactHooks from "eslint-plugin-react-hooks";
+import globals from "globals";
 
-const codacyRules = {
+const coreRules = {
   "constructor-super": ["error"],
   "for-direction": ["error"],
   "getter-return": ["error", { allowImplicit: false }],
@@ -26,7 +27,6 @@ const codacyRules = {
   "no-empty-pattern": ["error", { allowObjectPatternsAsParameters: false }],
   "no-ex-assign": ["error"],
   "no-extra-boolean-cast": ["error", { enforceForLogicalOperands: false }],
-  "no-extra-semi": ["error"],
   "no-fallthrough": ["error", { allowEmptyCase: false }],
   "no-func-assign": ["error"],
   "no-global-assign": ["error"],
@@ -42,8 +42,6 @@ const codacyRules = {
   }],
   "no-loss-of-precision": ["error"],
   "no-misleading-character-class": ["error"],
-  "no-mixed-spaces-and-tabs": ["error"],
-  "no-new-symbol": ["error"],
   "no-nonoctal-decimal-escape": ["error"],
   "no-obj-calls": ["error"],
   "no-octal": ["error"],
@@ -83,19 +81,62 @@ const domainNames = [
   "timbre-acoustics",
 ];
 
-function restrictImports(forbidden, message) {
+/**
+ * @param {string[]} forbidden
+ * @param {string} message
+ * @param {string[]} [siblingRegexes]
+ */
+function restrictImports(forbidden, message, siblingRegexes = []) {
   return ["error", {
-    patterns: [{
-      // `no-restricted-imports` matches these against the import specifier, so
-      // `**/app` catches every relative depth without banning sibling files.
-      group: forbidden.flatMap((path) => [`**/${path}`, `**/${path}/**`]),
-      message,
-    }],
+    patterns: [
+      {
+        // `no-restricted-imports` matches these against the import specifier, so
+        // `**/app` catches every relative depth without banning sibling files.
+        group: forbidden.flatMap((path) => [`**/${path}`, `**/${path}/**`]),
+        message,
+      },
+      // Sibling-relative specifiers such as `../browser/capture` never contain
+      // the layer prefix, so the globs above cannot see them.
+      ...siblingRegexes.map((regex) => ({ regex, message })),
+    ],
   }];
 }
 
+// Inside src/audio/{analysis,protocol}, `../browser` reaches audio/browser.
+const audioBrowserSiblingImports = ["^(\\.\\./)+browser(/|$)"];
+
 const applicationImports = ["app", "ui", "audio", "learning", "domains", "react", "react-dom"];
 const domainImports = ["app", "ui", "audio", "learning", "react", "react-dom"];
+
+// Fixtures shared by tests live in `*.test-helper.ts` and must never reach production code.
+const testFileGlobs = ["**/*.test.*", "**/*.test-helper.ts"];
+const testHelperImports = {
+  group: ["**/*.test-helper"],
+  message: "Test helpers may be imported only from tests and other test helpers.",
+};
+
+/**
+ * Flat config replaces rule options per file, so the test-helper ban is merged
+ * into every layer's `no-restricted-imports` block for non-test files.
+ * @param {any[]} blocks
+ */
+function forbidTestHelperImports(blocks) {
+  const base = {
+    files: ["src/**/*.ts", "src/**/*.tsx"],
+    ignores: testFileGlobs,
+    rules: { "no-restricted-imports": ["error", { patterns: [testHelperImports] }] },
+  };
+  return [base, ...blocks.flatMap((block) => {
+    const rule = block.rules?.["no-restricted-imports"];
+    if (!rule || !block.files) return [block];
+    const [severity, options] = rule;
+    return [block, {
+      files: block.files,
+      ignores: testFileGlobs,
+      rules: { "no-restricted-imports": [severity, { ...options, patterns: [...options.patterns, testHelperImports] }] },
+    }];
+  })];
+}
 
 const domainBoundaryConfigs = domainNames.map((domain) => ({
   files: [`src/domains/${domain}/**/*.ts`, `src/domains/${domain}/**/*.tsx`],
@@ -107,13 +148,21 @@ const domainBoundaryConfigs = domainNames.map((domain) => ({
   },
 }));
 
-export default [
+export default forbidTestHelperImports([
+  {
+    // ESLint does not read the ignore file of the version control system.
+    ignores: [
+      "node_modules/", "dist/", "coverage/", ".playwright-results/", "playwright-report/",
+      "test-results/", "blob-report/", "output/", "design-preview/", ".internal/",
+      ".serena/", ".codacy/", ".codegraph/", ".claude/", ".codex/", ".agents/", "**/.tmp-*",
+    ],
+  },
   {
     files: [
       "src/{shared,curriculum,domains,learning,ui}/**/*.{ts,tsx}",
       "src/audio/{analysis,protocol}/**/*.{ts,tsx}",
     ],
-    ignores: ["**/*.test.*"],
+    ignores: testFileGlobs,
     rules: {
       "no-restricted-globals": ["error", ...[
         "window", "document", "navigator", "localStorage", "sessionStorage",
@@ -135,11 +184,20 @@ export default [
     },
   },
   {
-    files: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx", "**/*.mjs", "**/*.cjs", "**/*.vue"],
+    files: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx", "**/*.mjs", "**/*.cjs"],
     languageOptions: {
       parser: typescriptParser,
     },
-    rules: codacyRules,
+    rules: coreRules,
+  },
+  {
+    files: ["benchmarks/**/*.mjs", "scripts/**/*.mjs", "**/*.config.*", "e2e/**"],
+    languageOptions: { globals: globals.node },
+  },
+  {
+    // These scripts and fixtures run in the page or pass callbacks to Playwright's `page.evaluate`.
+    files: ["benchmarks/workbench.mjs", "benchmarks/workbenchProfileMain.tsx", "e2e/fixtures/**", "scripts/capture-screenshots.mjs"],
+    languageOptions: { globals: globals.browser },
   },
   {
     files: ["**/*.ts", "**/*.tsx"],
@@ -200,10 +258,10 @@ export default [
     },
   },
   {
-    files: ["src/learning/legacy-v1/**/*.ts", "src/learning/legacy-v1/**/*.tsx"],
+    files: ["src/learning/portfolio/legacy/**/*.ts", "src/learning/portfolio/legacy/**/*.tsx"],
     rules: {
       "no-restricted-imports": restrictImports(
-        ["app", "ui", "audio", "domains", "evidence", "inquiry", "curriculum/catalog", "react", "react-dom"],
+        ["app", "ui", "audio", "domains", "curriculum/evidence", "inquiry", "curriculum/catalog", "react", "react-dom"],
         "Legacy v1 may depend only on its own modules, learning/portfolio, curriculum contracts and registry ports, and shared utilities.",
       ),
     },
@@ -214,6 +272,7 @@ export default [
       "no-restricted-imports": restrictImports(
         ["app", "ui", "learning", "domains", "audio/browser", "react", "react-dom"],
         "Audio analysis and protocol modules must remain independent of application, UI, learning, domain, and browser-adapter layers.",
+        audioBrowserSiblingImports,
       ),
     },
   },
@@ -235,4 +294,4 @@ export default [
       ),
     },
   },
-];
+]);

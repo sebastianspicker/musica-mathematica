@@ -161,14 +161,6 @@ export function recoverTempoFromOnsets(onsetsSeconds: readonly number[]): TempoR
   });
 }
 
-/** Signed estimator bias for a synthetic fixture with a known generating value. */
-export function parameterRecoveryError(estimatedValue: number, generatingValue: number): number {
-  if (!Number.isFinite(estimatedValue) || !Number.isFinite(generatingValue)) {
-    throw new RangeError("estimatedValue and generatingValue must be finite");
-  }
-  return estimatedValue - generatingValue;
-}
-
 /** Reproducible centered uniform fixture for teaching uncertainty, never hidden randomness. */
 export function deterministicCenteredSample(
   center: number,

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { LessonAttemptV1 } from "../legacy-v1/schema";
+import type { LessonAttemptV1 } from "./legacy/schema";
 import { createAttemptV2, createPortfolio, updateAttempt } from "./aggregate";
 import {
   legacyPortfolioStorageKey,
   maximumRawPortfolioJsonBytes,
   maximumResponseCodePoints,
   portfolioStorageKey,
-} from "./constants";
+} from "./schema";
 import {
   clearPortfolio,
   exportPortfolioJson,
@@ -15,7 +15,7 @@ import {
   savePortfolio,
   savePortfolioDetailed,
 } from "./repository";
-import { testCurriculum } from "./testReader";
+import { testCurriculum } from "./curriculumFixture.test-helper";
 
 const legacyLatencyAttempt: LessonAttemptV1 = {
   version: 1,

@@ -1,15 +1,12 @@
-import type {
-  EvaluationOutput,
-  FactorValue,
-  LessonDefinition,
-} from "../../curriculum/contracts";
+import type { FactorValue, LessonDefinition } from "../../curriculum/contracts";
 import type { CurriculumRegistry } from "../../curriculum/registry";
-import { attemptKey } from "../../learning/portfolio/constants";
-import type {
-  LearningPortfolioV2,
-  LessonAttemptV2,
-  TrialSnapshotV2,
-} from "../../learning/portfolio/schema-v2";
+import { createTrialSnapshot } from "../../learning/portfolio/aggregate";
+import {
+  attemptKey,
+  type LearningPortfolioV2,
+  type LessonAttemptV2,
+  type TrialSnapshotV2,
+} from "../../learning/portfolio/schema";
 
 const demoDomainId = "phase-proportion";
 const demoLessonId = "from-bpm-to-period";
@@ -20,11 +17,11 @@ export function createDemoPortfolio(curriculum: CurriculumRegistry): LearningPor
   const lesson = curriculum.lessonById(demoDomainId, demoLessonId);
   if (!lesson) throw new RangeError("The Pages demo lesson is missing from the curriculum.");
 
-  const runA = createDemoTrial(curriculum, lesson, "Run A", {
+  const runA = createDemoTrial(curriculum, lesson, 0, {
     bpm: 90,
     beatsPerBar: 4,
   }, "2026-09-01T12:00:00.000Z", "Baseline at the score tempo.");
-  const runB = createDemoTrial(curriculum, lesson, "Run B", {
+  const runB = createDemoTrial(curriculum, lesson, 1, {
     bpm: 120,
     beatsPerBar: 4,
   }, "2026-09-01T12:01:00.000Z", "Only tempo changed; beats per bar stayed at four.");
@@ -48,28 +45,11 @@ export function createDemoPortfolio(curriculum: CurriculumRegistry): LearningPor
 function createDemoTrial(
   curriculum: CurriculumRegistry,
   lesson: LessonDefinition,
-  id: string,
+  runIndex: number,
   factors: Readonly<Record<string, FactorValue>>,
   recordedAt: string,
   note: string,
 ): TrialSnapshotV2 {
   const evaluation = curriculum.evaluatorFor(lesson.domainId, lesson.id)(factors);
-  return {
-    id,
-    labId: lesson.domainId,
-    lessonId: lesson.id,
-    protocolId: lesson.protocol.id,
-    deterministic: isDeterministic(lesson, evaluation),
-    recordedAt,
-    factors: { ...factors },
-    observables: evaluation.observables.map((observable) => ({ ...observable })),
-    trace: evaluation.trace.map((point) => ({ ...point })),
-    provenance: { ...evaluation.provenance },
-    note,
-  };
-}
-
-function isDeterministic(lesson: LessonDefinition, evaluation: EvaluationOutput): boolean {
-  return lesson.protocol.deterministic
-    && (evaluation.provenance.source === "model" || evaluation.provenance.source === "synthetic");
+  return createTrialSnapshot({ lesson, runIndex, factors, evaluation, note, recordedAt });
 }

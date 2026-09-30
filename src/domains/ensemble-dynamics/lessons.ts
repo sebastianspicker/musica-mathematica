@@ -1,6 +1,6 @@
 import type { DomainDefinition, ThreeLessons } from "../../curriculum/contracts";
 import { lesson, numberFactor, selectFactor } from "../support/construction";
-import { ensembleConfigBounds } from "./ensembleConfig";
+import { ensembleConfigBounds } from "./config";
 
 const milliseconds = (seconds: number): number => seconds * 1000;
 

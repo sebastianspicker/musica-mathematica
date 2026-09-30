@@ -7,8 +7,7 @@ import {
   type ReactElement,
 } from "react";
 import { AUDIO_ANALYSIS_LIMITS, type SafeMediaSettings } from "../../audio/analysis/contracts";
-import type { FactorValue, InputMode, LessonDefinition, EvaluationOutput } from "../../curriculum/contracts";
-import type { AudioEvaluationSettings } from "./mapAudioEvaluation";
+import { audioAnalysisSettings, type FactorValue, type InputMode, type LessonDefinition, type EvaluationOutput } from "../../curriculum/contracts";
 import {
   analyzeFileSelection,
   startMicrophoneAnalysis,
@@ -33,7 +32,7 @@ export function AudioInputController({ mode, lesson, factors, onAnalysis }: Audi
   const [status, setStatus] = useState("No bounded segment has been analyzed.");
   const [busy, setBusy] = useState(false);
   const [settings, setSettings] = useState<SafeMediaSettings | null>(null);
-  const analysisSettings = audioSettingsFor(lesson, factors);
+  const analysisSettings = audioAnalysisSettings(lesson, factors);
   const analysisState = { onAnalysis, setBusy, setStatus };
 
   useEffect(() => {
@@ -321,19 +320,6 @@ function SafeSettings({ settings }: Readonly<{ settings: SafeMediaSettings }>): 
 
 function humanize(value: string): string {
   return value.replace(/([A-Z])/g, " $1").replace(/^./, (character) => character.toUpperCase());
-}
-
-function audioSettingsFor(
-  lesson: LessonDefinition,
-  factors: Readonly<Record<string, FactorValue>>,
-): AudioEvaluationSettings {
-  if (lesson.id !== "recorded-onset-hypotheses") return {};
-  const onsetSensitivity = factors.threshold;
-  const meterBias = factors.meterBias;
-  return {
-    ...(typeof onsetSensitivity === "number" ? { onsetSensitivity } : {}),
-    ...(meterBias === "mixed" || meterBias === "duple" || meterBias === "triple" ? { meterBias } : {}),
-  };
 }
 
 function validNumberInput(

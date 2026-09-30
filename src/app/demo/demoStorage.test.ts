@@ -3,8 +3,8 @@ import { curriculumRegistry } from "../../curriculum/catalog";
 import {
   legacyPortfolioStorageKey,
   portfolioStorageKey,
-} from "../../learning/portfolio/constants";
-import type { StoragePort } from "../../learning/portfolio/ports";
+  type StoragePort,
+} from "../../learning/portfolio/schema";
 import {
   createDemoStorage,
   demoPortfolioStorageKey,

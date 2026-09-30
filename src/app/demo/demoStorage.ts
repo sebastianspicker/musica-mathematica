@@ -2,8 +2,8 @@ import type { CurriculumRegistry } from "../../curriculum/registry";
 import {
   legacyPortfolioStorageKey,
   portfolioStorageKey,
-} from "../../learning/portfolio/constants";
-import type { StoragePort } from "../../learning/portfolio/ports";
+  type StoragePort,
+} from "../../learning/portfolio/schema";
 import { browserStorage } from "../portfolio/browserStorage";
 import { createDemoPortfolio } from "./demoPortfolio";
 

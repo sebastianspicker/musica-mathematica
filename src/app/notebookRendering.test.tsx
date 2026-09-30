@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { curriculumCatalog, defaultLesson, evaluatorFor } from "../curriculum/catalog";
-import type { LessonAttemptV2 } from "../learning/portfolio/schema-v2";
+import type { LessonAttemptV2 } from "../learning/portfolio/schema";
 import { LessonWorkbench, type LessonWorkbenchProps } from "../ui/workbench/LessonWorkbench";
 
 function props(stage: LessonAttemptV2["stage"]): LessonWorkbenchProps {
@@ -71,9 +71,9 @@ it("shows pending audio honestly instead of exposing fallback model outputs", ()
 
 it("announces routine saves quietly while retaining visible actionable failures", () => {
   const input = props("experiment");
-  const routine = renderToStaticMarkup(<LessonWorkbench {...input} runtime={{ ...input.runtime, message: "Run A recorded locally. Change one factor before Run B." }} />);
+  const routine = renderToStaticMarkup(<LessonWorkbench {...input} runtime={{ ...input.runtime, message: { text: "Run A recorded locally. Change one factor before Run B.", routine: true } }} />);
   expect(routine).toContain('class="sr-only" role="status">Run A recorded locally.');
-  const failure = renderToStaticMarkup(<LessonWorkbench {...input} runtime={{ ...input.runtime, message: "The run could not be recorded. Check the inquiry stage and result provenance." }} />);
+  const failure = renderToStaticMarkup(<LessonWorkbench {...input} runtime={{ ...input.runtime, message: { text: "The run could not be recorded. Check the inquiry stage and result provenance.", routine: false } }} />);
   expect(failure).toContain('class="mm-inquiry-message" role="status">The run could not be recorded.');
 });
 

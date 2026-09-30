@@ -8,12 +8,10 @@ import { preparePortfolio } from "./compact";
 import {
   attemptKey,
   maximumPortfolioJsonBytes,
-} from "./constants";
-import type {
-  LearningPortfolioV2,
-  LessonAttemptV2,
-  TrialSnapshotV2,
-} from "./schema-v2";
+  type LearningPortfolioV2,
+  type LessonAttemptV2,
+  type TrialSnapshotV2,
+} from "./schema";
 
 describe("portfolio byte compaction", () => {
   it("reduces traces and oldest excess trials while preserving comparison trials", () => {

@@ -5,20 +5,19 @@
   "type": "module",
   "packageManager": "pnpm@11.6.0",
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": "^20.19.0 || ^22.13.0 || >=24"
   },
   "license": "UNLICENSED",
   "description": "Browser-local university music mathematics workbench with 24 inquiry-led lessons across eight domains.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc --noEmit && vite build",
-    "build:pages": "tsc --noEmit && vite build --mode pages",
-    "lint": "eslint src",
-    "test": "pnpm test:unit",
+    "build": "vite build",
+    "build:pages": "vite build --mode pages",
+    "lint": "eslint .",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "typecheck": "tsc --noEmit",
-    "verify": "pnpm lint && pnpm test:unit && pnpm build"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build"
   },
   "dependencies": {
     "fft.js": "^4.0.4",
@@ -27,13 +26,15 @@
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
-    "eslint-plugin-react-hooks": "7.1.1",
+    "@types/node": "^22.20.4",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "8.64.0",
     "@typescript-eslint/parser": "8.64.0",
     "@vitejs/plugin-react": "^5.2.0",
-    "eslint": "8.57.0",
+    "eslint": "10.11.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.12.0",
     "typescript": "^5.8.0",
     "vite": "^7.3.6",
     "vitest": "^3.2.7"

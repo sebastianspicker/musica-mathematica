@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
-import type { FactorValue, InputMode, LessonDefinition } from "../../curriculum/contracts";
-import type { LessonAttemptV2 } from "../../learning/portfolio/schema-v2";
+import { audioAnalysisFactors, type FactorValue, type InputMode, type LessonDefinition } from "../../curriculum/contracts";
+import type { LessonAttemptV2 } from "../../learning/portfolio/schema";
 import { ComparisonTable } from "./ComparisonTable";
 import { EvidencePanel } from "./EvidencePanel";
 import { EvidenceRail } from "./EvidenceRail";
@@ -65,7 +65,7 @@ export function LessonWorkbench(props: LessonWorkbenchProps): ReactElement {
       <section className={`mm-inquiry mm-inquiry--${attempt.stage}`} aria-label="Current inquiry stage">
         <InquiryStage attempt={attempt} comparisonReason={runtime.comparison.reason} lesson={lesson} note={runtime.note} onBeginPrediction={runtime.beginPrediction} onCompare={runtime.openComparison} onNoteChange={runtime.setNote} onSavePrediction={runtime.savePrediction} onSaveResponse={runtime.saveResponse} stageContent={stageContent} />
         {attempt.stage === "compare" ? <button className="mm-primary-action" type="button" onClick={runtime.openInterpretation}>Interpret the evidence</button> : null}
-        {runtime.message ? <p className={routineMessage(runtime.message) ? "sr-only" : "mm-inquiry-message"} role="status">{runtime.message}</p> : null}
+        {runtime.message ? <p className={runtime.message.routine ? "sr-only" : "mm-inquiry-message"} role="status">{runtime.message.text}</p> : null}
         {attempt.stage === "debrief" ? <>{comparison}{props.debriefActions}</> : null}
       </section>
       {revealed ? <>
@@ -92,7 +92,7 @@ type InspectorStackProps = Readonly<{
 function InspectorStack(props: InspectorStackProps): ReactElement {
   return <div className="mm-inspector-stack">
     <FactorInspector compact={props.compact} disabled={!props.experimentActive} inputMode={props.inputMode} lesson={props.lesson} onFactorChange={props.onFactorChange} onInputModeChange={props.onInputModeChange} values={props.factors} />
-    {props.experimentActive && props.inputMode !== "synthetic" && props.lesson.id !== "recorded-onset-hypotheses" ? <p className="mm-audio-message">Audio is an observation appendix here. Controlled portfolio comparisons use the synthetic factors because this lesson does not expose an audio-analysis factor.</p> : null}
+    {props.experimentActive && props.inputMode !== "synthetic" && audioAnalysisFactors(props.lesson).length === 0 ? <p className="mm-audio-message">Audio is an observation appendix here. Controlled portfolio comparisons use the synthetic factors because this lesson does not expose an audio-analysis factor.</p> : null}
   </div>;
 }
 
@@ -105,12 +105,4 @@ function InterpretationBoundary({ annotation }: Readonly<{ annotation: string }>
       </div>
     </aside>
   );
-}
-
-function routineMessage(message: string): boolean {
-  return /^Run [A-Z]+ recorded locally\./.test(message)
-    || message === "Experiment unlocked. Record a baseline, change one factor, then record Run B."
-    || message === "Explain the mechanism and state the inference boundary."
-    || message === "Response saved locally."
-    || message === "Lesson inquiry complete. The result is not a score or grade.";
 }

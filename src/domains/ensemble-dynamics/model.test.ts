@@ -1,23 +1,15 @@
 import { describe, expect, it } from "vitest";
+import { defaultConfig, type EnsembleConfig } from "./config";
 import {
-  type EnsembleConfig,
-  type FixedStepSimulation,
-  advanceFixedStepSimulation,
-  configsEqual,
   createCouplingEdges,
   createInitialState,
-  isEnsembleConfig,
+  delayedOscillatorPhase,
   metricsFor,
-  modelLatencyBudgetRatio,
   modelLatencyBudgetSeconds,
-  modelLatencyBudgetStatus,
   peerCouplingShare,
-  retuneState,
   simulateEnsemble,
   stepEnsemble,
-} from "./ensemble";
-import { defaultConfig } from "./defaultConfig";
-import { delayedOscillatorPhase } from "./ensembleRuntime";
+} from "./model";
 
 function bpmToRadPerSecond(tempoBpm: number): number {
   return (tempoBpm / 60) * Math.PI * 2;
@@ -27,53 +19,7 @@ function run(config: Partial<EnsembleConfig>, seconds = 18): number {
   return simulateEnsemble({ ...defaultConfig, ...config }, seconds).finalMetrics.coherence;
 }
 
-function omegaSpan(config: EnsembleConfig): number {
-  const state = createInitialState(config);
-  const omegas = state.oscillators.map((oscillator) => oscillator.omega);
-  return Math.max(...omegas) - Math.min(...omegas);
-}
-
-function advanceAcrossFrameChunks(
-  config: EnsembleConfig,
-  frameChunksSeconds: readonly number[],
-): FixedStepSimulation {
-  const initialSimulation: FixedStepSimulation = {
-    state: createInitialState(config),
-    history: [],
-    accumulatorSeconds: 0,
-  };
-
-  return frameChunksSeconds.reduce(
-    (simulation, elapsedSeconds) =>
-      advanceFixedStepSimulation(simulation, config, elapsedSeconds),
-    initialSimulation,
-  );
-}
-
 describe("ensemble simulation invariants", () => {
-  it("recognizes only complete, bounded serialized ensemble configs", () => {
-    expect(isEnsembleConfig(defaultConfig)).toBe(true);
-
-    const invalidConfigs: unknown[] = [
-      null,
-      [],
-      {},
-      { ...defaultConfig, musicianCount: 2.5 },
-      { ...defaultConfig, tempoBpm: 221 },
-      { ...defaultConfig, tempoSpreadBpm: -0.5 },
-      { ...defaultConfig, couplingStrength: Number.NaN },
-      { ...defaultConfig, latencySeconds: 0.251 },
-      { ...defaultConfig, jitterSeconds: -0.001 },
-      { ...defaultConfig, clickTrackStrength: 4.01 },
-      { ...defaultConfig, topology: "invented" },
-      { ...defaultConfig, repertoireTexture: "invented" },
-    ];
-
-    for (const config of invalidConfigs) {
-      expect(isEnsembleConfig(config)).toBe(false);
-    }
-  });
-
   it("keeps topology edge order and section strengths stable", () => {
     const config: EnsembleConfig = {
       ...defaultConfig,
@@ -192,45 +138,6 @@ describe("ensemble simulation invariants", () => {
     expect(peerCouplingShare(config)).toBeCloseTo(0.4);
   });
 
-  it("produces the same golden trace regardless of render-frame chunking", () => {
-    const config: EnsembleConfig = {
-      ...defaultConfig,
-      tempoBpm: 118,
-      tempoSpreadBpm: 9,
-      couplingStrength: 1.25,
-      latencySeconds: 0.04,
-      jitterSeconds: 0.012,
-      topology: "click-track",
-      clickTrackStrength: 1.6,
-    };
-    const oneFrame = advanceAcrossFrameChunks(config, [0.1]);
-    const unevenFrames = advanceAcrossFrameChunks(config, [0.017, 0.041, 0.009, 0.033]);
-
-    const trace = (simulation: typeof oneFrame) => ({
-      time: simulation.state.time,
-      accumulatorSeconds: simulation.accumulatorSeconds,
-      phases: simulation.state.oscillators.map((oscillator) => oscillator.phase),
-      historyTimes: simulation.history.map((entry) => entry.time),
-    });
-
-    expect(trace(unevenFrames)).toEqual(trace(oneFrame));
-    expect(trace(oneFrame)).toEqual({
-      time: 0.09999999999999999,
-      accumulatorSeconds: 0,
-      phases: [
-        1.503128093205347,
-        1.7407022019563638,
-        2.2622870908572823,
-        3.7279854204281806,
-        4.73353141224523,
-        4.950090318592354,
-        6.011571838644364,
-        1.0058252620982182,
-      ],
-      historyTimes: [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.060000000000000005, 0.07, 0.08, 0.09],
-    });
-  });
-
   it("keeps empty oscillator metrics finite", () => {
     const metrics = metricsFor({ time: 0, oscillators: [] }, defaultConfig);
 
@@ -273,50 +180,6 @@ describe("ensemble simulation invariants", () => {
     expect(state.oscillators).toHaveLength(11);
   });
 
-  it("retunes tempo without resetting phase or time", () => {
-    const state = {
-      time: 4.25,
-      oscillators: createInitialState({ ...defaultConfig, tempoBpm: 96 }).oscillators,
-    };
-
-    const retuned = retuneState(state, {
-      ...defaultConfig,
-      tempoBpm: 144,
-      tempoSpreadBpm: 0,
-    });
-
-    expect(retuned.time).toBe(state.time);
-    expect(retuned.oscillators[0]?.phase).toBe(state.oscillators[0]?.phase);
-    expect(retuned.oscillators[0]?.omega).toBeCloseTo(bpmToRadPerSecond(144));
-  });
-
-  it("retunes tempo spread without rebuilding phases", () => {
-    const state = createInitialState({ ...defaultConfig, tempoSpreadBpm: 0 });
-    const wide = retuneState(state, { ...defaultConfig, tempoSpreadBpm: 20 });
-    const narrowSpan = omegaSpan({ ...defaultConfig, tempoSpreadBpm: 0 });
-    const wideOmegas = wide.oscillators.map((oscillator) => oscillator.omega);
-    const wideSpan = Math.max(...wideOmegas) - Math.min(...wideOmegas);
-
-    expect(wide.oscillators[3]?.phase).toBe(state.oscillators[3]?.phase);
-    expect(wideSpan).toBeGreaterThan(narrowSpan + bpmToRadPerSecond(30));
-  });
-
-  it("retunes musician count while preserving existing players", () => {
-    const state = {
-      time: 7,
-      oscillators: createInitialState({ ...defaultConfig, musicianCount: 4 }).oscillators,
-    };
-    const grown = retuneState(state, { ...defaultConfig, musicianCount: 6 });
-
-    expect(grown.time).toBe(7);
-    expect(grown.oscillators).toHaveLength(6);
-    expect(grown.oscillators[0]?.phase).toBe(state.oscillators[0]?.phase);
-    expect(grown.oscillators[3]?.phase).toBe(state.oscillators[3]?.phase);
-    expect(grown.oscillators[4]?.phase).toBe(
-      createInitialState({ ...defaultConfig, musicianCount: 6 }).oscillators[4]?.phase,
-    );
-  });
-
   it("texture changes the timing budget", () => {
     const dense = modelLatencyBudgetSeconds({
       ...defaultConfig,
@@ -334,31 +197,6 @@ describe("ensemble simulation invariants", () => {
     const fast = modelLatencyBudgetSeconds({ ...defaultConfig, tempoBpm: 140 });
 
     expect(fast).toBeLessThan(slow);
-  });
-
-  it("classifies model latency-budget risk", () => {
-    const config = {
-      ...defaultConfig,
-      tempoBpm: 120,
-      repertoireTexture: "pulse" as const,
-    };
-    const budget = modelLatencyBudgetSeconds(config);
-
-    expect(
-      modelLatencyBudgetStatus({ ...config, latencySeconds: budget * 0.35 }, {
-        modelLatencyBudgetSeconds: budget,
-      }),
-    ).toBe("plausible");
-    expect(
-      modelLatencyBudgetStatus({ ...config, latencySeconds: budget * 0.65 }, {
-        modelLatencyBudgetSeconds: budget,
-      }),
-    ).toBe("fragile");
-    expect(
-      modelLatencyBudgetStatus({ ...config, latencySeconds: budget * 0.9 }, {
-        modelLatencyBudgetSeconds: budget,
-      }),
-    ).toBe("unstable");
   });
 
   it("dense material has a smaller budget than call-response and drone", () => {
@@ -391,11 +229,6 @@ describe("ensemble simulation invariants", () => {
     const dense = run({ ...base, repertoireTexture: "dense-rhythm" });
 
     expect(drone - dense).toBeGreaterThan(0.12);
-  });
-
-  it("detects whether a lesson preset has become custom exploration", () => {
-    expect(configsEqual(defaultConfig, { ...defaultConfig })).toBe(true);
-    expect(configsEqual(defaultConfig, { ...defaultConfig, latencySeconds: 0.05 })).toBe(false);
   });
 
   it("rejects non-positive simulation time steps", () => {
@@ -487,13 +320,9 @@ describe("ensemble simulation invariants", () => {
     const invalidConfig = { ...defaultConfig, tempoBpm: 0 };
     const validState = createInitialState(defaultConfig);
     const validEdges = createCouplingEdges(defaultConfig);
-    const metrics = { modelLatencyBudgetSeconds: 1 };
 
     expect(() => createCouplingEdges(invalidConfig)).toThrow(RangeError);
-    expect(() => retuneState(validState, invalidConfig)).toThrow(RangeError);
     expect(() => modelLatencyBudgetSeconds(invalidConfig)).toThrow(RangeError);
-    expect(() => modelLatencyBudgetRatio(invalidConfig, metrics)).toThrow(RangeError);
-    expect(() => modelLatencyBudgetStatus(invalidConfig, metrics)).toThrow(RangeError);
     expect(() => peerCouplingShare(invalidConfig)).toThrow(RangeError);
     expect(() => metricsFor(validState, invalidConfig)).toThrow(RangeError);
     expect(() => stepEnsemble(validState, invalidConfig, validEdges, [], 0.01)).toThrow(

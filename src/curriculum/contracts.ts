@@ -27,6 +27,7 @@ export type NumberFactor = Readonly<{
   defaultValue: number;
   unit?: string;
   help: string;
+  audioSetting?: "onsetSensitivity";
 }>;
 
 export type SelectFactor = Readonly<{
@@ -36,6 +37,7 @@ export type SelectFactor = Readonly<{
   defaultValue: string;
   options: readonly Readonly<{ value: string; label: string }>[];
   help: string;
+  audioSetting?: "meterBias";
 }>;
 
 export type ToggleFactor = Readonly<{
@@ -150,6 +152,43 @@ export type DefinedDomain<Lessons extends ThreeLessons = ThreeLessons> = Readonl
 
 export function defaultFactorsFor(lesson: LessonDefinition): Record<string, FactorValue> {
   return Object.fromEntries(lesson.factors.map((factor) => [factor.id, factor.defaultValue]));
+}
+
+export type MeterBias = "mixed" | "duple" | "triple";
+
+export const meterBiases: readonly MeterBias[] = ["mixed", "duple", "triple"];
+
+/** Factors fed into local audio analysis; a lesson is audio-comparable exactly when this is non-empty. */
+export function audioAnalysisFactors(lesson: Pick<LessonDefinition, "factors">): readonly (NumberFactor | SelectFactor)[] {
+  return lesson.factors.filter((factor): factor is NumberFactor | SelectFactor => factor.kind !== "toggle" && factor.audioSetting !== undefined);
+}
+
+export type AudioAnalysisSettings = Readonly<{
+  onsetSensitivity?: number;
+  meterBias?: MeterBias;
+}>;
+
+/** Local audio-analysis settings carried by the lesson's audio factors at the given factor values. */
+export function audioAnalysisSettings(
+  lesson: Pick<LessonDefinition, "factors">,
+  factors: Readonly<Record<string, FactorValue>>,
+): AudioAnalysisSettings {
+  const settings: { onsetSensitivity?: number; meterBias?: MeterBias } = {};
+  for (const factor of audioAnalysisFactors(lesson)) {
+    const value = factors[factor.id];
+    if (factor.audioSetting === "onsetSensitivity" && typeof value === "number") settings.onsetSensitivity = value;
+    if (factor.audioSetting === "meterBias" && meterBiases.some((bias) => bias === value)) settings.meterBias = value as MeterBias;
+  }
+  return settings;
+}
+
+/** Protocol convention: a seed of "factor:<id>" means "use that factor's current value". */
+export function seedForTrial(lesson: LessonDefinition, factors: Readonly<Record<string, FactorValue>>): string {
+  if (lesson.protocol.seed?.startsWith("factor:")) {
+    const id = lesson.protocol.seed.slice("factor:".length);
+    return String(new Map(Object.entries(factors)).get(id) ?? "unspecified");
+  }
+  return lesson.protocol.seed ?? "unspecified";
 }
 
 export function isEvaluationOutput(value: unknown): value is EvaluationOutput {

@@ -1,5 +1,7 @@
 import {
   assertEvaluationOutput,
+  audioAnalysisFactors,
+  meterBiases,
   type DefinedDomain,
   type CurriculumLessonReader,
   type DomainDefinition,
@@ -9,6 +11,7 @@ import {
   type LessonEvaluatorMap,
   type ThreeLessons,
 } from "./contracts";
+import type { ClaimRecord, ResearchSource } from "./evidence";
 
 export function defineDomain<const Lessons extends ThreeLessons>(
   definition: DomainDefinition<Lessons>,
@@ -26,7 +29,18 @@ export type CurriculumRegistry = CurriculumLessonReader & Readonly<{
   evaluatorFor: (domainId: string, lessonId: string) => LessonEvaluator;
 }>;
 
-export function createCurriculumRegistry(domains: readonly DefinedDomain[]): CurriculumRegistry {
+export type CurriculumRegistryOptions = Readonly<{
+  /** When given, every static claim and source reference must resolve through it. */
+  evidence?: Readonly<{
+    claimById: (id: string) => ClaimRecord | undefined;
+    sourceById: (id: string) => ResearchSource | undefined;
+  }>;
+}>;
+
+export function createCurriculumRegistry(
+  domains: readonly DefinedDomain[],
+  options: CurriculumRegistryOptions = {},
+): CurriculumRegistry {
   if (domains.length === 0) throw new RangeError("Curriculum registry must include at least one domain.");
 
   const domainsById = new Map<string, DomainDefinition>();
@@ -44,6 +58,7 @@ export function createCurriculumRegistry(domains: readonly DefinedDomain[]): Cur
       const key = lessonKey(definition.id, lesson.id);
       if (lessonsByKey.has(key)) throw new RangeError(`Duplicate lesson key: ${key}.`);
       if (protocolIds.has(lesson.protocol.id)) throw new RangeError(`Duplicate protocol ID: ${lesson.protocol.id}.`);
+      if (options.evidence) assertResolvableEvidence(lesson, options.evidence);
       lessonsByKey.set(key, lesson);
       evaluatorsByKey.set(key, evaluators[lesson.id]);
       protocolIds.add(lesson.protocol.id);
@@ -88,7 +103,8 @@ function assertValidDomainModule(domain: DefinedDomain): void {
     if (!Number.isFinite(lesson.protocol.durationSeconds) || lesson.protocol.durationSeconds <= 0) {
       throw new RangeError(`Lesson ${lesson.id} must define a finite positive protocol duration.`);
     }
-    assertValidFactors(lesson.id, lesson.factors);
+    assertValidFactors(lesson);
+    assertValidAudioSettings(lesson);
     lessonIds.add(lesson.id);
     lessonNumbers.add(lesson.number);
   }
@@ -104,7 +120,49 @@ function assertValidDomainModule(domain: DefinedDomain): void {
   }
 }
 
-function assertValidFactors(lessonId: string, factors: readonly FactorDefinition[]): void {
+function assertResolvableEvidence(
+  lesson: LessonDefinition,
+  evidence: NonNullable<CurriculumRegistryOptions["evidence"]>,
+): void {
+  for (const claimId of lesson.claimIds) {
+    const claim = evidence.claimById(claimId);
+    if (!claim) throw new RangeError(`Lesson ${lesson.id} references unknown claim: ${claimId}.`);
+    for (const sourceId of claim.sourceIds) {
+      if (!evidence.sourceById(sourceId)) throw new RangeError(`Claim ${claimId} references unknown source: ${sourceId}.`);
+    }
+  }
+  for (const sourceId of lesson.sourceIds) {
+    if (!evidence.sourceById(sourceId)) throw new RangeError(`Lesson ${lesson.id} references unknown source: ${sourceId}.`);
+  }
+}
+
+function assertValidAudioSettings(lesson: LessonDefinition): void {
+  const audioFactors = audioAnalysisFactors(lesson);
+  if (audioFactors.length === 0) return;
+  if (!lesson.inputModes.some((mode) => mode === "microphone" || mode === "file")) {
+    throw new RangeError(`Lesson ${lesson.id} defines an audio setting but accepts neither microphone nor file input.`);
+  }
+  const settings = new Set<string>();
+  for (const factor of audioFactors) {
+    // Widened so that definitions bypassing the factor types are still rejected at runtime.
+    const setting: string | undefined = factor.audioSetting;
+    const kind: string = factor.kind;
+    if (setting === undefined) continue;
+    if (settings.has(setting)) throw new RangeError(`Lesson ${lesson.id} assigns audio setting ${setting} to more than one factor.`);
+    settings.add(setting);
+    if (setting === "onsetSensitivity" && kind !== "number") {
+      throw new RangeError(`Audio setting onsetSensitivity on factor ${factor.id} requires a number factor.`);
+    }
+    if (setting === "meterBias" && (factor.kind !== "select"
+      || !factor.options.every((option) => meterBiases.some((bias) => bias === option.value)))) {
+      throw new RangeError(`Audio setting meterBias on factor ${factor.id} requires a select factor with only mixed, duple, or triple options.`);
+    }
+  }
+}
+
+function assertValidFactors(lesson: LessonDefinition): void {
+  const lessonId = lesson.id;
+  const factors: readonly FactorDefinition[] = lesson.factors;
   const factorIds = new Set<string>();
   for (const factor of factors) {
     if (!factor.id) throw new TypeError(`Lesson ${lessonId} contains a factor with an empty ID.`);

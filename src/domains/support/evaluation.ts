@@ -38,19 +38,6 @@ export function observable({
   return { id, label, value, unit, claimId, precision, aggregation };
 }
 
-export function observableValues(...values: readonly [
-  id: string,
-  label: string,
-  value: number | string,
-  unit: string | null,
-  claimId?: string,
-  precision?: number,
-  aggregation?: ObservableRecord["aggregation"],
-]): ObservableRecord {
-  const [id, label, value, unit, claimId, precision, aggregation] = values;
-  return observable({ id, label, value, unit, claimId, precision, aggregation });
-}
-
 type ResultInput = Readonly<{
   headline: string;
   result: string;
@@ -76,25 +63,11 @@ export function result(input: ResultInput): EvaluationOutput {
   return { headline, result: resultText, observables, trace, traceAxes, visualKind, annotation, provenance };
 }
 
-export function resultValues(...values: readonly [
-  headline: string,
-  result: string,
-  observables: readonly ObservableRecord[],
-  trace: readonly TracePoint[],
-  visualKind: EvaluationOutput["visualKind"],
-  annotation: string,
-  traceAxes: TraceAxes,
-  provenance?: EvaluationOutput["provenance"],
-]): EvaluationOutput {
-  const [headline, resultText, observables, trace, visualKind, annotation, traceAxes, provenance] = values;
-  return result({ headline, result: resultText, observables, trace, visualKind, annotation, traceAxes, provenance });
-}
-
 export function axes(xLabel: string, xUnit: string | null, yLabel: string, yUnit: string | null): TraceAxes {
   return { x: { label: xLabel, unit: xUnit }, y: { label: yLabel, unit: yUnit } };
 }
 
-export function numberFactor(factors: Readonly<Record<string, FactorValue>>, id: string): number {
+export function readNumber(factors: Readonly<Record<string, FactorValue>>, id: string): number {
   const value = factors[id];
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new RangeError(`Factor ${id} must be a finite number.`);
@@ -102,13 +75,13 @@ export function numberFactor(factors: Readonly<Record<string, FactorValue>>, id:
   return value;
 }
 
-export function stringFactor(factors: Readonly<Record<string, FactorValue>>, id: string): string {
+export function readString(factors: Readonly<Record<string, FactorValue>>, id: string): string {
   const value = factors[id];
   if (typeof value !== "string") throw new TypeError(`Factor ${id} must be a string.`);
   return value;
 }
 
-export function booleanFactor(factors: Readonly<Record<string, FactorValue>>, id: string): boolean {
+export function readBoolean(factors: Readonly<Record<string, FactorValue>>, id: string): boolean {
   const value = factors[id];
   if (typeof value !== "boolean") throw new TypeError(`Factor ${id} must be a boolean.`);
   return value;

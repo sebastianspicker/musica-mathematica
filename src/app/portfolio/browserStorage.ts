@@ -1,4 +1,4 @@
-import type { StoragePort } from "../../learning/portfolio/ports";
+import type { StoragePort } from "../../learning/portfolio/schema";
 
 export function browserStorage(): StoragePort | undefined {
   if (typeof window === "undefined") return undefined;

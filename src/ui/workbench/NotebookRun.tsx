@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import type { FactorValue, LessonDefinition, ObservableRecord } from "../../curriculum/contracts";
-import { formatFactorValue, formatObservable } from "./ComparisonTable";
+import { formatFactorValue, formatObservable } from "../format";
 
 export function NotebookReadings({ lesson, factors, observables = [], factorMode = "all" }: Readonly<{
   lesson: LessonDefinition;

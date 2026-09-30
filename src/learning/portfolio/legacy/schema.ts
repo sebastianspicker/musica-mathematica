@@ -1,4 +1,4 @@
-import type { LessonStage } from "../stages";
+import type { LessonStage } from "../../stages";
 
 /**
  * Historical persisted DTO. It deliberately describes the former ensemble
@@ -44,5 +44,3 @@ export type LessonAttemptV1 = Readonly<{
   transferResponse?: string;
   runs: readonly LegacyRunSnapshot[];
 }>;
-
-export type LearningRecordStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;

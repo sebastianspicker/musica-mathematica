@@ -4,7 +4,8 @@ import type {
   ObservableRecord,
   TracePoint,
 } from "../../curriculum/contracts";
-import { claimById, evidenceLabels } from "../../learning/evidence/index";
+import { claimById, evidenceLabels } from "../../curriculum/evidence";
+import { formatNumber, formatObservable } from "../format";
 
 export type ResultVisualProps = Readonly<{
   evaluation: EvaluationOutput;
@@ -176,25 +177,12 @@ function scale(value: number, minimum: number, maximum: number, start: number, e
   return start + ((value - minimum) / (maximum - minimum)) * (end - start);
 }
 
-function formatObservable(observable: ObservableRecord): string {
-  const value = typeof observable.value === "number"
-    ? formatValue(observable.value, observable.precision)
-    : observable.value;
-  return observable.unit ? `${value} ${observable.unit}` : value;
-}
-
-function formatValue(value: number, precision?: number): string {
-  if (precision !== undefined) return value.toFixed(precision);
-  if (Number.isInteger(value)) return String(value);
-  return value.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
-}
-
 function formatAxisLabel(label: string, unit: string | null): string {
   return unit ? `${label} (${unit})` : label;
 }
 
 function formatAxisValue(value: number, unit: string | null): string {
-  const formatted = formatValue(value);
+  const formatted = formatNumber(value);
   return unit ? `${formatted} ${unit}` : formatted;
 }
 

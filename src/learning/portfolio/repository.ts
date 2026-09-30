@@ -1,5 +1,5 @@
 import type { CurriculumLessonReader } from "../../curriculum/contracts";
-import { migrateLegacyJson } from "../legacy-v1/migration";
+import { migrateLegacyJson } from "./legacy/migration";
 import { createPortfolio } from "./aggregate";
 import {
   preparePortfolio,
@@ -10,9 +10,9 @@ import {
   legacyPortfolioStorageKey,
   maximumRawPortfolioJsonBytes,
   portfolioStorageKey,
-} from "./constants";
-import type { StoragePort } from "./ports";
-import type { LearningPortfolioV2 } from "./schema-v2";
+  type StoragePort,
+  type LearningPortfolioV2,
+} from "./schema";
 
 export type PortfolioPersistenceStatus =
   | "not-needed"

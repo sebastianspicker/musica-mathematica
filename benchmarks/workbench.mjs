@@ -3,18 +3,13 @@ import { chromium } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 const root = process.cwd();
 const label = (process.argv[2] ?? 'current').replace(/[^a-zA-Z0-9_-]/g, '_');
+const resultVisualInstanceId = 'const instanceId = useId();';
 const server = await createServer({ root, server: { host: '127.0.0.1', port: 5193, strictPort: true, watch: null }, plugins: [{ name: 'temporary-render-profile', enforce: 'pre', transform(code, id) {
- if (id.endsWith('/src/main.tsx')) return `import {StrictMode, Profiler, useState} from 'react';
-import {createRoot} from 'react-dom/client';
-import {LessonWorkbenchController} from './app/workbench/LessonWorkbenchController';
-import {curriculumRegistry} from './curriculum/catalog';
-import {createDemoPortfolio} from './app/demo/demoPortfolio';
-import {activeAttempt} from './learning/portfolio/aggregate';
-import './styles/index.css';
-function Fixture(){ const [attempt,setAttempt] = useState(()=>({...activeAttempt(curriculumRegistry,createDemoPortfolio(curriculumRegistry)),stage:'experiment'})); return <LessonWorkbenchController curriculum={curriculumRegistry} lesson={curriculumRegistry.defaultLesson} attempt={attempt} onAttemptChange={setAttempt} onPersistenceMessage={()=>{}} />; }
-createRoot(document.getElementById('root')).render(<StrictMode><Profiler id="workbench" onRender={(_id,phase,actualDuration)=>{if(window.__profile && phase!=='mount')window.__profile.durations.push(actualDuration);}}><Fixture /></Profiler></StrictMode>);`;
-
- if (id.endsWith('/src/ui/workbench/ResultVisual.tsx')) return code.replace('const instanceId = useId();', 'if (window.__profile) window.__profile.geometry += 1;\n  const instanceId = useId();');
+ if (id.endsWith('/src/main.tsx')) return 'import "/benchmarks/workbenchProfileMain.tsx";';
+ if (id.endsWith('/src/ui/workbench/ResultVisual.tsx')) {
+  if (!code.includes(resultVisualInstanceId)) throw new Error(`ResultVisual.tsx no longer contains "${resultVisualInstanceId}"; update the geometry counter.`);
+  return code.replace(resultVisualInstanceId, `if (window.__profile) window.__profile.geometry += 1;\n  ${resultVisualInstanceId}`);
+ }
 } }] });
 await server.listen();
 const browser = await chromium.launch();
@@ -22,6 +17,8 @@ try {
  const page = await browser.newPage({ viewport: {width:1440,height:1000}, reducedMotion:'no-preference' });
  await page.goto('http://127.0.0.1:5193/#/labs/phase-proportion/lessons/from-bpm-to-period');
  await page.getByLabel('Motion', {exact:true}).check();
+ // Playback controls live in the collapsed model-exploration section of the notebook.
+ await page.getByText('Explore the model, charts and playback', {exact:true}).click();
  const runs=[];
  for(let i=0;i<5;i++) {
   await page.getByRole('button',{name:'Reset view',exact:true}).click();

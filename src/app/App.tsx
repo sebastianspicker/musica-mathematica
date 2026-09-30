@@ -1,21 +1,8 @@
 import { useEffect, useRef, useState, type ReactElement } from "react";
 import type { LessonDefinition } from "../curriculum/contracts";
 import type { CurriculumRegistry } from "../curriculum/registry";
-import { activeAttempt, attemptKey, createPortfolio, selectLesson, updateAttempt } from "../learning/portfolio/aggregate";
-import {
-  clearPortfolio,
-  exportPortfolioJson,
-  loadPortfolioDetailed,
-  portfolioNormalizationNotice,
-  savePortfolioDetailed,
-  type PortfolioPersistenceStatus,
-} from "../learning/portfolio/repository";
-import type { LearningPortfolioV2, LessonAttemptV2 } from "../learning/portfolio/schema-v2";
-import type { StoragePort } from "../learning/portfolio/ports";
-import {
-  isLessonAttemptV2,
-  normalizeLessonAttempt,
-} from "../learning/portfolio/validate";
+import { attemptKey } from "../learning/portfolio/aggregate";
+import type { StoragePort } from "../learning/portfolio/schema";
 import { lessonStages } from "../learning/stages";
 import { CurriculumRail } from "../ui/workbench/CurriculumRail";
 import { StageProgress } from "../ui/workbench/InquiryStage";
@@ -23,31 +10,8 @@ import { InterfaceIcon } from "../ui/Icon";
 import { LearningRecords, PortfolioStatus } from "../ui/workbench/LearningRecords";
 import { LessonWorkbenchController } from "./workbench/LessonWorkbenchController";
 import { browserStorage } from "./portfolio/browserStorage";
-import { downloadPortfolioJson } from "./portfolio/download";
+import { usePortfolio } from "./portfolio/usePortfolio";
 import { lessonByRoute, lessonRoute } from "./routing/hashRoute";
-
-type InitialAppState = Readonly<{
-  lesson: LessonDefinition;
-  portfolio: LearningPortfolioV2;
-  automaticPersistenceEnabled: boolean;
-  persistenceMessage: string | null;
-  persistenceStatus: PortfolioPersistenceStatus;
-}>;
-
-function initialAppState(curriculum: CurriculumRegistry, storage: StoragePort | undefined): InitialAppState {
-  const loaded = loadPortfolioDetailed(storage, curriculum);
-  const routed = typeof window === "undefined" ? undefined : lessonByRoute(window.location.hash, curriculum);
-  const selected = routed
-    ?? curriculum.lessonById(loaded.portfolio.active.labId, loaded.portfolio.active.lessonId)
-    ?? curriculum.defaultLesson;
-  return {
-    lesson: selected,
-    portfolio: selectLesson(curriculum, loaded.portfolio, selected.domainId, selected.id),
-    automaticPersistenceEnabled: loaded.automaticPersistenceEnabled,
-    persistenceMessage: loaded.notice ?? null,
-    persistenceStatus: loaded.persistenceStatus,
-  };
-}
 
 export type AppProps = Readonly<{
   curriculum: CurriculumRegistry;
@@ -57,25 +21,25 @@ export type AppProps = Readonly<{
 
 export function App({ curriculum, demoMode = false, storageFactory = browserStorage }: AppProps): ReactElement {
   const [storage] = useState<StoragePort | undefined>(() => storageFactory());
-  const [initial] = useState(() => initialAppState(curriculum, storage));
-  const [lesson, setLesson] = useState(initial.lesson);
-  const [portfolio, setPortfolio] = useState(initial.portfolio);
-  const [automaticPersistenceEnabled, setAutomaticPersistenceEnabled] = useState(
-    initial.automaticPersistenceEnabled,
-  );
-  const [persistenceMessage, setPersistenceMessage] = useState<string | null>(
-    initial.persistenceMessage,
-  );
+  // Only the location at first render seeds the lesson; later changes arrive through hashchange.
+  const [routedLesson] = useState(() => (
+    typeof window === "undefined" ? undefined : lessonByRoute(window.location.hash, curriculum)
+  ));
+  const {
+    lesson, portfolio, attempt, persistenceStatus, persistenceMessage,
+    selectLesson, replaceAttempt, exportPortfolio, clearAll, setMessage, dismissMessage,
+  } = usePortfolio({
+    curriculum,
+    storage,
+    demoMode,
+    routedLesson,
+  });
   const [presentationMode, setPresentationMode] = useState(false);
-  const [persistenceStatus, setPersistenceStatus] = useState(initial.persistenceStatus);
   const clearDialogRef = useRef<HTMLDialogElement>(null);
   const lessonsDialogRef = useRef<HTMLDialogElement>(null);
   const learningDialogRef = useRef<HTMLDialogElement>(null);
-  const skipPersistenceForRef = useRef<LearningPortfolioV2 | null>(null);
   const shouldFocusLessonRef = useRef(false);
-  const attempt = activeAttempt(curriculum, portfolio);
   const previousTaskRef = useRef({ lesson, stage: attempt.stage });
-
 
   function lessonProgress(candidate: LessonDefinition): string | undefined {
     const savedAttempt = portfolio.attempts[attemptKey(candidate.domainId, candidate.id)];
@@ -96,15 +60,14 @@ export function App({ curriculum, demoMode = false, storageFactory = browserStor
         return;
       }
       shouldFocusLessonRef.current = next !== lesson;
-      setLesson(next);
-      setPortfolio((current) => selectLesson(curriculum, current, next.domainId, next.id));
+      selectLesson(next);
       if (next === lesson) document.getElementById("mm-current-task")?.focus();
     };
     window.addEventListener("hashchange", onHashChange);
     return () => {
       window.removeEventListener("hashchange", onHashChange);
     };
-  }, [curriculum, lesson]);
+  }, [curriculum, lesson, selectLesson]);
 
   useEffect(() => {
     if (!shouldFocusLessonRef.current) return;
@@ -120,53 +83,9 @@ export function App({ curriculum, demoMode = false, storageFactory = browserStor
     }
   }, [attempt.stage, lesson]);
 
-  useEffect(() => {
-    if (!automaticPersistenceEnabled) return;
-    if (skipPersistenceForRef.current === portfolio) return;
-    const saved = savePortfolioDetailed(portfolio, storage, curriculum);
-    setPersistenceStatus(saved.persistenceStatus);
-    if (saved.persistenceStatus === "disabled") setAutomaticPersistenceEnabled(false);
-    if (saved.notice) setPersistenceMessage(saved.notice);
-    if (saved.portfolio && (saved.normalizationStatus === "normalized"
-      || saved.normalizationStatus === "compacted")) {
-      skipPersistenceForRef.current = saved.portfolio;
-      setPortfolio(saved.portfolio);
-    }
-  }, [automaticPersistenceEnabled, curriculum, portfolio, storage]);
-
-  function replaceAttempt(next: LessonAttemptV2): void {
-    const normalized = normalizeLessonAttempt(next, curriculum);
-    if (!normalized) return;
-    setPortfolio((current) => updateAttempt(curriculum, current, normalized));
-    if (!isLessonAttemptV2(next, curriculum)) {
-      setPersistenceMessage(portfolioNormalizationNotice);
-    }
-  }
-
-  function exportPortfolio(): void {
-    const json = exportPortfolioJson(portfolio, curriculum);
-    if (!json) {
-      setPersistenceMessage("The portfolio could not be exported.");
-      return;
-    }
-    downloadPortfolioJson(json);
-    setPersistenceMessage("Portfolio exported. The file remains under your control.");
-  }
-
   function clearAllLearning(): void {
-    const cleared = clearPortfolio(storage);
-    const reset = demoMode
-      ? loadPortfolioDetailed(storage, curriculum).portfolio
-      : createPortfolio(curriculum);
-    const next = selectLesson(curriculum, reset, lesson.domainId, lesson.id);
-    skipPersistenceForRef.current = next;
-    setPortfolio(next);
-    setPersistenceStatus(cleared ? "not-needed" : "failed");
-    if (cleared) setAutomaticPersistenceEnabled(true);
+    clearAll();
     clearDialogRef.current?.close();
-    setPersistenceMessage(cleared
-      ? demoMode ? "Demo data was reset." : "All local learning records were cleared."
-      : "Storage could not be cleared; use the browser's site-data controls.");
   }
 
   return (
@@ -185,9 +104,7 @@ export function App({ curriculum, demoMode = false, storageFactory = browserStor
       {persistenceMessage ? (
         <p className="mm-global-message" role="status">
           <span>{persistenceMessage}</span>
-          <button aria-label="Dismiss message" className="mm-global-message__dismiss" type="button" onClick={() => {
-            setPersistenceMessage(null);
-          }}>
+          <button aria-label="Dismiss message" className="mm-global-message__dismiss" type="button" onClick={dismissMessage}>
             <InterfaceIcon name="close" />
           </button>
         </p>
@@ -210,7 +127,7 @@ export function App({ curriculum, demoMode = false, storageFactory = browserStor
             key={`${lesson.domainId}:${lesson.id}`}
             lesson={lesson}
             onAttemptChange={replaceAttempt}
-            onPersistenceMessage={setPersistenceMessage}
+            onPersistenceMessage={setMessage}
           />
         </div>
       </div>

@@ -1,5 +1,34 @@
 import { describe, expect, it } from "vitest";
-import * as constants from "./constants";
+import { createAttemptV2, createPortfolio, updateAttempt } from "./aggregate";
+import { exportPortfolioJson } from "./repository";
+import { testCurriculum } from "./curriculumFixture.test-helper";
+import * as constants from "./schema";
+
+it("keeps the v2 golden field names and schema version", () => {
+  const attempt = createAttemptV2(
+    testCurriculum,
+    "phase-proportion",
+    "from-bpm-to-period",
+    "2026-08-28T10:00:00.000Z",
+  );
+  const portfolio = updateAttempt(testCurriculum, createPortfolio(testCurriculum), attempt);
+  const golden = {
+    version: 2,
+    active: { labId: "phase-proportion", lessonId: "from-bpm-to-period" },
+    attempts: {
+      "phase-proportion:from-bpm-to-period": {
+        version: 2,
+        labId: "phase-proportion",
+        lessonId: "from-bpm-to-period",
+        stage: "orient",
+        trials: [],
+        updatedAt: "2026-08-28T10:00:00.000Z",
+      },
+    },
+  };
+
+  expect(exportPortfolioJson(portfolio, testCurriculum)).toBe(JSON.stringify(golden));
+});
 
 describe("portfolio constants", () => {
   it("pins the literal storage keys, caps and trace tiers", () => {
@@ -16,17 +45,5 @@ describe("portfolio constants", () => {
     expect(constants.maximumPortfolioJsonBytes).toBe(4_194_304);
     expect(constants.maximumRawPortfolioJsonBytes).toBe(8_388_608);
     expect([...constants.traceCompactionTiers]).toEqual([128, 64, 32, 16, 0]);
-  });
-
-  it("pins the legacy lesson mapping", () => {
-    expect(constants.legacyLessonMapping).toEqual({
-      "lock-in": "lock-in-and-order",
-      latency: "delay-jitter-topology",
-      "low-latency-route": "delay-jitter-topology",
-      "diagnose-instability": "delay-jitter-topology",
-      click: "external-pulse-or-peer-adaptation",
-      "click-or-peer-coupling": "external-pulse-or-peer-adaptation",
-      "compose-with-latency": "external-pulse-or-peer-adaptation",
-    });
   });
 });

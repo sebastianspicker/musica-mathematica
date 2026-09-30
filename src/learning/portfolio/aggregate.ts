@@ -1,11 +1,19 @@
-import type { CurriculumDomainId, CurriculumLessonReader } from "../../curriculum/contracts";
+import {
+  seedForTrial,
+  type CurriculumDomainId,
+  type CurriculumLessonReader,
+  type EvaluationOutput,
+  type FactorValue,
+  type LessonDefinition,
+} from "../../curriculum/contracts";
 import { lessonStages, type LessonResponseField, type LessonStage } from "../stages";
-import { attemptKey, maximumTrialsPerLesson } from "./constants";
-import type {
-  LearningPortfolioV2,
-  LessonAttemptV2,
-  TrialSnapshotV2,
-} from "./schema-v2";
+import {
+  attemptKey,
+  maximumTrialsPerLesson,
+  type LearningPortfolioV2,
+  type LessonAttemptV2,
+  type TrialSnapshotV2,
+} from "./schema";
 import {
   isTrialSnapshotV2,
   normalizeLessonAttempt,
@@ -126,6 +134,38 @@ export function recordTrial(
     trials: [...attempt.trials, normalizedTrial].slice(-maximumTrialsPerLesson),
     updatedAt: now,
   };
+}
+
+/** Detect reductions made when accepting a run, before persistence sees it. */
+export function recordedRunWasTrimmed(previous: LessonAttemptV2, submitted: TrialSnapshotV2, next: LessonAttemptV2): boolean {
+  const saved = next.trials.at(-1);
+  return saved !== undefined && (
+    next.trials.length < previous.trials.length + 1
+    || (saved.note?.length ?? 0) < (submitted.note?.length ?? 0)
+    || saved.trace.length < submitted.trace.length
+    || saved.observables.length < submitted.observables.length
+  );
+}
+
+export function runLabel(runCount: number): string {
+  if (runCount === 0) return "Run A";
+  if (runCount === 1) return "Run B";
+  return `Run ${runCount + 1}`;
+}
+
+export type TrialSnapshotInput = Readonly<{
+  lesson: LessonDefinition;
+  runIndex: number;
+  factors: Readonly<Record<string, FactorValue>>;
+  evaluation: EvaluationOutput;
+  note: string;
+  recordedAt: string;
+}>;
+
+/** Build the persisted snapshot of one evaluated run; `runIndex` is the count of earlier trials. */
+export function createTrialSnapshot({ lesson, runIndex, factors, evaluation, note, recordedAt }: TrialSnapshotInput): TrialSnapshotV2 {
+  const deterministic = (evaluation.provenance.source === "model" || evaluation.provenance.source === "synthetic") && lesson.protocol.deterministic;
+  return { id: runLabel(runIndex), labId: lesson.domainId, lessonId: lesson.id, protocolId: lesson.protocol.id, deterministic, ...(deterministic && lesson.protocol.seed ? { seed: seedForTrial(lesson, factors) } : {}), recordedAt, factors: { ...factors }, observables: evaluation.observables.map((item) => ({ ...item })), trace: evaluation.trace.map((point) => ({ ...point })), provenance: { ...evaluation.provenance }, ...(note.trim() ? { note: note.trim() } : {}) };
 }
 
 function isTrialForAttempt(trial: TrialSnapshotV2, attempt: LessonAttemptV2, curriculum: CurriculumLessonReader): boolean {

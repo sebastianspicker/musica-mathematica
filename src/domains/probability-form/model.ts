@@ -1,4 +1,4 @@
-import { assertFiniteNonNegative } from "../../shared/numeric/validation";
+import { assertNonNegativeFinite } from "../../shared/numeric/validation";
 
 export type RandomSource = () => number;
 
@@ -36,7 +36,7 @@ export function normalizeTransitionMatrix(matrix: readonly (readonly number[])[]
   return matrix.map((row, rowIndex) => {
     if (row.length !== matrix.length) throw new RangeError("matrix must be square.");
     row.forEach((value, columnIndex) => {
-      assertFiniteNonNegative(`matrix[${rowIndex}][${columnIndex}]`, value);
+      assertNonNegativeFinite(`matrix[${rowIndex}][${columnIndex}]`, value);
     });
     const total = row.reduce((sum, value) => sum + value, 0);
     if (total === 0) throw new RangeError(`matrix row ${rowIndex} must have positive total weight.`);

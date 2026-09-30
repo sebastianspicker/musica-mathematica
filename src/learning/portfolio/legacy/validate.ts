@@ -1,5 +1,10 @@
-import { isLessonStage, lessonStages } from "../stages";
-import type { LegacyEnsembleConfig, LegacyEnsembleMetrics, LegacyRunSnapshot, LessonAttemptV1 } from "./schema";
+import { isLessonStage, lessonStages } from "../../stages";
+import type {
+  LegacyEnsembleConfig,
+  LegacyEnsembleMetrics,
+  LegacyRunSnapshot,
+  LessonAttemptV1,
+} from "./schema";
 
 export function isLessonAttemptV1(value: unknown): value is LessonAttemptV1 {
   if (!record(value) || value.version !== 1 || typeof value.lessonId !== "string" || !value.lessonId.trim() || !isLessonStage(value.stage) || !Array.isArray(value.runs) || !value.runs.every(isRun) || ![value.prediction, value.explanation, value.performanceReflection, value.transferResponse].every(optionalText)) return false;

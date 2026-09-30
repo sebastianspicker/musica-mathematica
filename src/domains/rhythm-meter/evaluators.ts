@@ -1,10 +1,10 @@
 import { analyzeRhythm, euclideanRhythm, rankMeterCandidates, rotateRhythm } from "./model";
 import {
   axes,
-  numberFactor,
-  observableValues as observable,
-  resultValues as result,
-  stringFactor,
+  readNumber,
+  observable,
+  result,
+  readString,
   SYNTHETIC_PROVENANCE,
 } from "../support/evaluation";
 import type { EvaluationOutput, FactorValue } from "../../curriculum/contracts";
@@ -12,9 +12,9 @@ import type { EvaluationOutput, FactorValue } from "../../curriculum/contracts";
 type Factors = Readonly<Record<string, FactorValue>>;
 
 function safePattern(factors: Factors): number[] {
-  const steps = Math.max(1, Math.round(numberFactor(factors, "steps")));
-  const pulses = Math.min(steps, Math.max(0, Math.round(numberFactor(factors, "pulses"))));
-  const rotation = Math.round(numberFactor(factors, "rotation"));
+  const steps = Math.max(1, Math.round(readNumber(factors, "steps")));
+  const pulses = Math.min(steps, Math.max(0, Math.round(readNumber(factors, "pulses"))));
+  const rotation = Math.round(readNumber(factors, "rotation"));
   return rotateRhythm(euclideanRhythm(pulses, steps), rotation);
 }
 
@@ -22,19 +22,19 @@ export function evaluateCyclesAndEuclideanRhythm(factors: Factors): EvaluationOu
   const pattern = safePattern(factors);
   const analysis = analyzeRhythm(pattern);
   const trace = pattern.map((value, index) => ({ x: index, y: value, series: "Onset pattern" }));
-  return result(
-    "Cyclic onset vector",
-    pattern.join(" "),
-    [
-      observable("onsets", "Onset count", analysis.pulseCount, null, "math.identity", 0),
-      observable("density", "Onset density", analysis.density, null, "math.identity", 3),
-      observable("cycleLength", "Cycle length", pattern.length, "steps", "math.identity", 0),
+  return result({
+    headline: "Cyclic onset vector",
+    result: pattern.join(" "),
+    observables: [
+      observable({ id: "onsets", label: "Onset count", value: analysis.pulseCount, unit: null, claimId: "math.identity", precision: 0 }),
+      observable({ id: "density", label: "Onset density", value: analysis.density, unit: null, claimId: "math.identity", precision: 3 }),
+      observable({ id: "cycleLength", label: "Cycle length", value: pattern.length, unit: "steps", claimId: "math.identity", precision: 0 }),
     ],
     trace,
-    "pulse",
-    "Rotation preserves onset count and density while relocating the chosen cycle origin.",
-    axes("Cycle step", "steps", "Onset indicator", null),
-  );
+    visualKind: "pulse",
+    annotation: "Rotation preserves onset count and density while relocating the chosen cycle origin.",
+    traceAxes: axes("Cycle step", "steps", "Onset indicator", null),
+  });
 }
 
 export function evaluateAutocorrelationSpectrumMeter(factors: Factors): EvaluationOutput {
@@ -48,25 +48,25 @@ export function evaluateAutocorrelationSpectrumMeter(factors: Factors): Evaluati
     y: value,
     series: "Circular autocorrelation",
   }));
-  return result(
-    "Ranked periodicity",
-    topMeter ? `${topMeter.beats} beats × ${topMeter.subdivisionsPerBeat} subdivisions` : "No equal-subdivision candidate",
-    [
-      observable("topMeter", "Top equal-subdivision candidate", topMeter ? `${topMeter.beats} × ${topMeter.subdivisionsPerBeat}` : "none", null, "heuristic.transparent"),
-      observable("meterScore", "Onset-alignment score", topMeter?.score ?? 0, null, "heuristic.transparent", 3),
-      observable("spectralBin", "Strongest non-DC bin", strongestSpectrum?.bin ?? 0, null, "model.deterministic", 0),
+  return result({
+    headline: "Ranked periodicity",
+    result: topMeter ? `${topMeter.beats} beats × ${topMeter.subdivisionsPerBeat} subdivisions` : "No equal-subdivision candidate",
+    observables: [
+      observable({ id: "topMeter", label: "Top equal-subdivision candidate", value: topMeter ? `${topMeter.beats} × ${topMeter.subdivisionsPerBeat}` : "none", unit: null, claimId: "heuristic.transparent" }),
+      observable({ id: "meterScore", label: "Onset-alignment score", value: topMeter?.score ?? 0, unit: null, claimId: "heuristic.transparent", precision: 3 }),
+      observable({ id: "spectralBin", label: "Strongest non-DC bin", value: strongestSpectrum?.bin ?? 0, unit: null, claimId: "model.deterministic", precision: 0 }),
     ],
-    profileTrace,
-    "spectrum",
-    "The ranking describes this vector under one candidate family; it is not a definitive heard meter.",
-    axes("Circular lag", "steps", "Autocorrelation", null),
-  );
+    trace: profileTrace,
+    visualKind: "spectrum",
+    annotation: "The ranking describes this vector under one candidate family; it is not a definitive heard meter.",
+    traceAxes: axes("Circular lag", "steps", "Autocorrelation", null),
+  });
 }
 
 export function evaluateRecordedOnsetHypotheses(factors: Factors): EvaluationOutput {
-  const tempo = numberFactor(factors, "tempoBpm");
-  const threshold = numberFactor(factors, "threshold");
-  const bias = stringFactor(factors, "meterBias");
+  const tempo = readNumber(factors, "tempoBpm");
+  const threshold = readNumber(factors, "threshold");
+  const bias = readString(factors, "meterBias");
   const eventCount = Math.max(2, Math.round(12 * (1.05 - threshold)));
   const candidates = bias === "duple" ? [tempo, tempo / 2, tempo * 2] : bias === "triple" ? [tempo, tempo * 1.5, tempo / 2] : [tempo, tempo / 2, tempo * 1.5];
   const trace = Array.from({ length: eventCount }, (_, index) => ({
@@ -74,19 +74,19 @@ export function evaluateRecordedOnsetHypotheses(factors: Factors): EvaluationOut
     y: 0.65 + 0.25 * Math.sin(index * 1.7),
     series: "Detected onset strength",
   }));
-  return result(
-    "Ranked transcription hypotheses",
-    `${candidates[0].toFixed(1)} BPM (top candidate)`,
-    [
-      observable("onsetCount", "Events above threshold", eventCount, null, "hypothesis.transcription", 0),
-      observable("tempo1", "Tempo candidate 1", candidates[0], "BPM", "hypothesis.transcription", 1),
-      observable("tempo2", "Tempo candidate 2", candidates[1], "BPM", "hypothesis.transcription", 1),
-      observable("tempo3", "Tempo candidate 3", candidates[2], "BPM", "hypothesis.transcription", 1),
+  return result({
+    headline: "Ranked transcription hypotheses",
+    result: `${candidates[0].toFixed(1)} BPM (top candidate)`,
+    observables: [
+      observable({ id: "onsetCount", label: "Events above threshold", value: eventCount, unit: null, claimId: "hypothesis.transcription", precision: 0 }),
+      observable({ id: "tempo1", label: "Tempo candidate 1", value: candidates[0], unit: "BPM", claimId: "hypothesis.transcription", precision: 1 }),
+      observable({ id: "tempo2", label: "Tempo candidate 2", value: candidates[1], unit: "BPM", claimId: "hypothesis.transcription", precision: 1 }),
+      observable({ id: "tempo3", label: "Tempo candidate 3", value: candidates[2], unit: "BPM", claimId: "hypothesis.transcription", precision: 1 }),
     ],
     trace,
-    "spectrum",
-    "Synthetic fixture shown. Microphone and file modes must retain the same hypothesis wording and local-only boundary.",
-    axes("Time", "s", "Onset strength", null),
-    SYNTHETIC_PROVENANCE,
-  );
+    visualKind: "spectrum",
+    annotation: "Synthetic fixture shown. Microphone and file modes must retain the same hypothesis wording and local-only boundary.",
+    traceAxes: axes("Time", "s", "Onset strength", null),
+    provenance: SYNTHETIC_PROVENANCE,
+  });
 }

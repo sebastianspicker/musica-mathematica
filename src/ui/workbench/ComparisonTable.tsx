@@ -5,7 +5,9 @@ import type {
   ObservableRecord,
   LessonDefinition,
 } from "../../curriculum/contracts";
-import type { TrialSnapshotV2 } from "../../learning/portfolio/schema-v2";
+import { changedFactorIds as changedFactorIdsBetween } from "../../learning/inquiry/comparison";
+import type { TrialSnapshotV2 } from "../../learning/portfolio/schema";
+import { formatFactorValue, formatNumber, formatRecordedObservable } from "../format";
 
 export type ComparisonTableProps = Readonly<{
   lesson: LessonDefinition;
@@ -29,9 +31,7 @@ export const ComparisonTable = memo(function ComparisonTable({ lesson, trials }:
   const leftFactors = new Map(Object.entries(left.factors));
   const rightFactors = new Map(Object.entries(right.factors));
   const factorIds = orderedFactorIds(lesson.factors, left.factors, right.factors);
-  const changedFactorIds = factorIds.filter(
-    (id) => !factorValuesEqual(leftFactors.get(id), rightFactors.get(id)),
-  );
+  const changedFactorIds = changedFactorIdsBetween(factorIds, left.factors, right.factors);
   const observableIds = unique([
     ...left.observables.map((observable) => observable.id),
     ...right.observables.map((observable) => observable.id),
@@ -103,9 +103,9 @@ function ComparisonSummary({ changedFactorIds, definitions, factorIds, leftFacto
   const changed = changedFactorIds.includes(primaryFactorId);
 
   return <div className="mm-comparison-summary" aria-label="Latest controlled comparison summary">
-    <div><span>Run A</span><strong>{formatFactorValue(leftValue, primaryFactor)}</strong><small>{formatObservable(leftObservable)}</small></div>
+    <div><span>Run A</span><strong>{formatFactorValue(leftValue, primaryFactor)}</strong><small>{formatRecordedObservable(leftObservable)}</small></div>
     <div className="mm-comparison-summary__change"><span>{factorLabel(definitions, primaryFactorId)} · {changed ? "changed factor" : "held constant"}</span><strong>{numericDelta ?? (changed ? "Changed" : "Held constant")}</strong><small>{heldFactorSummary(factorIds, changedFactorIds, definitions)}</small></div>
-    <div><span>Run B</span><strong>{formatFactorValue(rightValue, primaryFactor)}</strong><small>{formatObservable(rightObservable)}</small></div>
+    <div><span>Run B</span><strong>{formatFactorValue(rightValue, primaryFactor)}</strong><small>{formatRecordedObservable(rightObservable)}</small></div>
   </div>;
 }
 
@@ -164,8 +164,8 @@ function ObservableComparisonTable({ left, observableIds, right }: Readonly<{ le
 function ObservableComparisonRow({ id, left, right }: Readonly<{ id: string; left: ObservableRecord | undefined; right: ObservableRecord | undefined }>): ReactElement {
   return <tr>
     <th scope="row">{left?.label ?? right?.label ?? id}</th>
-    <td>{formatObservable(left)}</td>
-    <td>{formatObservable(right)}</td>
+    <td>{formatRecordedObservable(left)}</td>
+    <td>{formatRecordedObservable(right)}</td>
   </tr>;
 }
 
@@ -195,47 +195,11 @@ function factorLabel(definitions: readonly FactorDefinition[], id: string): stri
   return definitions.find((factor) => factor.id === id)?.label ?? id;
 }
 
-function factorValuesEqual(left: FactorValue | undefined, right: FactorValue | undefined): boolean {
-  if (typeof left === "number" && typeof right === "number") {
-    return Math.abs(left - right) < 1e-9;
-  }
-  return left === right;
-}
-
-export function formatFactorValue(value: FactorValue | undefined, definition?: FactorDefinition): string {
-  if (value === undefined) return "Not recorded";
-  if (typeof value === "boolean") return value ? "On" : "Off";
-  if (typeof value === "string") {
-    if (definition?.kind === "select") {
-      return definition.options.find((option) => option.value === value)?.label ?? value;
-    }
-    return value;
-  }
-  const formatted = formatNumber(value);
-  return definition?.kind === "number" && definition.unit
-    ? `${formatted} ${definition.unit}`
-    : formatted;
-}
-
 function factorDelta(left: FactorValue | undefined, right: FactorValue | undefined, definition: FactorDefinition | undefined): string | null {
   if (definition?.kind !== "number" || typeof left !== "number" || typeof right !== "number") return null;
   const delta = right - left;
   const signed = `${delta >= 0 ? "+" : ""}${formatNumber(delta)}`;
   return definition.unit ? `${signed} ${definition.unit}` : signed;
-}
-
-export function formatObservable(observable: ObservableRecord | undefined): string {
-  if (!observable) return "Not recorded";
-  const value = typeof observable.value === "number"
-    ? formatNumber(observable.value, observable.precision)
-    : observable.value;
-  return observable.unit ? `${value} ${observable.unit}` : value;
-}
-
-function formatNumber(value: number, precision?: number): string {
-  if (precision !== undefined) return value.toFixed(precision);
-  if (Number.isInteger(value)) return String(value);
-  return value.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
 }
 
 function unique(values: readonly string[]): readonly string[] {

@@ -1,43 +1,44 @@
-import { defaultConfig } from "./defaultConfig";
-import { simulateEnsemble, type EnsembleConfig, type Topology } from "./ensemble";
-import { axes, numberFactor, observableValues as observable, resultValues as result, stringFactor } from "../support/evaluation";
+import { defaultConfig, type EnsembleConfig, type Topology } from "./config";
+import { simulateEnsemble } from "./model";
+import { axes, observable, readNumber, readString, result } from "../support/evaluation";
 import type { EvaluationOutput, FactorValue } from "../../curriculum/contracts";
 
 type Factors = Readonly<Record<string, FactorValue>>;
 
 export function evaluateLockInAndOrder(factors: Factors): EvaluationOutput {
-  return evaluateEnsemble("lock-in-and-order", factors);
+  return evaluateEnsemble({
+    ...defaultConfig,
+    musicianCount: Math.round(readNumber(factors, "musicianCount")),
+    tempoBpm: readNumber(factors, "tempoBpm"),
+    tempoSpreadBpm: readNumber(factors, "tempoSpreadBpm"),
+    couplingStrength: readNumber(factors, "couplingStrength"),
+    latencySeconds: 0.012,
+  });
 }
 
 export function evaluateDelayJitterTopology(factors: Factors): EvaluationOutput {
-  return evaluateEnsemble("delay-jitter-topology", factors);
+  return evaluateEnsemble({
+    ...defaultConfig,
+    latencySeconds: readNumber(factors, "latencyMs") / 1000,
+    jitterSeconds: readNumber(factors, "jitterMs") / 1000,
+    couplingStrength: readNumber(factors, "couplingStrength"),
+    topology: readString(factors, "topology") as Topology,
+    repertoireTexture: "dense-rhythm",
+  });
 }
 
 export function evaluateExternalPulseOrPeerAdaptation(factors: Factors): EvaluationOutput {
-  return evaluateEnsemble("external-pulse-or-peer-adaptation", factors);
+  return evaluateEnsemble({
+    ...defaultConfig,
+    clickTrackStrength: readNumber(factors, "clickTrackStrength"),
+    couplingStrength: readNumber(factors, "couplingStrength"),
+    tempoSpreadBpm: readNumber(factors, "tempoSpreadBpm"),
+    tempoBpm: readNumber(factors, "tempoBpm"),
+    topology: "click-track",
+  });
 }
 
-function evaluateEnsemble(lessonId: string, factors: Factors): EvaluationOutput {
-  const config: EnsembleConfig = { ...defaultConfig };
-  if (lessonId === "lock-in-and-order") {
-    config.musicianCount = Math.round(numberFactor(factors, "musicianCount"));
-    config.tempoBpm = numberFactor(factors, "tempoBpm");
-    config.tempoSpreadBpm = numberFactor(factors, "tempoSpreadBpm");
-    config.couplingStrength = numberFactor(factors, "couplingStrength");
-    config.latencySeconds = 0.012;
-  } else if (lessonId === "delay-jitter-topology") {
-    config.latencySeconds = numberFactor(factors, "latencyMs") / 1000;
-    config.jitterSeconds = numberFactor(factors, "jitterMs") / 1000;
-    config.couplingStrength = numberFactor(factors, "couplingStrength");
-    config.topology = stringFactor(factors, "topology") as Topology;
-    config.repertoireTexture = "dense-rhythm";
-  } else {
-    config.clickTrackStrength = numberFactor(factors, "clickTrackStrength");
-    config.couplingStrength = numberFactor(factors, "couplingStrength");
-    config.tempoSpreadBpm = numberFactor(factors, "tempoSpreadBpm");
-    config.tempoBpm = numberFactor(factors, "tempoBpm");
-    config.topology = "click-track";
-  }
+function evaluateEnsemble(config: EnsembleConfig): EvaluationOutput {
   const simulation = simulateEnsemble(config, 8);
   const metrics = simulation.finalMetrics;
   const stride = Math.max(1, Math.ceil(simulation.samples.length / 96));
@@ -48,18 +49,18 @@ function evaluateEnsemble(lessonId: string, factors: Factors): EvaluationOutput 
       { x: sample.state.time, y: sample.metrics.phaseSpread / Math.PI, series: "Phase spread / pi" },
     ];
   });
-  return result(
-    "Terminal model state",
-    `r = ${metrics.coherence.toFixed(3)}`,
-    [
-      observable("coherence", "Order parameter", metrics.coherence, null, "model.ensemble", 3, "terminal-mean"),
-      observable("phaseSpread", "Circular phase spread", metrics.phaseSpread, "rad", "model.ensemble", 3, "terminal-mean"),
-      observable("phaseSpreadEquivalent", "Period-equivalent spread", metrics.phaseSpreadEquivalentMs, "ms", "model.ensemble", 1, "terminal-mean"),
-      observable("peerShare", "Peer-coupling share", metrics.peerCouplingShare, null, "heuristic.transparent", 2),
+  return result({
+    headline: "Terminal model state",
+    result: `r = ${metrics.coherence.toFixed(3)}`,
+    observables: [
+      observable({ id: "coherence", label: "Order parameter", value: metrics.coherence, unit: null, claimId: "model.ensemble", precision: 3, aggregation: "terminal-mean" }),
+      observable({ id: "phaseSpread", label: "Circular phase spread", value: metrics.phaseSpread, unit: "rad", claimId: "model.ensemble", precision: 3, aggregation: "terminal-mean" }),
+      observable({ id: "phaseSpreadEquivalent", label: "Period-equivalent spread", value: metrics.phaseSpreadEquivalentMs, unit: "ms", claimId: "model.ensemble", precision: 1, aggregation: "terminal-mean" }),
+      observable({ id: "peerShare", label: "Peer-coupling share", value: metrics.peerCouplingShare, unit: null, claimId: "heuristic.transparent", precision: 2 }),
     ],
     trace,
-    "network",
-    "Eight deterministic model seconds; values are simulated, not measured from performers or a network.",
-    axes("Model time", "s", "Normalized ensemble state", null),
-  );
+    visualKind: "network",
+    annotation: "Eight deterministic model seconds; values are simulated, not measured from performers or a network.",
+    traceAxes: axes("Model time", "s", "Normalized ensemble state", null),
+  });
 }

@@ -18,7 +18,8 @@ export const numberFactor = (
   step: number,
   unit: string,
   help: string,
-): NumberFactor => ({ id, kind: "number", label, defaultValue, min, max, step, unit, help });
+  options: Readonly<{ audioSetting?: NumberFactor["audioSetting"] }> = {},
+): NumberFactor => ({ id, kind: "number", label, defaultValue, min, max, step, unit, help, ...options });
 
 export const selectFactor = (
   id: string,
@@ -26,7 +27,8 @@ export const selectFactor = (
   defaultValue: string,
   options: readonly Readonly<{ value: string; label: string }>[],
   help: string,
-): SelectFactor => ({ id, kind: "select", label, defaultValue, options, help });
+  settings: Readonly<{ audioSetting?: SelectFactor["audioSetting"] }> = {},
+): SelectFactor => ({ id, kind: "select", label, defaultValue, options, help, ...settings });
 
 export const toggleFactor = (
   id: string,

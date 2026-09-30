@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { LessonDefinition } from "../../curriculum/contracts";
-import type { LessonAttemptV2 } from "../../learning/portfolio/schema-v2";
+import type { LessonAttemptV2 } from "../../learning/portfolio/schema";
 import { LearningRecords, PortfolioStatus } from "./LearningRecords";
 
 const lessons: readonly LessonDefinition[] = [{

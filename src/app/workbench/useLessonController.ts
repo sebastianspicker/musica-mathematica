@@ -1,53 +1,23 @@
 import { useEffect, useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { defaultFactorsFor, type EvaluationOutput, type FactorValue, type InputMode, type LessonDefinition } from "../../curriculum/contracts";
 import type { CurriculumRegistry } from "../../curriculum/registry";
-import { activeAttempt, advanceAttempt, createPortfolio, recordTrial, selectLesson, setAttemptPrediction, setAttemptResponse } from "../../learning/portfolio/aggregate";
+import { activeAttempt, advanceAttempt, createPortfolio, createTrialSnapshot, recordedRunWasTrimmed, recordTrial, runLabel, selectLesson, setAttemptPrediction, setAttemptResponse } from "../../learning/portfolio/aggregate";
 import { assessTrialComparison } from "../../learning/inquiry/comparison";
-import { lessonStages } from "../../learning/stages";
-import type { LessonAttemptV2, TrialSnapshotV2 } from "../../learning/portfolio/schema-v2";
+import { factorsForAttempt, recordingBlocker } from "../../learning/inquiry/recording";
+import { lessonStages, type LessonResponseField } from "../../learning/stages";
+import type { LessonAttemptV2 } from "../../learning/portfolio/schema";
 import { createPlaybackStore, type PlaybackStore } from "./playbackStore";
 import { usePulseAudio } from "../audio/usePulseAudio";
-import {
-  factorsForAttempt,
-  initialMotionEnabled,
-  recordingBlocker,
-  recordedRunWasTrimmed,
-  runLabel,
-  seedForTrial,
-} from "./workbenchHelpers";
+import type { InquiryMessage, LessonWorkbenchRuntimeView } from "../../ui/workbench/types";
 
-export type LessonControllerRuntime = Readonly<{
+export type LessonControllerRuntime = LessonWorkbenchRuntimeView & Readonly<{
   audio: ReturnType<typeof usePulseAudio>;
   audioEvaluation: EvaluationOutput | null;
   comparison: ReturnType<typeof assessTrialComparison>;
-  evaluation: EvaluationOutput;
-  experimentActive: boolean;
-  factors: Record<string, FactorValue>;
-  inputMode: InputMode;
-  message: string | null;
-  motionEnabled: boolean;
-  note: string;
   playback: PlaybackStore;
-  recordLabel: string;
-  beginPrediction: () => void;
-  changeInputMode: (mode: InputMode) => void;
-  openComparison: () => void;
-  openInterpretation: () => void;
-  recordCurrentRun: () => void;
-  resetPlayback: () => void;
-  restartLesson: () => void;
-  savePrediction: (event: FormEvent<HTMLFormElement>) => void;
-  saveResponse: (
-    event: FormEvent<HTMLFormElement>,
-    field: "explanation" | "performanceReflection" | "transferResponse",
-    nextStage: "perform" | "transfer" | "debrief",
-  ) => void;
   setAudioEvaluation: Dispatch<SetStateAction<EvaluationOutput | null>>;
   setMotionEnabled: Dispatch<SetStateAction<boolean>>;
   setNote: Dispatch<SetStateAction<string>>;
-  stepPlayback: () => void;
-  togglePlayback: () => void;
-  updateFactor: (factorId: string, value: FactorValue) => void;
 }>;
 
 export type LessonControllerDependencies = Readonly<{
@@ -85,7 +55,7 @@ function useLessonControllerState(
   );
   const [inputMode, setInputMode] = useState<InputMode>("synthetic");
   const [audioEvaluation, setAudioEvaluation] = useState<EvaluationOutput | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<InquiryMessage | null>(null);
   const [note, setNote] = useState("");
   const [motionEnabled, setMotionEnabled] = useState(initialMotionEnabled);
   const syntheticEvaluation = useMemo(() => evaluateLesson(curriculum, lesson, factors), [curriculum, factors, lesson]);
@@ -119,7 +89,7 @@ function useInquiryActions(context: InquiryActionContext) {
     resetPlayback: () => { resetPlayback(context); },
     restartLesson: () => { restartLesson(context); },
     savePrediction: (event: FormEvent<HTMLFormElement>) => { savePrediction(context, event); },
-    saveResponse: (event: FormEvent<HTMLFormElement>, field: "explanation" | "performanceReflection" | "transferResponse", nextStage: "perform" | "transfer" | "debrief") => { saveResponse(context, event, field, nextStage); },
+    saveResponse: (event: FormEvent<HTMLFormElement>, field: LessonResponseField, nextStage: "perform" | "transfer" | "debrief") => { saveResponse(context, event, field, nextStage); },
     stepPlayback: () => { stepPlayback(context); },
     togglePlayback: () => { togglePlayback(context); },
     updateFactor: (factorId: string, value: FactorValue) => { updateFactor(context, factorId, value); },
@@ -130,7 +100,7 @@ function beginPrediction(context: InquiryActionContext): void {
   const next = advanceAttempt(context.attempt, "predict");
   if (next === context.attempt) return;
   context.onAttemptChange(next);
-  context.setMessage("Write a directional prediction before changing the factors.");
+  context.setMessage(notice("Write a directional prediction before changing the factors."));
 }
 
 function changeInputMode(context: InquiryActionContext, mode: InputMode): void {
@@ -140,28 +110,35 @@ function changeInputMode(context: InquiryActionContext, mode: InputMode): void {
 
 function openComparison(context: InquiryActionContext): void {
   if (!context.comparison.valid) {
-    context.setMessage(context.comparison.reason);
+    context.setMessage(notice(context.comparison.reason));
     return;
   }
   context.onAttemptChange(advanceAttempt(context.attempt, "compare"));
-  context.setMessage(context.comparison.reason);
+  context.setMessage(notice(context.comparison.reason));
 }
 
 function openInterpretation(context: InquiryActionContext): void {
   context.onAttemptChange(advanceAttempt(context.attempt, "explain"));
-  context.setMessage("Explain the mechanism and state the inference boundary.");
+  context.setMessage(routine("Explain the mechanism and state the inference boundary."));
 }
 
 function recordCurrentRun(context: InquiryActionContext): void {
   const blocked = recordingBlocker(context.attempt, context.inputMode, context.audioEvaluation, context.lesson);
   if (blocked) {
-    context.setMessage(blocked);
+    context.setMessage(notice(blocked));
     return;
   }
-  const trial = createTrial(context.lesson, context.attempt, context.factors, context.evaluation, context.note);
+  const trial = createTrialSnapshot({
+    lesson: context.lesson,
+    runIndex: context.attempt.trials.length,
+    factors: context.factors,
+    evaluation: context.evaluation,
+    note: context.note,
+    recordedAt: new Date().toISOString(),
+  });
   const next = recordTrial(context.curriculum, context.attempt, trial);
   if (next === context.attempt) {
-    context.setMessage("The run could not be recorded. Check the inquiry stage and result provenance.");
+    context.setMessage(notice("The run could not be recorded. Check the inquiry stage and result provenance."));
     return;
   }
   context.onAttemptChange(next);
@@ -171,7 +148,7 @@ function recordCurrentRun(context: InquiryActionContext): void {
   context.setNote("");
   context.setRunning(false);
   context.setPlayhead(context.lesson.protocol.durationSeconds);
-  context.setMessage(`${trial.id} recorded locally. ${next.trials.length === 1 ? "Change one factor before Run B." : assessTrialComparison(context.lesson, next.trials).reason}`);
+  context.setMessage(routine(`${trial.id} recorded locally. ${next.trials.length === 1 ? "Change one factor before Run B." : assessTrialComparison(context.lesson, next.trials).reason}`));
 }
 
 function resetPlayback(context: InquiryActionContext): void {
@@ -196,23 +173,23 @@ function savePrediction(context: InquiryActionContext, event: FormEvent<HTMLForm
   const prediction = String(new FormData(event.currentTarget).get("prediction") ?? "");
   const next = advanceAttempt(setAttemptPrediction(context.attempt, prediction), "experiment");
   if (next.stage !== "experiment") {
-    context.setMessage("Write a prediction before beginning the experiment.");
+    context.setMessage(notice("Write a prediction before beginning the experiment."));
     return;
   }
   context.onAttemptChange(next);
-  context.setMessage("Experiment unlocked. Record a baseline, change one factor, then record Run B.");
+  context.setMessage(routine("Experiment unlocked. Record a baseline, change one factor, then record Run B."));
 }
 
-function saveResponse(context: InquiryActionContext, event: FormEvent<HTMLFormElement>, field: "explanation" | "performanceReflection" | "transferResponse", nextStage: "perform" | "transfer" | "debrief"): void {
+function saveResponse(context: InquiryActionContext, event: FormEvent<HTMLFormElement>, field: LessonResponseField, nextStage: "perform" | "transfer" | "debrief"): void {
   event.preventDefault();
   const response = String(new FormData(event.currentTarget).get(field) ?? "");
   const next = advanceAttempt(setAttemptResponse(context.attempt, field, response), nextStage);
   if (next.stage !== nextStage) {
-    context.setMessage("Write a response before continuing.");
+    context.setMessage(notice("Write a response before continuing."));
     return;
   }
   context.onAttemptChange(next);
-  context.setMessage(nextStage === "debrief" ? "Lesson inquiry complete. The result is not a score or grade." : "Response saved locally.");
+  context.setMessage(routine(nextStage === "debrief" ? "Lesson inquiry complete. The result is not a score or grade." : "Response saved locally."));
 }
 
 function stepPlayback(context: InquiryActionContext): void {
@@ -228,14 +205,21 @@ function updateFactor(context: InquiryActionContext, factorId: string, value: Fa
   context.setFactors((current) => ({ ...current, [factorId]: value }));
   if (context.inputMode !== "synthetic") {
     context.setAudioEvaluation(null);
-    context.setMessage("A factor changed. Analyze a fresh bounded audio segment before recording another run.");
+    context.setMessage(notice("A factor changed. Analyze a fresh bounded audio segment before recording another run."));
   }
 }
 
 
-function createTrial(lesson: LessonDefinition, attempt: LessonAttemptV2, factors: Record<string, FactorValue>, evaluation: EvaluationOutput, note: string): TrialSnapshotV2 {
-  const deterministic = (evaluation.provenance.source === "model" || evaluation.provenance.source === "synthetic") && lesson.protocol.deterministic;
-  return { id: runLabel(attempt.trials.length), labId: lesson.domainId, lessonId: lesson.id, protocolId: lesson.protocol.id, deterministic, ...(deterministic && lesson.protocol.seed ? { seed: seedForTrial(lesson, factors) } : {}), recordedAt: new Date().toISOString(), factors: { ...factors }, observables: evaluation.observables.map((item) => ({ ...item })), trace: evaluation.trace.map((point) => ({ ...point })), provenance: { ...evaluation.provenance }, ...(note.trim() ? { note: note.trim() } : {}) };
+function routine(text: string): InquiryMessage {
+  return { text, routine: true };
+}
+
+function notice(text: string): InquiryMessage {
+  return { text, routine: false };
+}
+
+function initialMotionEnabled(): boolean {
+  return typeof window === "undefined" || !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function evaluateLesson(curriculum: CurriculumRegistry, lesson: LessonDefinition, factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {

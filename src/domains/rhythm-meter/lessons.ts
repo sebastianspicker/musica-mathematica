@@ -59,12 +59,12 @@ const lessons = [
         transferPrompt: "Check one ranked hypothesis against a score, tapping task, or close listening.",
         factors: [
           numberFactor("tempoBpm", "Synthetic tempo", 108, 40, 220, 1, "BPM", "Tempo of the privacy-safe synthetic fixture."),
-          numberFactor("threshold", "Onset threshold", 0.35, 0.05, 0.95, 0.05, "", "Relative spectral-flux cutoff."),
+          numberFactor("threshold", "Onset threshold", 0.35, 0.05, 0.95, 0.05, "", "Relative spectral-flux cutoff.", { audioSetting: "onsetSensitivity" }),
           selectFactor("meterBias", "Candidate family", "mixed", [
             { value: "mixed", label: "Mixed" },
             { value: "duple", label: "Duple" },
             { value: "triple", label: "Triple" },
-          ], "Candidate set used by the lightweight ranking stage."),
+          ], "Candidate set used by the lightweight ranking stage.", { audioSetting: "meterBias" }),
         ],
         claimIds: ["measurement.local", "hypothesis.transcription", "literature.context", "recommendation.inquiry"],
         sourceIds: ["jacoby-2024", "snyder-2024", "w3c-webaudio", "w3c-mediacapture"],

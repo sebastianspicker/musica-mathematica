@@ -1,12 +1,12 @@
 import type { EvaluationOutput, FactorValue } from "../../curriculum/contracts";
 import {
   axes,
-  booleanFactor,
-  numberFactor,
+  readBoolean,
+  readNumber,
   observable,
   result,
   signed,
-  stringFactor,
+  readString,
   SYNTHETIC_PROVENANCE,
 } from "../support/evaluation";
 import {
@@ -25,9 +25,9 @@ const pitchClassSets: Readonly<Record<string, readonly number[]>> = {
 };
 
 export function evaluatePitchClass(factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {
-  const source = pitchClassSets[stringFactor(factors, "set")] ?? pitchClassSets.major;
-  const axis = Math.round(numberFactor(factors, "axis"));
-  const inverted = booleanFactor(factors, "invert");
+  const source = pitchClassSets[readString(factors, "set")] ?? pitchClassSets.major;
+  const axis = Math.round(readNumber(factors, "axis"));
+  const inverted = readBoolean(factors, "invert");
   const transformed = inverted ? invertPitchClasses(source, axis) : transposePitchClasses(source, axis);
   const sourceVector = intervalClassVector(source);
   const transformedVector = intervalClassVector(transformed);
@@ -108,11 +108,11 @@ function graphPathCost(path: readonly number[], edges: readonly Readonly<{ from:
 }
 
 export function evaluateVoiceLeading(factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {
-  const chordAName = knownChordName(stringFactor(factors, "chordA"), "C");
-  const chordBName = knownChordName(stringFactor(factors, "chordB"), "Am");
+  const chordAName = knownChordName(readString(factors, "chordA"), "C");
+  const chordBName = knownChordName(readString(factors, "chordB"), "Am");
   const chordA = chordPitchClasses[chordAName];
   const chordB = chordPitchClasses[chordBName];
-  const graphFamily = stringFactor(factors, "metric");
+  const graphFamily = readString(factors, "metric");
   const voiceLeading = minimalVoiceLeading(chordA, chordB);
   const moves = voiceLeading.moves.map((move) => `${move.from}->${move.to} (${signed(move.semitones, 0)})`).join("; ");
   const graph = graphEdges(graphFamily);
@@ -155,9 +155,9 @@ function chordScores(root: number, quality: string, ambiguity: number): readonly
 }
 
 export function evaluateChordHypotheses(factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {
-  const root = Math.round(numberFactor(factors, "root"));
-  const quality = stringFactor(factors, "quality");
-  const ambiguity = numberFactor(factors, "ambiguity");
+  const root = Math.round(readNumber(factors, "root"));
+  const quality = readString(factors, "quality");
+  const ambiguity = readNumber(factors, "ambiguity");
   const ranked = chordScores(root, quality, ambiguity);
   return result({
     headline: "Ranked chord hypotheses",

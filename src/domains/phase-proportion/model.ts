@@ -1,18 +1,11 @@
 /** Private mathematical model for the phase-and-proportion domain. */
-const EPSILON = 1e-12;
+import { assertPositiveFinite } from "../../shared/numeric/validation";
 
-export type Rational = Readonly<{ numerator: number; denominator: number }>;
+const EPSILON = 1e-12;
 
 function assertFinite(name: string, value: number): void {
   if (!Number.isFinite(value)) {
     throw new RangeError(`${name} must be finite`);
-  }
-}
-
-function assertPositive(name: string, value: number): void {
-  assertFinite(name, value);
-  if (value <= 0) {
-    throw new RangeError(`${name} must be greater than zero`);
   }
 }
 
@@ -24,21 +17,8 @@ function assertInteger(name: string, value: number): void {
 
 /** Converts a tempo in beats per minute to the duration of one beat. */
 export function bpmToPeriodSeconds(bpm: number): number {
-  assertPositive("bpm", bpm);
+  assertPositiveFinite("bpm", bpm);
   return 60 / bpm;
-}
-
-/** Converts a beat duration in seconds to beats per minute. */
-export function periodSecondsToBpm(periodSeconds: number): number {
-  assertPositive("periodSeconds", periodSeconds);
-  return 60 / periodSeconds;
-}
-
-/** Returns the multiplicative tempo relation `target / source`. */
-export function tempoRatio(sourceBpm: number, targetBpm: number): number {
-  assertPositive("sourceBpm", sourceBpm);
-  assertPositive("targetBpm", targetBpm);
-  return targetBpm / sourceBpm;
 }
 
 export function greatestCommonDivisor(left: number, right: number): number {
@@ -61,21 +41,6 @@ export function leastCommonMultiple(left: number, right: number): number {
   return Math.abs((left / greatestCommonDivisor(left, right)) * right);
 }
 
-/** Reduces an integer proportion and keeps its sign in the numerator. */
-export function reduceRatio(numerator: number, denominator: number): Rational {
-  assertInteger("numerator", numerator);
-  assertInteger("denominator", denominator);
-  if (denominator === 0) {
-    throw new RangeError("denominator must not be zero");
-  }
-  if (numerator === 0) {
-    return { numerator: 0, denominator: 1 };
-  }
-  const divisor = greatestCommonDivisor(numerator, denominator);
-  const sign = denominator < 0 ? -1 : 1;
-  return { numerator: sign * (numerator / divisor), denominator: sign * (denominator / divisor) };
-}
-
 /** Wraps a phase measured in cycles into the half-open interval [0, 1). */
 export function normalizeCircularPhase(phaseCycles: number): number {
   assertFinite("phaseCycles", phaseCycles);
@@ -93,6 +58,6 @@ export function circularPhaseDifference(fromCycles: number, toCycles: number): n
 /** Returns a point's circular phase after an elapsed duration. */
 export function phaseAtTime(elapsedSeconds: number, periodSeconds: number): number {
   assertFinite("elapsedSeconds", elapsedSeconds);
-  assertPositive("periodSeconds", periodSeconds);
+  assertPositiveFinite("periodSeconds", periodSeconds);
   return normalizeCircularPhase(elapsedSeconds / periodSeconds);
 }

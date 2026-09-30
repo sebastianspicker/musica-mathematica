@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { curriculumRegistry } from "../../curriculum/catalog";
 import { assessTrialComparison } from "../../learning/inquiry/comparison";
-import { attemptKey } from "../../learning/portfolio/constants";
+import { attemptKey } from "../../learning/portfolio/schema";
 import { isLearningPortfolioV2 } from "../../learning/portfolio/validate";
 import { createDemoPortfolio } from "./demoPortfolio";
 

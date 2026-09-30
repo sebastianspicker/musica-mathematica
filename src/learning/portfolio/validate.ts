@@ -18,12 +18,10 @@ import {
   maximumResponseCodePoints,
   maximumTracePointsPerTrial,
   maximumTrialsPerLesson,
-} from "./constants";
-import type {
-  LearningPortfolioV2,
-  LessonAttemptV2,
-  TrialSnapshotV2,
-} from "./schema-v2";
+  type LearningPortfolioV2,
+  type LessonAttemptV2,
+  type TrialSnapshotV2,
+} from "./schema";
 
 export function normalizePortfolio(
   value: unknown,
@@ -188,7 +186,7 @@ function normalizeTrial(
     lessonId: value.lessonId,
     protocolId: value.protocolId,
     deterministic: value.deterministic,
-    ...optionalUnboundedText("seed", value.seed),
+    ...optionalTrimmedCappedText("seed", value.seed),
     recordedAt: value.recordedAt.trim(),
     factors,
     observables,
@@ -322,7 +320,7 @@ function optionalBoundedText<Key extends string>(
   return normalized ? { [key]: normalized } as Record<Key, string> : {};
 }
 
-function optionalUnboundedText<Key extends string>(
+function optionalTrimmedCappedText<Key extends string>(
   key: Key,
   value: unknown,
 ): Partial<Record<Key, string>> {
@@ -400,7 +398,7 @@ function iso(value: string): boolean {
   return Number.isFinite(Date.parse(value));
 }
 
-function sameJson(left: unknown, right: unknown): boolean {
+export function sameJson(left: unknown, right: unknown): boolean {
   try {
     return JSON.stringify(canonicalValue(left)) === JSON.stringify(canonicalValue(right));
   } catch {

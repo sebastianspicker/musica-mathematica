@@ -13,8 +13,8 @@ import {
   maximumLongValueCodePoints,
   maximumObservablesPerTrial,
   maximumResponseCodePoints,
-} from "./constants";
-import { testCurriculum } from "./testReader";
+} from "./schema";
+import { testCurriculum } from "./curriculumFixture.test-helper";
 
 const recordedAt = "2026-08-06T10:00:00.000Z";
 

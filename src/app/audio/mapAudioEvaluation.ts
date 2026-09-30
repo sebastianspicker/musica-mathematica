@@ -1,11 +1,13 @@
 import type { AudioProvenance, QueueStatus } from "../../audio/analysis/contracts";
 import type { AudioSelectionSummary, FrameAnalysis, TemporalHypotheses } from "../../audio/analysis/analysis";
-import type { EvaluationOutput, ObservableRecord, TracePoint } from "../../curriculum/contracts";
+import type {
+  AudioAnalysisSettings,
+  EvaluationOutput,
+  MeterBias,
+  ObservableRecord,
+  TracePoint,
+} from "../../curriculum/contracts";
 
-export type AudioEvaluationSettings = Readonly<{
-  onsetSensitivity?: number;
-  meterBias?: "mixed" | "duple" | "triple";
-}>;
 
 type ChordHypothesis = Readonly<{
   label: string;
@@ -21,7 +23,7 @@ function chordHypothesisObservables(candidates: readonly ChordHypothesis[]): Obs
 export function selectionToEvaluation(
   analysis: AudioSelectionSummary,
   provenance: AudioProvenance,
-  settings: AudioEvaluationSettings = {},
+  settings: AudioAnalysisSettings = {},
 ): EvaluationOutput {
   const frameCount = analysis.frameCount;
   const topTempo = analysis.tempoHypotheses.at(0);
@@ -73,7 +75,7 @@ export function microphoneFrameToEvaluation(
   frame: FrameAnalysis,
   temporal: TemporalHypotheses,
   queue: QueueStatus,
-  settings: AudioEvaluationSettings = {},
+  settings: AudioAnalysisSettings = {},
 ): EvaluationOutput {
   const topTempo = temporal.tempoHypotheses.at(0);
   const topMeter = selectMeterHypotheses(temporal.meterHypotheses, settings.meterBias).at(0);
@@ -122,9 +124,8 @@ export function microphoneFrameToEvaluation(
 
 type MeterHypotheses = TemporalHypotheses["meterHypotheses"];
 type MeterHypothesis = MeterHypotheses[number];
-type MeterBias = AudioEvaluationSettings["meterBias"];
 
-function formatAnalysisSettings(settings: AudioEvaluationSettings): string {
+function formatAnalysisSettings(settings: AudioAnalysisSettings): string {
   const parts = [
     ...(settings.onsetSensitivity === undefined ? [] : [`onset sensitivity ${settings.onsetSensitivity.toFixed(2)}`]),
     ...(settings.meterBias === undefined ? [] : [`meter family ${settings.meterBias}`]),
@@ -144,7 +145,7 @@ function finiteLabel(value: number | null, precision: number): string {
   return value === null || !Number.isFinite(value) ? "below numerical floor" : value.toFixed(precision);
 }
 
-function selectMeterHypotheses(hypotheses: MeterHypotheses, bias: MeterBias): MeterHypotheses {
+function selectMeterHypotheses(hypotheses: MeterHypotheses, bias: MeterBias | undefined): MeterHypotheses {
   if (bias === undefined || bias === "mixed") return hypotheses;
   const divisor = bias === "duple" ? 2 : 3;
   return hypotheses.filter((candidate: MeterHypothesis) => candidate.beatsPerBar % divisor === 0);

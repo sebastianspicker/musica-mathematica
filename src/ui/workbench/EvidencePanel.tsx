@@ -1,5 +1,5 @@
 import { memo, useId, type ReactElement } from "react";
-import { claimsByIds, evidenceLabels, sourceById } from "../../learning/evidence/index";
+import { claimsByIds, evidenceLabels, sourceById } from "../../curriculum/evidence";
 
 export type EvidencePanelProps = Readonly<{
   claimIds: readonly string[];

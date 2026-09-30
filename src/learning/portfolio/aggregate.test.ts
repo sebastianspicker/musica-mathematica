@@ -1,17 +1,24 @@
 import { describe, expect, it } from "vitest";
-import type { TrialSnapshotV2 } from "./schema-v2";
+import {
+  type TrialSnapshotV2,
+  maximumResponseCodePoints,
+  maximumTracePointsPerTrial,
+} from "./schema";
 import {
   activeAttempt,
   advanceAttempt,
   createAttemptV2,
   createPortfolio,
+  createTrialSnapshot,
   recordTrial,
+  recordedRunWasTrimmed,
+  runLabel,
   setAttemptPrediction,
   setAttemptResponse,
   updateAttempt,
 } from "./aggregate";
-import { maximumResponseCodePoints, maximumTracePointsPerTrial } from "./constants";
-import { testCurriculum } from "./testReader";
+import type { EvaluationOutput } from "../../curriculum/contracts";
+import { testCurriculum } from "./curriculumFixture.test-helper";
 
 describe("portfolio aggregate", () => {
   it("retains the complete inquiry gate chain", () => {
@@ -98,6 +105,90 @@ describe("portfolio aggregate", () => {
     expect(Array.from(stored.prediction ?? "")).toHaveLength(maximumResponseCodePoints);
     expect(Array.from(stored.explanation ?? "")).toHaveLength(maximumResponseCodePoints);
     expect(advanceAttempt(stored, "perform").stage).toBe("perform");
+  });
+});
+
+describe("recorded run trimming notice", () => {
+  const attempt = {
+    ...createAttemptV2(testCurriculum, "phase-proportion", "from-bpm-to-period", "2026-08-28T10:00:00.000Z"),
+    stage: "experiment" as const,
+    prediction: "The period halves.",
+    trials: [trial("Run A"), trial("Run B")],
+  };
+  const submittedTrial = trial("Run 3");
+
+  it("does not report an unchanged accepted run", () => {
+    const next = recordTrial(testCurriculum, attempt, submittedTrial);
+    expect(next).not.toBe(attempt);
+    expect(recordedRunWasTrimmed(attempt, submittedTrial, next)).toBe(false);
+  });
+
+  it("reports a shortened Unicode note", () => {
+    const submitted = { ...submittedTrial, note: "🎼".repeat(16_385) };
+    const next = recordTrial(testCurriculum, attempt, submitted);
+    expect(recordedRunWasTrimmed(attempt, submitted, next)).toBe(true);
+  });
+
+  it("reports removal of the oldest run when recording a thirteenth", () => {
+    const previous = { ...attempt, trials: Array.from({ length: 12 }, (_, i) => trial(`Run ${i + 1}`)) };
+    const submitted = trial("Run 13");
+    const next = recordTrial(testCurriculum, previous, submitted);
+    expect(next.trials).toHaveLength(12);
+    expect(recordedRunWasTrimmed(previous, submitted, next)).toBe(true);
+  });
+
+  it("reports reduced trace data", () => {
+    const submitted = trial("Run 3", Array.from({ length: 300 }, (_, x) => ({ x, y: x, series: "test" })));
+    const next = recordTrial(testCurriculum, attempt, submitted);
+    expect(next.trials.at(-1)?.trace).toHaveLength(256);
+    expect(recordedRunWasTrimmed(attempt, submitted, next)).toBe(true);
+  });
+});
+
+describe("trial snapshots", () => {
+  const lesson = testCurriculum.defaultLesson;
+  const evaluation = {
+    observables: [{ id: "period", label: "Period", value: 0.5, unit: "s", aggregation: "instantaneous", claimId: "math.identity" }],
+    trace: [{ x: 0, y: 1, series: "test" }],
+    provenance: { source: "model", calibration: "uncalibrated", method: "test" },
+  } as unknown as EvaluationOutput;
+  const factors = { bpm: 120, beatsPerBar: 4 };
+  const recordedAt = "2026-08-28T10:00:00.000Z";
+
+  it("labels the first runs A and B, then by position", () => {
+    expect([0, 1, 2, 5].map(runLabel)).toEqual(["Run A", "Run B", "Run 3", "Run 6"]);
+  });
+
+  it("copies evaluation data and trims the note", () => {
+    const snapshot = createTrialSnapshot({ lesson, runIndex: 1, factors, evaluation, note: "  steady  ", recordedAt });
+    expect(snapshot).toEqual({
+      id: "Run B",
+      labId: "phase-proportion",
+      lessonId: "from-bpm-to-period",
+      protocolId: "phase-proportion.from-bpm-to-period.v1",
+      deterministic: true,
+      recordedAt,
+      factors,
+      observables: evaluation.observables,
+      trace: evaluation.trace,
+      provenance: evaluation.provenance,
+      note: "steady",
+    });
+    expect(snapshot.factors).not.toBe(factors);
+    expect(snapshot.observables[0]).not.toBe(evaluation.observables[0]);
+  });
+
+  it("omits an empty note and is not deterministic for recorded audio", () => {
+    const recorded = { ...evaluation, provenance: { ...evaluation.provenance, source: "file" } } as EvaluationOutput;
+    const snapshot = createTrialSnapshot({ lesson, runIndex: 0, factors, evaluation: recorded, note: "  ", recordedAt });
+    expect(snapshot.deterministic).toBe(false);
+    expect(snapshot).not.toHaveProperty("note");
+    expect(snapshot).not.toHaveProperty("seed");
+  });
+
+  it("seeds deterministic runs from the protocol seed", () => {
+    const seeded = { ...lesson, protocol: { ...lesson.protocol, seed: "factor:bpm" } };
+    expect(createTrialSnapshot({ lesson: seeded, runIndex: 0, factors, evaluation, note: "", recordedAt }).seed).toBe("120");
   });
 });
 

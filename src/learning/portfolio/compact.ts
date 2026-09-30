@@ -4,12 +4,10 @@ import {
   attemptKey,
   maximumPortfolioJsonBytes,
   traceCompactionTiers,
-} from "./constants";
-import type {
-  LearningPortfolioV2,
-  LessonAttemptV2,
-} from "./schema-v2";
-import { capTrace, isLearningPortfolioV2, normalizePortfolio } from "./validate";
+  type LearningPortfolioV2,
+  type LessonAttemptV2,
+} from "./schema";
+import { capTrace, isLearningPortfolioV2, normalizePortfolio, sameJson } from "./validate";
 
 export type PortfolioNormalizationStatus =
   | "unchanged"
@@ -165,22 +163,4 @@ function replaceAttempt(
 
 function requiredTrialCount(attempt: LessonAttemptV2): number {
   return lessonStages.indexOf(attempt.stage) >= lessonStages.indexOf("compare") ? 2 : 0;
-}
-
-function sameJson(left: unknown, right: unknown): boolean {
-  try {
-    return JSON.stringify(canonicalValue(left)) === JSON.stringify(canonicalValue(right));
-  } catch {
-    return false;
-  }
-}
-
-function canonicalValue(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonicalValue);
-  if (!isRecord(value)) return value;
-  return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalValue(value[key])]));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

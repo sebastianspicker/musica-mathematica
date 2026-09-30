@@ -1,8 +1,7 @@
 import type { ReactElement } from "react";
 import type { LessonDefinition } from "../../curriculum/contracts";
 import { lessonStages } from "../../learning/stages";
-import { attemptKey } from "../../learning/portfolio/constants";
-import type { LessonAttemptV2 } from "../../learning/portfolio/schema-v2";
+import { attemptKey, type LessonAttemptV2 } from "../../learning/portfolio/schema";
 import type { PortfolioPersistenceStatus } from "../../learning/portfolio/repository";
 import { InterfaceIcon } from "../Icon";
 

@@ -1,5 +1,12 @@
 import type { FormEvent } from "react";
 import type { EvaluationOutput, FactorValue, InputMode } from "../../curriculum/contracts";
+import type { LessonResponseField } from "../../learning/stages";
+
+export type InquiryMessage = Readonly<{
+  text: string;
+  /** Routine confirmations are announced quietly; everything else is shown. */
+  routine: boolean;
+}>;
 
 export type PulseAudioView = Readonly<{
   audioEnabled: boolean;
@@ -17,7 +24,7 @@ export type LessonWorkbenchRuntimeView = Readonly<{
   experimentActive: boolean;
   factors: Record<string, FactorValue>;
   inputMode: InputMode;
-  message: string | null;
+  message: InquiryMessage | null;
   motionEnabled: boolean;
   note: string;
   recordLabel: string;
@@ -31,7 +38,7 @@ export type LessonWorkbenchRuntimeView = Readonly<{
   savePrediction: (event: FormEvent<HTMLFormElement>) => void;
   saveResponse: (
     event: FormEvent<HTMLFormElement>,
-    field: "explanation" | "performanceReflection" | "transferResponse",
+    field: LessonResponseField,
     nextStage: "perform" | "transfer" | "debrief",
   ) => void;
   setMotionEnabled: (enabled: boolean) => void;

@@ -1,7 +1,7 @@
 import type { EvaluationOutput, FactorValue } from "../../curriculum/contracts";
 import {
   axes,
-  numberFactor,
+  readNumber,
   observable,
   result,
   SYNTHETIC_PROVENANCE,
@@ -20,9 +20,9 @@ function seededBinarySequence(probability: number, length: number, seed: number)
 }
 
 function seededBinaryInputs(factors: Readonly<Record<string, FactorValue>>) {
-  const probability = numberFactor(factors, "probability");
-  const length = Math.round(numberFactor(factors, "length"));
-  const seed = Math.round(numberFactor(factors, "seed"));
+  const probability = readNumber(factors, "probability");
+  const length = Math.round(readNumber(factors, "length"));
+  const seed = Math.round(readNumber(factors, "seed"));
   return { probability, length, seed };
 }
 
@@ -52,9 +52,9 @@ export function evaluateSeededChance(factors: Readonly<Record<string, FactorValu
 }
 
 export function evaluateMarkov(factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {
-  const stay = numberFactor(factors, "stayProbability");
-  const length = Math.round(numberFactor(factors, "length"));
-  const seed = Math.round(numberFactor(factors, "seed"));
+  const stay = readNumber(factors, "stayProbability");
+  const length = Math.round(readNumber(factors, "length"));
+  const seed = Math.round(readNumber(factors, "seed"));
   const matrix = [[stay, 1 - stay], [1 - stay, stay]];
   const sequence = generateMarkovSequence(matrix, 0, length, createSeededRandom(seed));
   const stationary = stationaryDistribution(matrix);

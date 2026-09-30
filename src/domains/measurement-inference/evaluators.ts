@@ -1,7 +1,7 @@
 import type { EvaluationOutput, FactorValue } from "../../curriculum/contracts";
 import {
   axes,
-  numberFactor,
+  readNumber,
   observable,
   result,
   signed,
@@ -16,10 +16,10 @@ import {
 } from "./model";
 
 export function evaluateUncertainty(factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {
-  const count = Math.round(numberFactor(factors, "sampleCount"));
-  const trueValue = numberFactor(factors, "trueValue");
-  const noise = numberFactor(factors, "noise");
-  const seed = Math.round(numberFactor(factors, "seed"));
+  const count = Math.round(readNumber(factors, "sampleCount"));
+  const trueValue = readNumber(factors, "trueValue");
+  const noise = readNumber(factors, "noise");
+  const seed = Math.round(readNumber(factors, "seed"));
   const values = deterministicCenteredSample(trueValue, noise, count, seed);
   const summary = summarizeDistribution(values);
   const center = summary.mean;
@@ -43,10 +43,10 @@ export function evaluateUncertainty(factors: Readonly<Record<string, FactorValue
 }
 
 export function evaluateParameterRecovery(factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {
-  const tempo = numberFactor(factors, "tempoBpm");
-  const jitterMs = numberFactor(factors, "jitterMs");
-  const count = Math.round(numberFactor(factors, "sampleCount"));
-  const seed = Math.round(numberFactor(factors, "seed"));
+  const tempo = readNumber(factors, "tempoBpm");
+  const jitterMs = readNumber(factors, "jitterMs");
+  const count = Math.round(readNumber(factors, "sampleCount"));
+  const seed = Math.round(readNumber(factors, "seed"));
   const onsets = syntheticOnsets(tempo, jitterMs / 1000, count, seed);
   const recovery = recoverTempoFromOnsets(onsets);
   const intervals = recovery.intervalsSeconds;
@@ -69,10 +69,10 @@ export function evaluateParameterRecovery(factors: Readonly<Record<string, Facto
 }
 
 export function evaluateDescriptiveComparison(factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {
-  const offset = numberFactor(factors, "offsetMs");
-  const spread = numberFactor(factors, "spreadMs");
-  const count = Math.round(numberFactor(factors, "eventCount"));
-  const seed = Math.round(numberFactor(factors, "seed"));
+  const offset = readNumber(factors, "offsetMs");
+  const spread = readNumber(factors, "spreadMs");
+  const count = Math.round(readNumber(factors, "eventCount"));
+  const seed = Math.round(readNumber(factors, "seed"));
   const differences = deterministicCenteredSample(offset, spread, count, seed);
   const reference = Array<number>(count).fill(0);
   const summary = describeEventAlignment(differences, reference, { unit: "ms", centeredTolerance: 1 });

@@ -1,8 +1,5 @@
-/* eslint-disable no-restricted-imports -- This test intentionally checks the curriculum/evidence boundary. */
 import { describe, expect, it } from "vitest";
-import { curriculumCatalog } from "./catalog";
-import { claims } from "../learning/evidence/claims";
-import { researchSources } from "../learning/evidence/sources";
+import { claims, researchSources } from "./evidence";
 
 type Identified = Readonly<{ id: string }>;
 
@@ -16,22 +13,11 @@ function duplicateIds(records: readonly Identified[]): string[] {
   return [...duplicates].sort();
 }
 
-function missingIds(references: readonly string[], records: readonly Identified[]): string[] {
-  const availableIds = new Set(records.map((record) => record.id));
-  return [...new Set(references.filter((id) => !availableIds.has(id)))].sort();
-}
-
-describe("curriculum and evidence referential integrity", () => {
-  it("keeps source and claim identifiers unique and resolvable", () => {
-    const lessons = curriculumCatalog.flatMap((domain) => domain.lessons);
-    const lessonClaimIds = lessons.flatMap((lesson) => lesson.claimIds);
-    const lessonSourceIds = lessons.flatMap((lesson) => lesson.sourceIds);
-    const claimSourceIds = claims.flatMap((claim) => claim.sourceIds);
-
+// Reference resolution is enforced at runtime by createCurriculumRegistry when the
+// catalog composes it with the evidence; only identifier uniqueness remains here.
+describe("evidence identifier uniqueness", () => {
+  it("keeps source and claim identifiers unique", () => {
     expect(duplicateIds(claims)).toEqual([]);
     expect(duplicateIds(researchSources)).toEqual([]);
-    expect(missingIds(lessonClaimIds, claims)).toEqual([]);
-    expect(missingIds(lessonSourceIds, researchSources)).toEqual([]);
-    expect(missingIds(claimSourceIds, researchSources)).toEqual([]);
   });
 });

@@ -20,14 +20,6 @@ export function assertNonEmptyFiniteNumbers(values: ArrayLike<number>, name: str
   }
 }
 
-export function assertFiniteNonNegative(name: string, value: number): void {
-  assertValidNumber(name, !Number.isFinite(value) || value < 0, "a finite non-negative number.");
-}
-
-export function assertFinitePositive(name: string, value: number): void {
-  assertValidNumber(name, !Number.isFinite(value) || value <= 0, "a finite positive number.");
-}
-
 function assertValidNumber(name: string, invalid: boolean, requirement: string): void {
   if (invalid) throw new RangeError(`${name} must be ${requirement}`);
 }

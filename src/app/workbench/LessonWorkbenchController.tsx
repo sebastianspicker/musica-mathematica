@@ -1,13 +1,14 @@
 import { Component, useMemo, type ReactElement } from "react";
 import { defaultFactorsFor, type FactorValue, type LessonDefinition } from "../../curriculum/contracts";
+import { evidenceClaimIdsFor } from "../../curriculum/evidence";
 import type { CurriculumRegistry } from "../../curriculum/registry";
-import type { LessonAttemptV2 } from "../../learning/portfolio/schema-v2";
+import type { LessonAttemptV2 } from "../../learning/portfolio/schema";
 import { AudioInputController } from "../audio/AudioInputController";
+import { briefStageFor } from "../../ui/workbench/LessonBrief";
 import { LessonWorkbench } from "../../ui/workbench/LessonWorkbench";
 import { LessonErrorFallback } from "../../ui/workbench/LessonErrorFallback";
 import { PlaybackController } from "./PlaybackController";
 import { useLessonController } from "./useLessonController";
-import { briefStageFor, evidenceClaimIdsFor } from "./workbenchHelpers";
 
 export type LessonWorkbenchControllerProps = Readonly<{
   curriculum: CurriculumRegistry;
@@ -42,7 +43,7 @@ class LessonErrorBoundary extends Component<LessonWorkbenchControllerProps, { fa
 
 function LessonSession(props: LessonWorkbenchControllerProps): ReactElement {
   const runtime = useLessonController(props);
-  const claimIds = useMemo(() => evidenceClaimIdsFor(props.lesson, runtime.evaluation), [props.lesson, runtime.evaluation]);
+  const claimIds = useMemo(() => evidenceClaimIdsFor(props.lesson.claimIds, runtime.evaluation.observables.map((observable) => observable.claimId)), [props.lesson, runtime.evaluation]);
   const domain = props.curriculum.domainById(props.lesson.domainId);
   const audioInput = runtime.experimentActive ? (
     <AudioInputController

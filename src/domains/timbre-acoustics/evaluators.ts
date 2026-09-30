@@ -1,10 +1,10 @@
 import type { EvaluationOutput, FactorValue } from "../../curriculum/contracts";
 import {
   axes,
-  numberFactor,
+  readNumber,
   observable,
   result,
-  stringFactor,
+  readString,
   SYNTHETIC_PROVENANCE,
 } from "../support/evaluation";
 import {
@@ -15,9 +15,9 @@ import {
 } from "./model";
 
 export function evaluateResonance(factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {
-  const length = numberFactor(factors, "length");
-  const waveSpeed = numberFactor(factors, "waveSpeed");
-  const partialCount = Math.round(numberFactor(factors, "partialCount"));
+  const length = readNumber(factors, "length");
+  const waveSpeed = readNumber(factors, "waveSpeed");
+  const partialCount = Math.round(readNumber(factors, "partialCount"));
   const modes = idealStringModes(length, waveSpeed, partialCount);
   const fundamental = modes[0].frequencyHz;
   const trace = modes.map((mode) => ({ x: mode.frequencyHz, y: 1 / mode.modeNumber, series: "Ideal modes" }));
@@ -37,9 +37,9 @@ export function evaluateResonance(factors: Readonly<Record<string, FactorValue>>
 }
 
 export function evaluateAliasing(factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {
-  const frequency = numberFactor(factors, "frequencyHz");
-  const sampleRate = Number(stringFactor(factors, "sampleRateHz"));
-  const frameSize = Number(stringFactor(factors, "frameSize"));
+  const frequency = readNumber(factors, "frequencyHz");
+  const sampleRate = Number(readString(factors, "sampleRateHz"));
+  const frameSize = Number(readString(factors, "frameSize"));
   const resolution = fourierResolution(sampleRate, frameSize);
   const alias = aliasFrequencyHz(frequency, sampleRate);
   const hann = Array.from({ length: 48 }, (_, index) => ({
@@ -64,10 +64,10 @@ export function evaluateAliasing(factors: Readonly<Record<string, FactorValue>>)
 }
 
 export function evaluateTimeVaryingTimbre(factors: Readonly<Record<string, FactorValue>>): EvaluationOutput {
-  const attack = numberFactor(factors, "attackMs") / 1000;
-  const decay = numberFactor(factors, "decayMs") / 1000;
-  const modulation = numberFactor(factors, "modulationHz");
-  const depth = numberFactor(factors, "modulationDepth");
+  const attack = readNumber(factors, "attackMs") / 1000;
+  const decay = readNumber(factors, "decayMs") / 1000;
+  const modulation = readNumber(factors, "modulationHz");
+  const depth = readNumber(factors, "modulationDepth");
   const duration = attack + decay;
   const trajectory = timeVaryingTimbreTrajectory({
     fundamentalHz: 150,

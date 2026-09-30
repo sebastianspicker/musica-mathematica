@@ -1,8 +1,16 @@
 import { useId, type ReactElement } from "react";
 import type { LessonDefinition } from "../../curriculum/contracts";
+import type { LessonStage } from "../../learning/stages";
 
 export const briefStages = ["predict", "experiment", "interpret", "transfer"] as const;
 export type BriefStage = (typeof briefStages)[number];
+
+export function briefStageFor(stage: LessonStage): BriefStage {
+  if (stage === "orient" || stage === "predict") return "predict";
+  if (stage === "experiment") return "experiment";
+  if (stage === "compare" || stage === "explain" || stage === "perform") return "interpret";
+  return "transfer";
+}
 
 export type LessonBriefProps = Readonly<{
   lesson: LessonDefinition;

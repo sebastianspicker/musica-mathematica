@@ -2,35 +2,10 @@ import { expect, test } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
 import { curriculumRegistry } from "../src/curriculum/catalog";
 import { createDemoPortfolio } from "../src/app/demo/demoPortfolio";
+import { portfolioStorageKey } from "../src/learning/portfolio/schema";
 
-const storageKey = "musicaMathematica.learning.v2";
-const fixtureSource = `
-import { StrictMode, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import { LessonWorkbenchController } from './app/workbench/LessonWorkbenchController';
-import { curriculumRegistry } from './curriculum/catalog';
-import { activeAttempt } from './learning/portfolio/aggregate';
-import './styles/index.css';
-const storageKey = ${JSON.stringify(storageKey)};
-const curriculum = { ...curriculumRegistry, evaluatorFor: (domainId, lessonId) => {
-  const evaluate = curriculumRegistry.evaluatorFor(domainId, lessonId);
-  return factors => {
-    if (factors.bpm === 120) throw new Error('Injected lesson render failure');
-    return evaluate(factors);
-  };
-}};
-function Fixture() {
-  const [portfolio, setPortfolio] = useState(() => JSON.parse(localStorage.getItem(storageKey)));
-  const attempt = activeAttempt(curriculumRegistry, portfolio);
-  function replaceAttempt(next) {
-    const changed = {...portfolio, attempts: {...portfolio.attempts, [next.labId + ':' + next.lessonId]: next}};
-    localStorage.setItem(storageKey, JSON.stringify(changed));
-    setPortfolio(changed);
-  }
-  return <LessonWorkbenchController curriculum={curriculum} lesson={curriculum.defaultLesson} attempt={attempt} onAttemptChange={replaceAttempt} onPersistenceMessage={() => {}} />;
-}
-createRoot(document.getElementById('root')).render(<StrictMode><Fixture /></StrictMode>);
-`;
+const storageKey = portfolioStorageKey;
+const resultVisualInstanceId = "const instanceId = useId();";
 
 let server: ViteDevServer;
 let fixtureUrl: string;
@@ -46,9 +21,10 @@ test.beforeAll(async () => {
       name: "lesson-recovery-test-fixture",
       enforce: "pre",
       transform: (code, id) => {
-        if (id.endsWith("/src/main.tsx")) return fixtureSource;
+        if (id.endsWith("/src/main.tsx")) return 'import "/e2e/fixtures/lessonRecoveryMain.tsx";';
         if (id.endsWith("/src/ui/workbench/ResultVisual.tsx")) {
-          return code.replace("const instanceId = useId();", "globalThis.__chartRenderCount = (globalThis.__chartRenderCount ?? 0) + 1; const instanceId = useId();");
+          if (!code.includes(resultVisualInstanceId)) throw new Error(`ResultVisual.tsx no longer contains "${resultVisualInstanceId}"; update the chart render counter.`);
+          return code.replace(resultVisualInstanceId, `globalThis.__chartRenderCount = (globalThis.__chartRenderCount ?? 0) + 1; ${resultVisualInstanceId}`);
         }
         return code;
       },

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { LegacyEnsembleConfig, LegacyEnsembleMetrics, LessonAttemptV1 } from "./schema";
-import { migrateLessonAttemptV1 } from "./migration";
-import { testCurriculum } from "../portfolio/testReader";
+import { legacyLessonMapping, migrateLessonAttemptV1 } from "./migration";
+import { testCurriculum } from "../curriculumFixture.test-helper";
 
 const timestamp = "2026-08-28T10:00:00.000Z";
 const legacyMetrics: LegacyEnsembleMetrics = {
@@ -44,7 +44,7 @@ function legacyAttemptFixture(lessonId: string, config: LegacyEnsembleConfig): L
   };
 }
 
-describe("legacy-v1 migration", () => {
+describe("legacy migration", () => {
   it.each([
     ["lock-in", "lock-in-and-order", { musicianCount: 8, tempoBpm: 104, tempoSpreadBpm: 12, couplingStrength: 0.18 }, legacyConfigFixture],
     ["latency", "delay-jitter-topology", { latencyMs: 75, jitterMs: 0, couplingStrength: 1.6, topology: "leader-follower" }, { ...legacyConfigFixture, tempoBpm: 132, tempoSpreadBpm: 5, couplingStrength: 1.6, latencySeconds: 0.075, topology: "leader-follower", repertoireTexture: "dense-rhythm" }],
@@ -87,5 +87,17 @@ describe("legacy-v1 migration", () => {
     );
 
     expect(migrated).toEqual({ version: 2, active: { labId: "phase-proportion", lessonId: "from-bpm-to-period" }, attempts: {} });
+  });
+
+  it("pins the legacy lesson mapping", () => {
+    expect(legacyLessonMapping).toEqual({
+      "lock-in": "lock-in-and-order",
+      latency: "delay-jitter-topology",
+      "low-latency-route": "delay-jitter-topology",
+      "diagnose-instability": "delay-jitter-topology",
+      click: "external-pulse-or-peer-adaptation",
+      "click-or-peer-coupling": "external-pulse-or-peer-adaptation",
+      "compose-with-latency": "external-pulse-or-peer-adaptation",
+    });
   });
 });

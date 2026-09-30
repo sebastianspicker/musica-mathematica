@@ -1,6 +1,6 @@
 import type { FormEvent, ReactElement } from "react";
-import { lessonStages } from "../../learning/stages";
-import type { LessonAttemptV2 } from "../../learning/portfolio/schema-v2";
+import { lessonStages, type LessonResponseField } from "../../learning/stages";
+import type { LessonAttemptV2 } from "../../learning/portfolio/schema";
 import type { LessonDefinition } from "../../curriculum/contracts";
 
 type InquiryStageProps = Readonly<{
@@ -15,7 +15,7 @@ type InquiryStageProps = Readonly<{
   onNoteChange: (value: string) => void;
   onSaveResponse: (
     event: FormEvent<HTMLFormElement>,
-    field: "explanation" | "performanceReflection" | "transferResponse",
+    field: LessonResponseField,
     nextStage: "perform" | "transfer" | "debrief",
   ) => void;
 }>;
@@ -56,7 +56,7 @@ function CompareStage({ reason, stageContent }: Readonly<{ reason: string; stage
 
 type ResponseStageProps = Readonly<{
   stageContent?: ReactElement;
-  field: "explanation" | "performanceReflection" | "transferResponse";
+  field: LessonResponseField;
   heading: string;
   prompt: string;
   button: string;

@@ -1,47 +1,158 @@
 /** Deterministic ensemble model owned by the ensemble-dynamics domain. */
-import {
-  assertValidEnsembleConfig,
-  textureProfile,
-} from "./ensembleConfig";
-import {
-  clickTrackPull,
-  delayedOscillatorPhase,
-  effectiveDelaySeconds,
-  feedbackReliability,
-  trimHistory,
-} from "./ensembleRuntime";
-import {
-  bpmToRadPerSecond,
-  circularDifference,
-  initialPhaseFor,
-  nearlyEqual,
-  normalizePhase,
-} from "./ensembleMath";
-import {
-  assertValidCouplingEdges,
-} from "./ensembleValidation";
-import { assertFiniteNonNegative, assertFinitePositive } from "../../shared/numeric/validation";
-import type {
-  EnsembleConfig,
-} from "./ensembleConfig";
-import type { CouplingEdge, EnsembleState, Oscillator } from "./ensembleTypes";
+import { assertNonNegativeFinite, assertPositiveFinite } from "../../shared/numeric/validation";
+import { assertValidEnsembleConfig, textureProfile } from "./config";
+import type { EnsembleConfig } from "./config";
 
-export { ensembleConfigBounds, isEnsembleConfig, textureProfile } from "./ensembleConfig";
-export type {
-  EnsembleConfig,
-  RepertoireTexture,
-  TextureProfile,
-  Topology,
-} from "./ensembleConfig";
-export type { CouplingEdge, EnsembleState, Oscillator } from "./ensembleTypes";
+export type Oscillator = {
+  phase: number;
+  omega: number;
+};
+
+export type CouplingEdge = {
+  from: number;
+  to: number;
+  strength: number;
+  delaySeconds: number;
+};
+
+export type EnsembleState = {
+  time: number;
+  oscillators: Oscillator[];
+};
+
+const TAU = Math.PI * 2;
+
+// Exported for model.reference.test-helper.ts.
+export function normalizePhase(phase: number): number {
+  const wrapped = phase % TAU;
+  return wrapped < 0 ? wrapped + TAU : wrapped;
+}
+
+// Exported for model.reference.test-helper.ts.
+export function circularDifference(from: number, to: number): number {
+  return Math.atan2(Math.sin(to - from), Math.cos(to - from));
+}
+
+function bpmToRadPerSecond(tempoBpm: number): number {
+  return (tempoBpm / 60) * TAU;
+}
+
+function initialPhaseFor(index: number, count: number): number {
+  const imperfectCircle = (TAU * index) / count + 0.41 * Math.sin((index + 1) * 1.73);
+  return normalizePhase(imperfectCircle);
+}
+
+// Exported for model.test.ts.
+export function delayedOscillatorPhase(
+  history: readonly EnsembleState[],
+  fallback: EnsembleState,
+  oscillatorIndex: number,
+  targetTime: number,
+): number {
+  if (targetTime <= 0 || history.length === 0) {
+    return oscillatorPhaseOrZero(fallback, oscillatorIndex);
+  }
+
+  let lower = 0;
+  let upper = history.length;
+  while (lower < upper) {
+    const middle = lower + Math.floor((upper - lower) / 2);
+    const entry = history[middle];
+    if (entry && entry.time <= targetTime) {
+      lower = middle + 1;
+    } else {
+      upper = middle;
+    }
+  }
+
+  const candidate = history[lower - 1];
+  if (!candidate) return oscillatorPhaseOrZero(fallback, oscillatorIndex);
+  const oscillator = candidate.oscillators.at(oscillatorIndex);
+  if (!oscillator) {
+    throw new RangeError("delayed coupling history is missing the requested source oscillator.");
+  }
+  return oscillator.phase;
+}
+
+// Exported for model.reference.test-helper.ts.
+export function effectiveDelaySeconds(
+  edge: CouplingEdge,
+  config: EnsembleConfig,
+  time: number,
+): number {
+  if (config.jitterSeconds <= 0) return edge.delaySeconds;
+  const frameSeconds = 0.025;
+  const frame = Math.floor(time / frameSeconds);
+  const blend = time / frameSeconds - frame;
+  const previous = deterministicNoise(edge.from, edge.to, frame);
+  const next = deterministicNoise(edge.from, edge.to, frame + 1);
+  const smoothBlend = blend * blend * (3 - 2 * blend);
+  const jitter = previous + (next - previous) * smoothBlend;
+  return Math.max(0, edge.delaySeconds + jitter * config.jitterSeconds);
+}
+
+// Exported for model.reference.test-helper.ts.
+export function feedbackReliability(config: EnsembleConfig): number {
+  if (config.jitterSeconds <= 0) return 1;
+  const profile = textureProfile(config.repertoireTexture);
+  const jitterRatio = config.jitterSeconds / Math.max(config.latencySeconds, 0.01);
+  return Math.max(0.08, 1 - jitterRatio * 1.35 * profile.jitterPenaltyMultiplier);
+}
+
+// Exported for model.reference.test-helper.ts.
+export function clickTrackPull(time: number, phase: number, config: EnsembleConfig): number {
+  if (config.clickTrackStrength <= 0) return 0;
+  const profile = textureProfile(config.repertoireTexture);
+  const clickPhase = normalizePhase(bpmToRadPerSecond(config.tempoBpm) * time);
+  return config.clickTrackStrength
+    * profile.clickTrackMultiplier
+    * Math.sin(circularDifference(phase, clickPhase));
+}
+
+// Exported for model.reference.test-helper.ts.
+export function trimHistory(history: EnsembleState[], keepSeconds: number): void {
+  const latest = history.at(-1);
+  if (!latest) return;
+  const cutoff = latest.time - keepSeconds;
+  while (history.length > 2) {
+    const earliest = history.at(0);
+    if (!earliest || earliest.time >= cutoff) break;
+    history.shift();
+  }
+}
+
+function oscillatorPhaseOrZero(state: EnsembleState, oscillatorIndex: number): number {
+  const oscillator = state.oscillators.at(oscillatorIndex);
+  return oscillator ? oscillator.phase : 0;
+}
+
+function deterministicNoise(from: number, to: number, frame: number): number {
+  const seed = (from + 1) * 12.9898 + (to + 1) * 78.233 + (frame + 1) * 37.719;
+  const sine = Math.sin(seed) * 43758.5453;
+  return (sine - Math.floor(sine)) * 2 - 1;
+}
+
+function assertValidCouplingEdges(
+  edges: readonly CouplingEdge[],
+  oscillatorCount: number,
+): void {
+  for (const edge of edges) {
+    assertValidOscillatorIndex("edge.from", edge.from, oscillatorCount);
+    assertValidOscillatorIndex("edge.to", edge.to, oscillatorCount);
+    if (!Number.isFinite(edge.strength)) {
+      throw new RangeError("edge.strength must be finite.");
+    }
+    assertNonNegativeFinite("edge.delaySeconds", edge.delaySeconds);
+  }
+}
+
+function assertValidOscillatorIndex(name: string, value: number, oscillatorCount: number): void {
+  if (!Number.isInteger(value) || value < 0 || value >= oscillatorCount) {
+    throw new RangeError(`${name} must reference an existing oscillator.`);
+  }
+}
 
 const FIXED_STEP_EPSILON_SECONDS = 1e-10;
-
-/**
- * Integration interval used by the browser simulation loop. Rendering may be
- * irregular, but model integration always advances in these fixed increments.
- */
-export const fixedSimulationStepSeconds = 0.01;
 
 export type EnsembleMetrics = {
   coherence: number;
@@ -60,8 +171,6 @@ export type EnsembleMetrics = {
   modelLatencyBudgetSeconds: number;
 };
 
-export type ModelLatencyBudgetStatus = "plausible" | "fragile" | "unstable";
-
 export type SimulationSample = {
   state: EnsembleState;
   metrics: EnsembleMetrics;
@@ -71,13 +180,6 @@ export type SimulationResult = {
   samples: SimulationSample[];
   finalState: EnsembleState;
   finalMetrics: EnsembleMetrics;
-};
-
-/** State retained between render frames by the fixed-step browser driver. */
-export type FixedStepSimulation = {
-  state: EnsembleState;
-  history: EnsembleState[];
-  accumulatorSeconds: number;
 };
 
 type SimulationProgress = {
@@ -144,28 +246,6 @@ export function modelLatencyBudgetSeconds(config: EnsembleConfig): number {
   assertValidEnsembleConfig(config);
   return idealizedPhaseBudgetSeconds(config.tempoBpm) *
     textureProfile(config.repertoireTexture).latencyBudgetMultiplier;
-}
-
-export function modelLatencyBudgetRatio(
-  config: EnsembleConfig,
-  metrics: Pick<EnsembleMetrics, "modelLatencyBudgetSeconds">,
-): number {
-  assertValidEnsembleConfig(config);
-  return config.latencySeconds / Math.max(metrics.modelLatencyBudgetSeconds, 0.001);
-}
-
-export function modelLatencyBudgetStatus(
-  config: EnsembleConfig,
-  metrics: Pick<EnsembleMetrics, "modelLatencyBudgetSeconds">,
-): ModelLatencyBudgetStatus {
-  const ratio = modelLatencyBudgetRatio(config, metrics);
-  if (ratio >= 0.85) {
-    return "unstable";
-  }
-  if (ratio >= 0.55) {
-    return "fragile";
-  }
-  return "plausible";
 }
 
 export function peerCouplingShare(config: EnsembleConfig): number {
@@ -255,42 +335,6 @@ function naturalOmegaFor(index: number, count: number, config: EnsembleConfig): 
   const spreadOmega = bpmToRadPerSecond(config.tempoSpreadBpm * profile.tempoSpreadMultiplier);
   return bpmToRadPerSecond(config.tempoBpm) + centered * spreadOmega;
 }
-
-export function retuneState(state: EnsembleState, config: EnsembleConfig): EnsembleState {
-  assertValidEnsembleConfig(config);
-  const count = config.musicianCount;
-  const oscillators = Array.from({ length: count }, (_, index) => {
-    const existing = state.oscillators.at(index);
-    return {
-      phase: existing?.phase ?? initialPhaseFor(index, count),
-      omega: naturalOmegaFor(index, count, config),
-    };
-  });
-
-  return {
-    time: state.time,
-    oscillators,
-  };
-}
-
-export function configsEqual(left: EnsembleConfig, right: EnsembleConfig): boolean {
-  assertValidEnsembleConfig(left);
-  assertValidEnsembleConfig(right);
-
-  return numericConfigValuesEqual(left, right)
-    && left.topology === right.topology
-    && left.repertoireTexture === right.repertoireTexture;
-}
-
-const numericConfigValuesEqual = (left: EnsembleConfig, right: EnsembleConfig): boolean => {
-  return nearlyEqual(left.musicianCount, right.musicianCount)
-    && nearlyEqual(left.tempoBpm, right.tempoBpm)
-    && nearlyEqual(left.tempoSpreadBpm, right.tempoSpreadBpm)
-    && nearlyEqual(left.couplingStrength, right.couplingStrength)
-    && nearlyEqual(left.latencySeconds, right.latencySeconds)
-    && nearlyEqual(left.jitterSeconds, right.jitterSeconds)
-    && nearlyEqual(left.clickTrackStrength, right.clickTrackStrength);
-};
 
 export function createCouplingEdges(config: EnsembleConfig): CouplingEdge[] {
   assertValidEnsembleConfig(config);
@@ -403,47 +447,6 @@ function stepEnsembleWithIncoming(
   };
 }
 
-/**
- * Advances a simulation by elapsed wall-clock time without coupling numerical
- * integration to render-frame duration. The remaining fractional interval is
- * retained for the next call.
- */
-export function advanceFixedStepSimulation(
-  simulation: FixedStepSimulation,
-  config: EnsembleConfig,
-  elapsedSeconds: number,
-): FixedStepSimulation {
-  assertValidEnsembleConfig(config);
-  assertFiniteNonNegative("elapsedSeconds", elapsedSeconds);
-  assertFiniteNonNegative("accumulatorSeconds", simulation.accumulatorSeconds);
-
-  const edges = createCouplingEdges(config);
-  const incomingEdges = prepareIncomingEdges(edges, simulation.state.oscillators.length);
-  const history = [...simulation.history];
-  let state = simulation.state;
-  let accumulatorSeconds = simulation.accumulatorSeconds + elapsedSeconds;
-
-  while (accumulatorSeconds + FIXED_STEP_EPSILON_SECONDS >= fixedSimulationStepSeconds) {
-    history.push(state);
-    trimHistory(history, Math.max(1, config.latencySeconds + config.jitterSeconds + 0.5));
-    state = stepEnsembleWithIncoming(
-      state,
-      config,
-      incomingEdges,
-      history,
-      fixedSimulationStepSeconds,
-    );
-    accumulatorSeconds -= fixedSimulationStepSeconds;
-  }
-
-  return {
-    state,
-    history,
-    accumulatorSeconds:
-      accumulatorSeconds < FIXED_STEP_EPSILON_SECONDS ? 0 : accumulatorSeconds,
-  };
-}
-
 function advanceSimulationStep(input: AdvanceSimulationInput): SimulationProgress {
   const { progress, config, incomingEdges, stepSeconds, canonicalTime, sampleInterval } = input;
   progress.history.push(progress.state);
@@ -477,8 +480,8 @@ export function simulateEnsemble(
   dtSeconds = 0.01,
 ): SimulationResult {
   assertValidEnsembleConfig(config);
-  assertFiniteNonNegative("durationSeconds", durationSeconds);
-  assertFinitePositive("dtSeconds", dtSeconds);
+  assertNonNegativeFinite("durationSeconds", durationSeconds);
+  assertPositiveFinite("dtSeconds", dtSeconds);
 
   const edges = createCouplingEdges(config);
   const incomingEdges = prepareIncomingEdges(edges, config.musicianCount);

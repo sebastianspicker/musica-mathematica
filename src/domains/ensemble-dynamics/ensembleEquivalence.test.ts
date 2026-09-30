@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { defaultConfig } from "./defaultConfig";
-import { simulateEnsemble, type EnsembleConfig } from "./ensemble";
-import { simulateEnsembleReference } from "./ensembleReference.test-helper";
+import { defaultConfig, type EnsembleConfig } from "./config";
+import { simulateEnsemble } from "./model";
+import { simulateEnsembleReference } from "./model.reference.test-helper";
 
 const stress: EnsembleConfig = {
   ...defaultConfig,
