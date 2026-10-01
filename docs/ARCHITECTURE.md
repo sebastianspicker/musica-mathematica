@@ -28,39 +28,81 @@ media permissions and device access.
 flowchart TD
   main[src/main.tsx] --> app[src/app]
   app --> ui[src/ui]
-  app --> catalog[src/curriculum catalog]
+  app --> curriculum[src/curriculum]
   app --> learning[src/learning]
   app --> browserAudio[src/audio/browser]
-  catalog --> domains[src/domains]
-  domains --> contracts[src/curriculum contracts]
+  app -->|result types| analysis[src/audio/analysis]
+  curriculum -->|catalog.ts only| domains[src/domains]
+  domains --> curriculum
+  domains --> support[src/domains/support]
   domains --> shared[src/shared]
-  learning --> contracts
-  learning --> shared
+  ui --> curriculum
+  ui --> learning
+  learning -->|contracts| curriculum
   browserAudio --> protocol[src/audio/protocol]
-  browserAudio --> analysis[src/audio/analysis]
+  browserAudio --> analysis
   protocol --> analysis
+  analysis --> shared
 ```
 
-An arrow means that the source may depend on the target. Import restrictions in
-`eslint.config.mjs` enforce the lower-level boundaries and allow the one
-intentional edge from the curriculum catalog to the domain modules.
+An arrow means that the source may depend on the target. `eslint.config.mjs`
+enforces these edges with layer import zones. Sibling-relative imports into
+`audio/browser` are covered as well. The one edge from `src/curriculum/` to
+`src/domains/` is `catalog.ts`, the composition root and the only importer of
+domain modules. Domains import only the curriculum contracts and registry,
+`domains/support`, `src/shared/`, and their own files, never the catalog.
+Learning code imports curriculum contracts and registry ports but not the
+catalog. `src/shared/` is a leaf and imports neither the curriculum nor any
+application layer. `src/app/` reaches domain content only through the
+curriculum registry and does not import `domains`. `src/ui/` does not import
+`app`, `audio`, `domains`, or the catalog.
 
 | Area | Responsibility |
 | --- | --- |
-| `src/shared/` | Small browser-independent utilities, including numeric validation. |
-| `src/curriculum/` | Shared lesson and evaluation contracts, registry validation, and catalog assembly. |
-| `src/domains/` | Eight deterministic domains, each with three lessons and matching evaluators. |
-| `src/learning/` | Inquiry stages, evidence, controlled comparison, portfolio schema, validation, migration, and storage ports. |
+| `src/shared/numeric/` | Browser-independent numeric validation. |
+| `src/curriculum/` | `contracts.ts` (lesson, factor and evaluation contracts, audio-analysis policy helpers, `seedForTrial`), `registry.ts` (validation and `defineDomain`), `catalog.ts` (composition root), `evidence.ts` (claims and research sources), and `__golden__/evaluations.json`. |
+| `src/domains/<id>/` | Eight deterministic domains, each with `lessons.ts`, `evaluators.ts`, `model.ts`, and `index.ts`. `ensemble-dynamics` also has `config.ts` and a test-only `model.reference.test-helper.ts`. |
+| `src/domains/support/` | `construction.ts` (definition builders) and `evaluation.ts` (`observable`, `result`, and `readNumber`, `readString`, `readBoolean`). |
+| `src/learning/` | `stages.ts` (ordered stages); `inquiry/comparison.ts` (controlled A/B rule) and `inquiry/recording.ts` (recording blockers, factors for an attempt); `portfolio/` with `schema.ts` (persisted version 2 types, `StoragePort`, keys, limits), `aggregate.ts`, `validate.ts`, `compact.ts`, `repository.ts`; and `portfolio/legacy/` (version 1 schema, validation, migration). |
 | `src/audio/analysis/` | Portable windowing, FFT-backed analysis, features, and ranked hypotheses. |
 | `src/audio/protocol/` | Worker and AudioWorklet messages and bounded frame queues. |
 | `src/audio/browser/` | Media capture, file decoding, workers, AudioWorklet integration, and resource cleanup. |
-| `src/ui/` | Presentational React components driven by supplied state and callbacks. |
-| `src/app/` | Browser composition, routes, controllers, storage and download adapters, and audio-to-lesson mapping. |
+| `src/ui/` | Presentational React components driven by supplied state and callbacks. `format.ts` holds shared formatters and `workbench/types.ts` the runtime view contract. `audio/` holds the audio input controls. |
+| `src/app/` | `App.tsx` (routing, focus, dialogs, layout); `portfolio/` (`usePortfolio.ts`, `browserStorage.ts`, `download.ts`); `routing/hashRoute.ts`; `workbench/` (lesson and playback controllers and `playbackStore.ts`); `audio/` (audio controllers and mapping of results to evaluations); and `demo/` (Pages-only seed and isolated storage). |
 
 Domain logic, learning rules, and portable audio analysis do not use React, the
-DOM, storage, Worker, AudioWorklet, or media APIs. Browser adapters live in
-`src/app/` or `src/audio/browser/`. Stateful lesson coordination belongs in
-`src/app/`, while reusable rendering belongs in `src/ui/`.
+DOM, storage, Worker, AudioWorklet, or media APIs. Lint rejects a denylist of
+browser globals, not every browser API, in these layers and in `src/ui/`, and it
+rejects production imports of `*.test-helper` files. The legacy migration may
+not import inquiry rules or curriculum evidence. `src/architecture.test.ts`
+probes each import zone.
+
+### Where new code goes
+
+- A lesson goes in its domain's `lessons.ts`, with its evaluator in
+  `evaluators.ts`, and the domain's `index.ts` registers both. A new domain is
+  added through `src/curriculum/catalog.ts`. There is no central evaluator
+  switch.
+- Shared curriculum types and registry validation go in `src/curriculum/`.
+  Generic numeric helpers go in `src/shared/`.
+- Definition and evaluation helpers shared by domains go in
+  `src/domains/support/`.
+- Rendering goes in `src/ui/`. Stateful orchestration, routing, and browser
+  adapters (storage, downloads, media) go in `src/app/` or
+  `src/audio/browser/`.
+- Tests are colocated as `*.test.ts(x)`. Shared test fixtures use the
+  `*.test-helper.ts` suffix.
+
+### Lesson policy lives in the curriculum
+
+Lesson rules are data in the curriculum, not checks against lesson identifiers.
+A factor may declare `audioSetting: "onsetSensitivity" | "meterBias"`. A lesson
+with such factors supports controlled comparison of recorded audio, limited to
+those factors, and those factors feed the audio analysis. The registry
+validates the declarations. Claims and research sources come from
+`src/curriculum/evidence.ts`, and the registry can check that every lesson
+reference resolves. `seedForTrial` in `contracts.ts` derives a trial's random
+seed from the lesson and its factors.
 
 ## Application and lesson flow
 
@@ -96,8 +138,7 @@ native dialogs restore focus when dismissed with Escape.
 `src/curriculum/catalog.ts` assembles the eight domains. The registry in
 `src/curriculum/registry.ts` checks identifier uniqueness, exactly three lessons
 per domain, evaluator coverage, factor definitions, and evaluator output. Each
-domain maps its own lesson identifiers to evaluators, so there is no central
-evaluator switch.
+domain maps its own lesson identifiers to evaluators.
 
 ## Portfolio state and privacy
 
@@ -166,14 +207,15 @@ privacy rules, and limits on interpretation.
 
 ## Builds and deployment
 
-`pnpm build` type-checks the application and writes an origin-root bundle to
-`dist/`. `pnpm build:pages` runs Vite in `pages` mode, sets the base to
+`pnpm build` runs `vite build` without a separate type-check, and writes an
+origin-root bundle to `dist/`. `pnpm typecheck` covers the type-checking. `pnpm build:pages` runs Vite in `pages` mode, sets the base to
 `/musica-mathematica/`, rewrites the favicon path, makes application, worker,
 worklet, and font assets aware of that base, and enables isolated demo storage.
 
 On pushes and pull requests, CI installs the frozen lockfile with Node 22 and
-runs `pnpm verify`. The GitHub Pages workflow is manual and builds, uploads, and
-deploys the Pages artifact. Repository settings, the live origin, response
+runs `pnpm verify` in one job and `pnpm test:e2e` in a separate job. The GitHub
+Pages workflow is manual. It runs `pnpm typecheck` and `pnpm test:unit`, then
+builds, uploads, and deploys the Pages artifact. Repository settings, the live origin, response
 headers, and cache behavior remain part of the deployment environment.
 `index.html` includes a same-origin meta Content Security Policy, with loopback
 WebSocket access for Vite development. A deployed host should also send
@@ -185,25 +227,31 @@ Changes to the following values need focused tests and an explicit compatibility
 or migration decision:
 
 - route, domain, lesson, protocol, claim, factor, and input-mode identifiers;
+- factor bounds, select options, and protocol identifiers, because stored
+  trials whose values fall outside the current definitions are dropped on load
+  (`src/curriculum/compatibility.test.ts` freezes them);
 - `LessonDefinition`, `EvaluationOutput`, storage keys, portfolio version 2,
   trial and trace caps, export fields, and legacy migration behavior;
 - audio frame sizes, input limits, queue capacity, and worker and AudioWorklet
   messages; and
 - the origin-root and project-subpath asset assumptions of the two build modes.
 
-Add a lesson in its domain's `lessons.ts`, add its evaluator to `evaluators.ts`,
-and update the domain's public `index.ts`. Add a domain through
-`src/curriculum/catalog.ts`. New storage, media, or download behavior belongs
-behind a port or browser adapter rather than in domain or learning code.
+See "Where new code goes" above for placement. New storage, media, or download
+behavior belongs behind a port or browser adapter rather than in domain or
+learning code.
 
 ## What local verification covers
 
-Tests are colocated under `src/**/*.test.{js,ts,tsx}` and run in Vitest's Node
-environment. `pnpm verify` runs lint, unit tests, type-checking through the
-build, and the origin-root production build. The tests also check asset URLs
-in the Pages build. `pnpm test:e2e` separately runs the root and Pages builds
-through Chromium, Firefox, and WebKit, covering lesson completion, navigation,
-storage, playback, and analysis of generated audio files.
+Tests are colocated with the code they cover and run in Vitest's Node
+environment. [CONTRIBUTING.md](../CONTRIBUTING.md) lists the commands and what
+each runs. Golden files pin evaluator output
+(`src/curriculum/__golden__/evaluations.json`, compared with a relative
+tolerance of 1e-6 because floating-point results differ across platforms) and
+the exported portfolio JSON (`src/learning/portfolio/golden-json.test.ts`). An
+intentional model change regenerates the evaluator golden file, and that diff is
+reviewed as a behavior change. The unit tests also check asset URLs in the Pages
+build. The Playwright suite covers lesson completion, navigation, storage,
+playback, and analysis of generated audio files in the root and Pages builds.
 
 Local automated checks cannot establish browser permission behavior, microphone
 hardware behavior, codec availability, applied media constraints, deployed

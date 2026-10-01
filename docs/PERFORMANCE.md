@@ -39,7 +39,8 @@ Run the current workload with:
 node benchmarks/ensemble.mjs
 ```
 
-The table was measured inside Vitest. The standalone script uses the same
+The script loads `src/domains/ensemble-dynamics/config.ts` and `model.ts`. The
+table was measured inside Vitest. The standalone script uses the same
 workload, but its times are not directly comparable with that table. Use one
 harness consistently when measuring a change.
 
@@ -104,6 +105,8 @@ pnpm exec playwright install chromium
 node benchmarks/workbench.mjs current
 ```
 
-The script uses local port 5193 and writes raw samples to
-`/tmp/mm-workbench-current.json`. Its profiling code runs only in the benchmark
-fixture and is not included in product builds.
+The script uses local port 5193, opens the collapsed **Explore the model, charts
+and playback** section first, and writes raw samples to
+`/tmp/mm-workbench-current.json`. Its profiling code lives in the typed fixture
+`benchmarks/workbenchProfileMain.tsx`, which runs only in the benchmark and is
+not included in product builds.

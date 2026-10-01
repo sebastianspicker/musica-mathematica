@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { curriculumCatalog, evaluatorFor } from "./catalog";
+import { curriculumRegistry } from "./catalog";
 import { defaultFactorsFor, type FactorValue } from "./contracts";
 
-const endpointCases = curriculumCatalog.flatMap((domain) =>
+const endpointCases = curriculumRegistry.catalog.flatMap((domain) =>
   domain.lessons.flatMap((lesson) =>
     lesson.factors.flatMap((factor) => {
       if (factor.kind !== "number") return [];
@@ -29,7 +29,7 @@ describe("advertised numeric lesson endpoints", () => {
         [factor.id]: factor[endpoint],
       };
 
-      expect(() => evaluatorFor(domainId, lesson.id)(factors)).not.toThrow();
+      expect(() => curriculumRegistry.evaluatorFor(domainId, lesson.id)(factors)).not.toThrow();
     },
     30_000,
   );

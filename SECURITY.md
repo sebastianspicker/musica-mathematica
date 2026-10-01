@@ -23,10 +23,10 @@ and their source information in `localStorage`. Learners can download it as
 JSON. Those exports may contain personal data; clearing the app's storage does
 not delete files that have already been downloaded.
 
-The Pages demo uses `musicaMathematica.demo.learning.v2` for its example and
-subsequent changes. Its storage adapter cannot access the ordinary
-`musicaMathematica.learning.v2` record or the legacy migration record. Changes
-to the demo must preserve that separation.
+The Pages demo stores its example and changes under a separate key, and its
+storage adapter cannot access the ordinary or legacy records. Changes to the
+demo must preserve that separation; see
+[Architecture](docs/ARCHITECTURE.md#portfolio-state-and-privacy).
 
 ## Microphone and audio files
 
@@ -45,10 +45,10 @@ Client source and build configuration are visible to anyone who receives the
 bundle. Keep secrets, private service credentials, and privileged endpoints
 out of both.
 
-[index.html](index.html) defines the Content Security Policy. It allows
-same-origin resources and the loopback WebSocket connections used during Vite
-development. Check the deployed response headers as well; the HTML policy does
-not configure every response. See [Deployment](docs/DEPLOYMENT.md).
+[index.html](index.html) defines the Content Security Policy. Check the
+deployed response headers as well; the HTML policy does not configure every
+response. [Deployment](docs/DEPLOYMENT.md) describes the policy and the host
+headers to review.
 
 ## Dependencies
 

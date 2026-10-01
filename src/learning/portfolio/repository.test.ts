@@ -10,9 +10,7 @@ import {
 import {
   clearPortfolio,
   exportPortfolioJson,
-  loadPortfolio,
   loadPortfolioDetailed,
-  savePortfolio,
   savePortfolioDetailed,
 } from "./repository";
 import { testCurriculum } from "./curriculumFixture.test-helper";
@@ -76,16 +74,16 @@ describe("portfolio repository", () => {
       "2026-08-28T10:00:00.000Z",
     );
     const expected = updateAttempt(testCurriculum, createPortfolio(testCurriculum), attempt);
-    expect(savePortfolio(expected, storage, testCurriculum)).toBe(true);
+    expect(savePortfolioDetailed(expected, storage, testCurriculum).persistenceStatus).toBe("saved");
     storage.setItem(legacyPortfolioStorageKey, JSON.stringify(legacyLatencyAttempt));
-    expect(loadPortfolio(storage, testCurriculum, "2026-08-28T10:01:00.000Z")).toEqual(expected);
+    expect(loadPortfolioDetailed(storage, testCurriculum, "2026-08-28T10:01:00.000Z").portfolio).toEqual(expected);
   });
 
   it("falls back from corrupt v2 to v1 and writes the migrated v2 record", () => {
     const storage = new MemoryStorage();
     storage.setItem(portfolioStorageKey, "{");
     storage.setItem(legacyPortfolioStorageKey, JSON.stringify(legacyLatencyAttempt));
-    const loaded = loadPortfolio(storage, testCurriculum, "2026-08-28T10:00:00.000Z");
+    const loaded = loadPortfolioDetailed(storage, testCurriculum, "2026-08-28T10:00:00.000Z").portfolio;
     expect(loaded.active).toEqual({ labId: "ensemble-dynamics", lessonId: "delay-jitter-topology" });
     expect(storage.getItem(portfolioStorageKey)).not.toBeNull();
     expect(storage.getItem(legacyPortfolioStorageKey)).not.toBeNull();

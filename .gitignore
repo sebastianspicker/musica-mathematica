@@ -12,6 +12,7 @@
 /playwright-report/
 /.playwright-results/
 /blob-report/
+/.tmp-*/
 /junit*.xml
 /.eslintcache
 /.pnpm-store/

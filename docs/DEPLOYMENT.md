@@ -11,7 +11,9 @@ example under `/musica-mathematica/`. It runs only when dispatched manually.
 Ordinary pushes run CI without deploying.
 
 Before deployment, run `pnpm verify` and `pnpm test:e2e` for the intended
-revision. The browser tests build both the root app and the Pages demo.
+revision, as described in [Contributing](../CONTRIBUTING.md#tests-and-verification).
+The browser tests build both the root app and the Pages demo. The Pages
+workflow itself runs `pnpm typecheck` and `pnpm test:unit` before building.
 
 ### Publish to Pages
 
@@ -37,12 +39,8 @@ the site has been published.
 
 ### Preview locally
 
-```sh
-pnpm build:pages
-pnpm exec vite preview --host 127.0.0.1 --port 4175 --strictPort --mode pages
-```
-
-Open <http://127.0.0.1:4175/musica-mathematica/>. The demo starts with a
+Build and serve the demo as described in
+[Contributing](../CONTRIBUTING.md#preview-the-pages-demo). The demo starts with a
 prediction and a controlled 90-to-120 BPM comparison. All lessons remain
 interactive. In **My learning**, choose **Reset demo data** and confirm to
 restore the example.
@@ -72,7 +70,9 @@ Hash-based lesson routes do not require a server-side route fallback.
 
 Review the Content Security Policy in [index.html](../index.html) along with
 your host's response headers and caching policy. HTML cannot configure those
-headers or caching. On Pages, GitHub controls them.
+headers or caching. On Pages, GitHub controls them. The policy allows
+same-origin resources and, for Vite development, loopback WebSocket
+connections.
 
 ## Rollback
 

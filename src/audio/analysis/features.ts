@@ -29,7 +29,7 @@ export type WaveformEnvelopePoint = Readonly<{
 }>;
 
 export function rootMeanSquare(samples: ArrayLike<number>): number {
-  assertNonEmptyFiniteNumbers(samples, "samples");
+  assertNonEmptyFiniteNumbers("samples", samples);
   let sumSquares = 0;
   for (let index = 0; index < samples.length; index += 1) {
     sumSquares += samples[index] * samples[index];
@@ -68,7 +68,7 @@ export function waveformEnvelope(
   samples: ArrayLike<number>,
   maximumPointCount = 256,
 ): WaveformEnvelopePoint[] {
-  assertNonEmptyFiniteNumbers(samples, "samples");
+  assertNonEmptyFiniteNumbers("samples", samples);
   if (!Number.isSafeInteger(maximumPointCount) || maximumPointCount <= 0) {
     throw new RangeError("maximumPointCount must be a positive safe integer");
   }
@@ -102,7 +102,7 @@ export function estimateNoiseFloorDbfs(
   blockSize = 256,
   percentile = 0.1,
 ): number {
-  assertNonEmptyFiniteNumbers(samples, "samples");
+  assertNonEmptyFiniteNumbers("samples", samples);
   if (![Number.isSafeInteger(blockSize), blockSize > 0].every(Boolean)) {
     throw new RangeError("blockSize must be a positive safe integer");
   }
@@ -215,7 +215,7 @@ export function estimatePitchYin(
   sampleRateHz: number,
   options: PitchOptionsInput = {},
 ): PitchEstimate {
-  assertNonEmptyFiniteNumbers(samples, "samples");
+  assertNonEmptyFiniteNumbers("samples", samples);
   const { minimumHz, maximumHz, threshold } = validatePitchOptions(sampleRateHz, options);
   const minimumPeriod = Math.max(2, Math.floor(sampleRateHz / maximumHz));
   const maximumPeriod = Math.min(Math.floor(sampleRateHz / minimumHz), Math.floor(samples.length / 2));

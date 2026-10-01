@@ -209,6 +209,20 @@ describe("curriculum registry", () => {
     })).toThrow("only mixed, duple, or triple options");
   });
 
+  it("rejects unknown audio settings and audio settings on toggle factors", () => {
+    const audio = { inputModes: ["synthetic" as const, "file" as const] };
+    const lessonWith = (patch: Partial<LessonDefinition>) => moduleFrom(replaceFirstLesson(domain("timbre-acoustics"), patch));
+    const numberFactor = { id: "threshold", kind: "number", label: "Threshold", min: 0, max: 1, step: 0.1, defaultValue: 0.5, help: "Synthetic." };
+    const toggleFactor = { id: "flag", kind: "toggle", label: "Flag", defaultValue: false, help: "Synthetic." };
+
+    expect(() => lessonWith({ ...audio, factors: [{ ...numberFactor, audioSetting: "gain" }] } as unknown as Partial<LessonDefinition>))
+      .toThrow("unknown audio setting gain");
+    expect(() => lessonWith({ ...audio, factors: [{ ...toggleFactor, audioSetting: "onsetSensitivity" }] } as unknown as Partial<LessonDefinition>))
+      .toThrow("requires a number or select factor");
+    expect(() => lessonWith({ ...audio, factors: [{ ...toggleFactor, audioSetting: "meterBias" }] } as unknown as Partial<LessonDefinition>))
+      .toThrow("requires a number or select factor");
+  });
+
   it("accepts only supported aggregation values and bounded integer precision", () => {
     expect(isEvaluationOutput({
       ...evaluation,

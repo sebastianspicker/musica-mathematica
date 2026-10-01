@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { curriculumCatalog } from "./catalog";
+import { curriculumRegistry } from "./catalog";
 import type { FactorDefinition } from "./contracts";
 
 const compatibilityManifest = [
@@ -379,7 +379,7 @@ function factorContract(factor: FactorDefinition) {
 
 describe("curriculum compatibility manifest", () => {
   it("preserves every canonical domain and lesson identity in order", () => {
-    const currentManifest = curriculumCatalog.map((domain) => ({
+    const currentManifest = curriculumRegistry.catalog.map((domain) => ({
       id: domain.id,
       lessons: domain.lessons.map((lesson) => ({
         id: lesson.id,

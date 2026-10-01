@@ -5,8 +5,8 @@ Keep a change focused on one problem and include a way to check the result.
 
 ## Run the app
 
-Use Node.js `^20.19.0` or `>=22.12.0` and pnpm `11.6.0`, as specified in
-[package.json](package.json).
+Use Node.js `^20.19.0`, `^22.13.0`, or `>=24` and pnpm `11.6.0`, as
+specified in [package.json](package.json).
 
 ```sh
 pnpm install --frozen-lockfile
@@ -38,23 +38,29 @@ and UI components focused on rendering supplied state. The
 [architecture guide](docs/ARCHITECTURE.md) explains where code belongs.
 Discuss new production dependencies with a maintainer before adding them.
 
-## Tests
+## Tests and verification
 
 Add or update focused tests for changes to models, lesson definitions, portfolio
-behavior, storage, migration, or audio processing.
+behavior, storage, migration, or audio processing. Tests are colocated as
+`*.test.ts(x)`. Shared test fixtures use the `*.test-helper.ts` suffix, and
+production code may not import them.
 
-Run the narrowest relevant command first, then run:
+| Command | What it runs |
+| --- | --- |
+| `pnpm dev` | The Vite development server. |
+| `pnpm lint` | `eslint .` over the whole repository (ESLint 10 flat config with explicit ignores). It checks React Hooks, import boundaries between layers, and browser-global bans in portable layers. |
+| `pnpm typecheck` | `tsc --noEmit` for the browser program (`src`, `e2e/fixtures`, `benchmarks/*.tsx`), then `tsc --noEmit -p tsconfig.node.json` for e2e specs, the Pages bundle build test (`src/**/*.build.test.ts`), `playwright.config.ts`, `vite.config.ts`, and `eslint.config.mjs`. |
+| `pnpm test:unit` | `vitest run`. |
+| `pnpm build` | `vite build` for the origin-root bundle. It does not type-check. |
+| `pnpm build:pages` | `vite build --mode pages` for the GitHub Pages demo. Not part of `pnpm verify`. |
+| `pnpm verify` | Lint, typecheck, unit tests, then build. |
+| `pnpm test:e2e` | Playwright over the root and Pages builds in Chromium, Firefox, and WebKit. |
 
-```sh
-pnpm verify
-```
+Run the narrowest relevant command first, then `pnpm verify`. If a check
+cannot run, record the exact command and failure. CI runs `pnpm verify` and,
+in a separate job, `pnpm test:e2e`.
 
-Use `pnpm test:unit` for Vitest. `pnpm verify` runs ESLint, TypeScript, the
-unit suite, and the production build. If a check cannot run, record the exact
-command and failure.
-
-Browser checks run separately against production root and Pages builds in
-Chromium, Firefox, and WebKit:
+Browser checks need the browsers installed once:
 
 ```sh
 pnpm exec playwright install chromium firefox webkit
@@ -64,8 +70,23 @@ pnpm test:e2e
 The browser suite covers complete lessons, numeric limits, navigation focus,
 playback, reduced motion, restart, clearing, export, storage separation, and
 analysis of generated audio files. It does not test microphone hardware.
-ESLint checks React Hooks and the separation between portable code, UI, and
-browser adapters.
+
+Evaluator outputs are pinned by `src/curriculum/__golden__/evaluations.json`,
+which `evaluator-golden.test.ts` compares with a relative tolerance of 1e-6.
+An intentional model change regenerates that file, and its diff is reviewed as
+a behavior change. `src/learning/portfolio/golden-json.test.ts` pins the exact
+exported portfolio JSON. Performance checks are in
+[docs/PERFORMANCE.md](docs/PERFORMANCE.md).
+
+### Preview the Pages demo
+
+```sh
+pnpm build:pages
+pnpm exec vite preview --host 127.0.0.1 --port 4175 --strictPort --mode pages
+```
+
+Open <http://127.0.0.1:4175/musica-mathematica/>. The [deployment
+guide](docs/DEPLOYMENT.md) covers publishing.
 
 ## Documentation
 
@@ -81,14 +102,8 @@ privacy and calibration labels, keyboard focus, chart labels, and text layout.
 Keep the image paths and alt text accurate, and fix the app or capture setup
 instead of retouching a screenshot.
 
-To refresh the README tour, build and serve the Pages demo:
-
-```sh
-pnpm build:pages
-pnpm exec vite preview --host 127.0.0.1 --port 4175 --strictPort --mode pages
-```
-
-In another terminal, run:
+To refresh the README tour, serve the Pages demo as described above. In another
+terminal, run:
 
 ```sh
 pnpm exec playwright install chromium
@@ -100,7 +115,6 @@ replaces four PNGs in `docs/assets/screenshots/`. It checks the page title,
 demo label, prediction-to-comparison flow, console errors, and horizontal
 overflow. Review all four images before including them in a pull request.
 Pass a local preview URL as the first argument if you use a different port.
-
 
 ## Pull requests
 

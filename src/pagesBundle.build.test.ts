@@ -15,7 +15,7 @@ afterAll(async () => {
 describe("GitHub Pages audio production bundle", () => {
   it("emits base-aware application, worker, worklet, and font assets", async () => {
     await build({
-      configFile: resolve(dirname(fileURLToPath(import.meta.url)), "../../../vite.config.ts"),
+      configFile: resolve(dirname(fileURLToPath(import.meta.url)), "../vite.config.ts"),
       logLevel: "silent",
       mode: "pages",
       build: {
@@ -28,7 +28,7 @@ describe("GitHub Pages audio production bundle", () => {
     const assetNames = await readdir(assetsDirectory);
     const workletAssetName = assetNames.find((name) => /^captureProcessor-.+\.js$/.test(name));
 
-    expect(workletAssetName).toBeDefined();
+    if (!workletAssetName) throw new Error("The build emitted no captureProcessor asset.");
 
     const workletSource = await readFile(join(assetsDirectory, workletAssetName), "utf8");
     expect(workletSource).toContain("registerProcessor");
@@ -37,7 +37,7 @@ describe("GitHub Pages audio production bundle", () => {
     expect(workletSource).not.toContain("captureProcessor.ts");
 
     const analysisWorkerAssetName = assetNames.find((name) => /^analysisWorker-.+\.js$/.test(name));
-    expect(analysisWorkerAssetName).toBeDefined();
+    if (!analysisWorkerAssetName) throw new Error("The build emitted no analysisWorker asset.");
 
     const applicationAssetNames = assetNames.filter((name) => /^index-.+\.js$/.test(name));
     const applicationSources = await Promise.all(
@@ -53,7 +53,7 @@ describe("GitHub Pages audio production bundle", () => {
     expect(indexHtml).toContain(`href="${pagesBase}favicon.svg"`);
 
     const stylesheetAssetName = assetNames.find((name) => /^index-.+\.css$/.test(name));
-    expect(stylesheetAssetName).toBeDefined();
+    if (!stylesheetAssetName) throw new Error("The build emitted no index stylesheet.");
     const stylesheet = await readFile(join(assetsDirectory, stylesheetAssetName), "utf8");
     expect(stylesheet).toContain(`${pagesBase}fonts/`);
   }, 30_000);

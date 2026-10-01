@@ -1,4 +1,6 @@
 /** Private mathematical model for the harmony-and-geometry domain. */
+import { assertSafeInteger } from "../../shared/numeric/validation";
+
 export type PitchClass = number;
 
 export type VoiceLeadingMove = {
@@ -20,24 +22,18 @@ export type WeightedEdge = {
   weight: number;
 };
 
-function assertInteger(value: number, name: string): void {
-  if (!Number.isInteger(value)) {
-    throw new RangeError(`${name} must be an integer.`);
-  }
-}
-
 function assertPitchClasses(pitchClasses: readonly number[], name: string): void {
   if (pitchClasses.length === 0) {
     throw new RangeError(`${name} must not be empty.`);
   }
   pitchClasses.forEach((pitchClass, index) => {
-    assertInteger(pitchClass, `${name}[${index}]`);
+    assertSafeInteger(`${name}[${index}]`, pitchClass);
   });
 }
 
 /** Converts any integer pitch spelling to its pitch class in [0, 11]. */
 export function normalizePitchClass(pitchClass: number): PitchClass {
-  assertInteger(pitchClass, "pitchClass");
+  assertSafeInteger("pitchClass", pitchClass);
   return ((pitchClass % 12) + 12) % 12;
 }
 
@@ -46,7 +42,7 @@ export function transposePitchClasses(
   semitones: number,
 ): PitchClass[] {
   assertPitchClasses(pitchClasses, "pitchClasses");
-  assertInteger(semitones, "semitones");
+  assertSafeInteger("semitones", semitones);
   return pitchClasses.map((pitchClass) => normalizePitchClass(pitchClass + semitones));
 }
 
@@ -56,7 +52,7 @@ export function invertPitchClasses(
   index: number = 0,
 ): PitchClass[] {
   assertPitchClasses(pitchClasses, "pitchClasses");
-  assertInteger(index, "index");
+  assertSafeInteger("index", index);
   return pitchClasses.map((pitchClass) => normalizePitchClass(index - pitchClass));
 }
 
@@ -130,7 +126,7 @@ export function minimalVoiceLeading(
 }
 
 function assertGraphNode(name: string, node: number, nodeCount: number): void {
-  assertInteger(node, name);
+  assertSafeInteger(name, node);
   if (node < 0 || node >= nodeCount) {
     throw new RangeError(`${name} must identify an existing node.`);
   }
@@ -191,7 +187,7 @@ export function shortestPath(
   start: number,
   end: number,
 ): readonly number[] | null {
-  assertInteger(nodeCount, "nodeCount");
+  assertSafeInteger("nodeCount", nodeCount);
   if (nodeCount <= 0) throw new RangeError("nodeCount must be positive.");
   assertGraphNode("start", start, nodeCount);
   assertGraphNode("end", end, nodeCount);

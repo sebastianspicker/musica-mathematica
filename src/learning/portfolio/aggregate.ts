@@ -21,8 +21,6 @@ import {
   sanitizeTrial,
 } from "./validate";
 
-export { attemptKey };
-
 export function createPortfolio(curriculum: CurriculumLessonReader): LearningPortfolioV2 {
   return {
     version: 2,

@@ -72,7 +72,7 @@ debrief.
 
 ## Run locally
 
-Use Node.js `^20.19.0` or `>=22.12.0` and pnpm `11.6.0`.
+Use Node.js `^20.19.0`, `^22.13.0`, or `>=24` and pnpm `11.6.0`.
 
 ```sh
 git clone https://github.com/sebastianspicker/musica-mathematica.git
@@ -98,8 +98,8 @@ does not need server-side route handling.
 
 The interactive demo is built for
 [the project's Pages address](https://sebastianspicker.github.io/musica-mathematica/).
-Publishing is manual. If the site is unavailable, use the local preview below
-or follow the [deployment guide](docs/DEPLOYMENT.md).
+Publishing is manual. If the site is unavailable, use the local preview or
+follow the [deployment guide](docs/DEPLOYMENT.md).
 
 The demo opens **From BPM to Period** with a prediction and two recorded runs
 at 90 and 120 BPM. You can change factors, try other lessons, and reset the
@@ -107,16 +107,10 @@ example through **My learning**. The **Demo data · separate portfolio** label
 identifies this mode. Demo changes use separate browser storage from ordinary
 learner records.
 
-Preview the demo locally:
-
-```sh
-pnpm build:pages
-pnpm exec vite preview --host 127.0.0.1 --port 4175 --strictPort --mode pages
-```
-
-Open <http://127.0.0.1:4175/musica-mathematica/>.
-See [deployment instructions](docs/DEPLOYMENT.md) for the manual Pages workflow
-and instructions for forks.
+To preview the demo locally, see
+[Contributing](CONTRIBUTING.md#preview-the-pages-demo). The
+[deployment guide](docs/DEPLOYMENT.md) covers the manual Pages workflow and
+forks.
 
 ## Your data and audio
 
@@ -153,16 +147,9 @@ and licensing limits.
 
 ## Development and documentation
 
-```sh
-pnpm verify
-pnpm exec playwright install chromium firefox webkit
-pnpm test:e2e
-```
-
-`pnpm verify` runs lint, unit tests, type-checking, and the production build.
-The browser suite separately exercises root and Pages builds in all three
-engines. [Contributing](CONTRIBUTING.md) covers focused checks and screenshot
-capture.
+[Contributing](CONTRIBUTING.md) lists the commands, verification steps, and the
+browser and screenshot workflow. `pnpm verify` is the check to run before a
+change.
 
 - [Architecture](docs/ARCHITECTURE.md): module layout, runtime flows, storage,
   and browser audio.

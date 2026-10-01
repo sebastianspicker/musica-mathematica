@@ -9,9 +9,7 @@ import "../src/styles/index.css";
 
 // `workbench.mjs` installs `window.__profile` and instruments ResultVisual to count geometry builds.
 type RenderProfile = { durations: number[]; geometry: number };
-declare global {
-  interface Window { __profile?: RenderProfile | null }
-}
+const profileWindow = window as Window & { __profile?: RenderProfile | null };
 
 function Fixture() {
   const [attempt, setAttempt] = useState<LessonAttemptV2>(() => ({
@@ -26,7 +24,7 @@ if (!rootElement) throw new Error("Missing #root element for the workbench profi
 createRoot(rootElement).render(
   <StrictMode>
     <Profiler id="workbench" onRender={(_id, phase, actualDuration) => {
-      if (window.__profile && phase !== "mount") window.__profile.durations.push(actualDuration);
+      if (profileWindow.__profile && phase !== "mount") profileWindow.__profile.durations.push(actualDuration);
     }}>
       <Fixture />
     </Profiler>

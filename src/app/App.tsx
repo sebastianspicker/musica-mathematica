@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type ReactElement } from "react";
 import type { LessonDefinition } from "../curriculum/contracts";
 import type { CurriculumRegistry } from "../curriculum/registry";
-import { attemptKey } from "../learning/portfolio/aggregate";
-import type { StoragePort } from "../learning/portfolio/schema";
+import { attemptKey, type StoragePort } from "../learning/portfolio/schema";
 import { lessonStages } from "../learning/stages";
 import { CurriculumRail } from "../ui/workbench/CurriculumRail";
 import { StageProgress } from "../ui/workbench/InquiryStage";

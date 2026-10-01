@@ -37,7 +37,7 @@ export type TempoRecovery = Readonly<{
 
 /** Linear-interpolated sample quantile (the common type-7 definition). */
 export function quantile(values: readonly number[], probability: number): number {
-  assertNonEmptyFiniteNumbers(values, "values");
+  assertNonEmptyFiniteNumbers("values", values);
   if (!Number.isFinite(probability) || probability < 0 || probability > 1) {
     throw new RangeError("probability must be between zero and one");
   }
@@ -54,7 +54,7 @@ export function median(values: readonly number[]): number {
 }
 
 export function summarizeDistribution(values: readonly number[]): DistributionSummary {
-  assertNonEmptyFiniteNumbers(values, "values");
+  assertNonEmptyFiniteNumbers("values", values);
   const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
   const variance = values.length > 1
     ? values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (values.length - 1)
@@ -117,8 +117,8 @@ export function describeEventAlignment(
   referenceEvents: readonly number[],
   options: Readonly<{ unit?: string; centeredTolerance?: number }> = {},
 ): AlignmentDescription {
-  assertNonEmptyFiniteNumbers(observedEvents, "observedEvents");
-  assertNonEmptyFiniteNumbers(referenceEvents, "referenceEvents");
+  assertNonEmptyFiniteNumbers("observedEvents", observedEvents);
+  assertNonEmptyFiniteNumbers("referenceEvents", referenceEvents);
   assertPairedEventCounts(observedEvents, referenceEvents);
   const centeredTolerance = centeredToleranceFor(options);
   const signedDifferences = observedEvents.map((observed, index) => observed - referenceEvents[index]);
@@ -142,7 +142,7 @@ export function describeEventAlignment(
 
 /** Median inter-onset-interval estimator; results remain tempo hypotheses. */
 export function recoverTempoFromOnsets(onsetsSeconds: readonly number[]): TempoRecovery {
-  assertNonEmptyFiniteNumbers(onsetsSeconds, "onsetsSeconds");
+  assertNonEmptyFiniteNumbers("onsetsSeconds", onsetsSeconds);
   if (onsetsSeconds.length < 2) throw new RangeError("at least two onsets are required");
   const intervalsSeconds = onsetsSeconds.slice(1).map((onset, index) => onset - onsetsSeconds[index]);
   if (intervalsSeconds.some((interval) => interval <= 0)) {

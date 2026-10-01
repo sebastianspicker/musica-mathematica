@@ -3,7 +3,6 @@
 .mm-notebook #mm-current-task { margin-bottom: 22px; }
 .mm-notebook .mm-lesson-brief h1 { font-size: clamp(2.4rem, 4vw, 3.6rem); line-height: 1.12; font-weight: 400; letter-spacing: -.025em; }
 .mm-notebook .mm-lesson-brief__question { font-size: clamp(1.15rem, 2vw, 1.75rem); line-height: 1.4; margin: 8px 0 0; }
-.mm-notebook .mm-lesson-brief__crumb { margin-top: 10px; font-family: var(--mm-sans, sans-serif); font-size: .75rem; }
 .mm-notebook-prediction { display: flex; align-items: baseline; gap: 14px; padding: 14px 24px; border-left: 4px solid var(--mm-primary); border-radius: 3px; background: var(--mm-blue-soft); font-size: 1.2rem; line-height: 1.5; margin-bottom: 20px; }
 .mm-notebook-prediction strong { flex-shrink: 0; font-weight: 500; }
 .mm-notebook-prediction p { margin: 0; overflow-wrap: anywhere; }

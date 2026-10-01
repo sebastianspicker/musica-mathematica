@@ -1,19 +1,7 @@
 /** Private mathematical model for the phase-and-proportion domain. */
-import { assertPositiveFinite } from "../../shared/numeric/validation";
+import { assertFinite, assertPositiveFinite, assertSafeInteger } from "../../shared/numeric/validation";
 
 const EPSILON = 1e-12;
-
-function assertFinite(name: string, value: number): void {
-  if (!Number.isFinite(value)) {
-    throw new RangeError(`${name} must be finite`);
-  }
-}
-
-function assertInteger(name: string, value: number): void {
-  if (!Number.isSafeInteger(value)) {
-    throw new RangeError(`${name} must be a safe integer`);
-  }
-}
 
 /** Converts a tempo in beats per minute to the duration of one beat. */
 export function bpmToPeriodSeconds(bpm: number): number {
@@ -22,8 +10,8 @@ export function bpmToPeriodSeconds(bpm: number): number {
 }
 
 export function greatestCommonDivisor(left: number, right: number): number {
-  assertInteger("left", left);
-  assertInteger("right", right);
+  assertSafeInteger("left", left);
+  assertSafeInteger("right", right);
   let a = Math.abs(left);
   let b = Math.abs(right);
   while (b !== 0) {
@@ -33,8 +21,8 @@ export function greatestCommonDivisor(left: number, right: number): number {
 }
 
 export function leastCommonMultiple(left: number, right: number): number {
-  assertInteger("left", left);
-  assertInteger("right", right);
+  assertSafeInteger("left", left);
+  assertSafeInteger("right", right);
   if (left === 0 || right === 0) {
     return 0;
   }

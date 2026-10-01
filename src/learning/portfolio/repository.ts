@@ -84,14 +84,6 @@ export function loadPortfolioDetailed(
   };
 }
 
-export function loadPortfolio(
-  storage: StoragePort | undefined,
-  curriculum: CurriculumLessonReader,
-  now = new Date().toISOString(),
-): LearningPortfolioV2 {
-  return loadPortfolioDetailed(storage, curriculum, now).portfolio;
-}
-
 export function savePortfolioDetailed(
   portfolio: LearningPortfolioV2,
   storage: StoragePort | undefined,
@@ -137,14 +129,6 @@ export function savePortfolioDetailed(
       notice: STORAGE_UNAVAILABLE_NOTICE,
     };
   }
-}
-
-export function savePortfolio(
-  portfolio: LearningPortfolioV2,
-  storage: StoragePort | undefined,
-  curriculum: CurriculumLessonReader,
-): boolean {
-  return savePortfolioDetailed(portfolio, storage, curriculum).persistenceStatus === "saved";
 }
 
 export function clearPortfolio(storage: StoragePort | undefined): boolean {

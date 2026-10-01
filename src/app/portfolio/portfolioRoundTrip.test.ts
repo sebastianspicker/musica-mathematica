@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { curriculumCatalog, curriculumRegistry } from "../../curriculum/catalog";
+import { curriculumRegistry } from "../../curriculum/catalog";
 import { defaultFactorsFor, type FactorDefinition, type FactorValue, type LessonDefinition } from "../../curriculum/contracts";
 import {
   advanceAttempt,
@@ -55,7 +55,7 @@ function comparedAttempt(lesson: LessonDefinition) {
 }
 
 describe("portfolio persistence round trip", () => {
-  const lessons = curriculumCatalog.flatMap((domain) => domain.lessons);
+  const lessons = curriculumRegistry.catalog.flatMap((domain) => domain.lessons);
 
   it.each(lessons.map((lesson) => [`${lesson.domainId}:${lesson.id}`, lesson] as const))(
     "saves and reloads a two-run comparison for %s unchanged",

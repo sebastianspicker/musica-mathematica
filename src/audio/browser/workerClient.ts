@@ -114,21 +114,6 @@ export function prepareMicrophoneAnalysisPipeline(
   });
 }
 
-/** Connects capture directly to a worker MessagePort; feature extraction never runs on the main thread. */
-export async function createMicrophoneAnalysisPipeline(
-  context: AudioContext,
-  stream: MediaStream,
-  options: AnalysisPipelineOptions,
-): Promise<AnalysisPipeline> {
-  const prepared = prepareMicrophoneAnalysisPipeline(context, options);
-  try {
-    return await prepared.connect(stream);
-  } catch (error) {
-    prepared.stop();
-    throw error;
-  }
-}
-
 type ValidatedPipelineSettings = Readonly<{
   frameSize: 2048 | 4096;
   queueCapacity: number;

@@ -19,10 +19,6 @@
   .mm-stage-ribbon__seg { font-size: .8125rem; }
 }
 .mm-inquiry { padding: 20px 22px 24px; }
-.mm-inquiry-header { align-items: center; display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.mm-inquiry-header__eyebrow { color: var(--mm-blue); font-size: .75rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; margin: 0; }
-.mm-inquiry-header button { border-color: transparent; background: transparent; color: var(--mm-muted); font-size: .75rem; padding-inline: 8px; }
-.mm-inquiry-header button:hover { background: var(--mm-blue-soft); color: var(--mm-blue-deep); }
 .mm-stage-card h2 { color: var(--mm-ink); font-family: var(--mm-display); font-size: 1.75rem; line-height: 1.2; font-weight: 500; margin: 0 0 14px; text-wrap: balance; }
 .mm-stage-card p { color: var(--mm-ink-soft); font-size: .9375rem; line-height: 1.6; margin: 0 0 18px; }
 .mm-stage-card label { display: grid; gap: 8px; }

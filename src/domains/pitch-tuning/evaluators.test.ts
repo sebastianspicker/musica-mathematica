@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { evaluatorFor } from "../../curriculum/catalog";
+import { createCurriculumRegistry } from "../../curriculum/registry";
+import { pitchTuningDomain } from "./index";
+
+const { evaluatorFor } = createCurriculumRegistry([pitchTuningDomain]);
 
 const value = (output: ReturnType<ReturnType<typeof evaluatorFor>>, id: string) => (
   output.observables.find((observable) => observable.id === id)?.value

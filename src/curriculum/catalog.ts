@@ -20,9 +20,3 @@ export const curriculumRegistry = createCurriculumRegistry([
   probabilityFormDomain,
   measurementInferenceDomain,
 ], { evidence: { claimById, sourceById } });
-
-export const curriculumCatalog = curriculumRegistry.catalog;
-export const defaultLesson = curriculumRegistry.defaultLesson;
-export const domainById = curriculumRegistry.domainById;
-export const lessonById = curriculumRegistry.lessonById;
-export const evaluatorFor = curriculumRegistry.evaluatorFor;

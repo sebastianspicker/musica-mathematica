@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { defaultFactorsFor, type EvaluationOutput, type FactorValue, type InputMode, type LessonDefinition } from "../../curriculum/contracts";
 import type { CurriculumRegistry } from "../../curriculum/registry";
-import { activeAttempt, advanceAttempt, createPortfolio, createTrialSnapshot, recordedRunWasTrimmed, recordTrial, runLabel, selectLesson, setAttemptPrediction, setAttemptResponse } from "../../learning/portfolio/aggregate";
+import { advanceAttempt, createAttemptV2, createTrialSnapshot, recordedRunWasTrimmed, recordTrial, runLabel, setAttemptPrediction, setAttemptResponse } from "../../learning/portfolio/aggregate";
 import { assessTrialComparison } from "../../learning/inquiry/comparison";
 import { factorsForAttempt, recordingBlocker } from "../../learning/inquiry/recording";
 import { lessonStages, type LessonResponseField } from "../../learning/stages";
@@ -148,7 +148,9 @@ function recordCurrentRun(context: InquiryActionContext): void {
   context.setNote("");
   context.setRunning(false);
   context.setPlayhead(context.lesson.protocol.durationSeconds);
-  context.setMessage(routine(`${trial.id} recorded locally. ${next.trials.length === 1 ? "Change one factor before Run B." : assessTrialComparison(context.lesson, next.trials).reason}`));
+  const text = `${trial.id} recorded locally. ${next.trials.length === 1 ? "Change one factor before Run B." : assessTrialComparison(context.lesson, next.trials).reason}`;
+  // Only the lettered baseline and comparison runs are routine; later runs stay visible.
+  context.setMessage(context.attempt.trials.length < 2 ? routine(text) : notice(text));
 }
 
 function resetPlayback(context: InquiryActionContext): void {
@@ -158,7 +160,7 @@ function resetPlayback(context: InquiryActionContext): void {
 
 function restartLesson(context: InquiryActionContext): void {
   if (!window.confirm("Restart this lesson attempt? Other lesson attempts remain in the local portfolio.")) return;
-  context.onAttemptChange(activeAttempt(context.curriculum, selectLesson(context.curriculum, createPortfolio(context.curriculum), context.lesson.domainId, context.lesson.id)));
+  context.onAttemptChange(createAttemptV2(context.curriculum, context.lesson.domainId, context.lesson.id));
   context.setFactors(defaultFactorsFor(context.lesson));
   context.setInputMode("synthetic");
   context.setAudioEvaluation(null);

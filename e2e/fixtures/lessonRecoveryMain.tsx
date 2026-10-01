@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 import { LessonWorkbenchController } from "../../src/app/workbench/LessonWorkbenchController";
 import { curriculumRegistry } from "../../src/curriculum/catalog";
 import type { CurriculumRegistry } from "../../src/curriculum/registry";
-import { activeAttempt, attemptKey } from "../../src/learning/portfolio/aggregate";
-import { portfolioStorageKey, type LearningPortfolioV2, type LessonAttemptV2 } from "../../src/learning/portfolio/schema";
+import { activeAttempt } from "../../src/learning/portfolio/aggregate";
+import { attemptKey, portfolioStorageKey, type LearningPortfolioV2, type LessonAttemptV2 } from "../../src/learning/portfolio/schema";
 import "../../src/styles/index.css";
 
 // The failure exists only in this development fixture, never in product code.

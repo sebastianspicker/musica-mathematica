@@ -15,4 +15,3 @@
 .mm-factor-control__number { display: grid; align-items: center; gap: 10px; grid-template-columns: minmax(0,1fr) auto; }
 .mm-factor-control__number span { font-size: .8125rem; color: var(--mm-muted); }
 .mm-factor-control--toggle label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
-.mm-inspector-action { margin-top: 20px; }

@@ -5,5 +5,6 @@
     "checkJs": true,
     "types": ["node"]
   },
-  "include": ["e2e/**/*.ts", "playwright.config.ts", "vite.config.ts", "eslint.config.mjs"]
+  "include": ["src/**/*.build.test.ts", "e2e/**/*.ts", "playwright.config.ts", "vite.config.ts", "eslint.config.mjs"],
+  "exclude": []
 }

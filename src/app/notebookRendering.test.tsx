@@ -1,17 +1,17 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { curriculumCatalog, defaultLesson, evaluatorFor } from "../curriculum/catalog";
+import { curriculumRegistry } from "../curriculum/catalog";
 import type { LessonAttemptV2 } from "../learning/portfolio/schema";
 import { LessonWorkbench, type LessonWorkbenchProps } from "../ui/workbench/LessonWorkbench";
 
 function props(stage: LessonAttemptV2["stage"]): LessonWorkbenchProps {
-  const lesson = defaultLesson;
+  const lesson = curriculumRegistry.defaultLesson;
   const factors = Object.fromEntries(lesson.factors.map((factor) => [factor.id, factor.defaultValue]));
   return {
     lesson, attempt: { version: 2, labId: lesson.domainId, lessonId: lesson.id, stage, trials: [], updatedAt: "2026-09-09" },
     briefStage: "predict", domainNumber: 1, domainTitle: "Phase and proportion", claimIds: [], audioInput: null, transport: <div>Playback test surface</div>,
     runtime: {
-      factors, evaluation: evaluatorFor(lesson.domainId, lesson.id)(factors), experimentActive: stage === "experiment", inputMode: "synthetic", message: null, motionEnabled: false, note: "", recordLabel: "Run A", comparison: { reason: "Record two runs before comparing them." },
+      factors, evaluation: curriculumRegistry.evaluatorFor(lesson.domainId, lesson.id)(factors), experimentActive: stage === "experiment", inputMode: "synthetic", message: null, motionEnabled: false, note: "", recordLabel: "Run A", comparison: { reason: "Record two runs before comparing them." },
       audio: { audioEnabled: false, audioVolume: 0.3, audioUnavailableReason: null, setAudioEnabled: vi.fn(), setAudioVolume: vi.fn() },
       beginPrediction: vi.fn(), changeInputMode: vi.fn(), openComparison: vi.fn(), openInterpretation: vi.fn(), recordCurrentRun: vi.fn(), resetPlayback: vi.fn(), restartLesson: vi.fn(), savePrediction: vi.fn(), saveResponse: vi.fn(), setMotionEnabled: vi.fn(), setNote: vi.fn(), stepPlayback: vi.fn(), togglePlayback: vi.fn(), updateFactor: vi.fn(),
     },
@@ -45,9 +45,9 @@ describe("guided notebook", () => {
 
   it("renders every curriculum lesson with its own factors", () => {
     const base = props("experiment");
-    for (const domain of curriculumCatalog) for (const lesson of domain.lessons) {
+    for (const domain of curriculumRegistry.catalog) for (const lesson of domain.lessons) {
       const factors = Object.fromEntries(lesson.factors.map((factor) => [factor.id, factor.defaultValue]));
-      const markup = renderToStaticMarkup(<LessonWorkbench {...base} lesson={lesson} runtime={{ ...base.runtime, factors, evaluation: evaluatorFor(lesson.domainId, lesson.id)(factors) }} />);
+      const markup = renderToStaticMarkup(<LessonWorkbench {...base} lesson={lesson} runtime={{ ...base.runtime, factors, evaluation: curriculumRegistry.evaluatorFor(lesson.domainId, lesson.id)(factors) }} />);
       expect(markup).toContain(lesson.title.replaceAll("&", "&amp;"));
       expect((markup.match(/class="mm-factor-control/g) ?? []).length).toBeGreaterThanOrEqual(lesson.factors.length);
     }
@@ -75,6 +75,15 @@ it("announces routine saves quietly while retaining visible actionable failures"
   expect(routine).toContain('class="sr-only" role="status">Run A recorded locally.');
   const failure = renderToStaticMarkup(<LessonWorkbench {...input} runtime={{ ...input.runtime, message: { text: "The run could not be recorded. Check the inquiry stage and result provenance.", routine: false } }} />);
   expect(failure).toContain('class="mm-inquiry-message" role="status">The run could not be recorded.');
+});
+
+it("keeps run messages after Run B visible while Run A and Run B stay quiet", () => {
+  const input = props("experiment");
+  const later = renderToStaticMarkup(<LessonWorkbench {...input} runtime={{ ...input.runtime, message: { text: "Run 3 recorded locally. Compare it with the earlier runs.", routine: false } }} />);
+  expect(later).toContain('class="mm-inquiry-message" role="status">Run 3 recorded locally.');
+  expect(later).not.toContain('class="sr-only" role="status">Run 3');
+  const first = renderToStaticMarkup(<LessonWorkbench {...input} runtime={{ ...input.runtime, message: { text: "Run A recorded locally. Change one factor before Run B.", routine: true } }} />);
+  expect(first).toContain('class="sr-only" role="status">Run A recorded locally.');
 });
 
 it.each(["perform", "transfer", "debrief"] as const)("prioritizes the %s response without repeating the prediction strip", (stage) => {

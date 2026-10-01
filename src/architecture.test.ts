@@ -15,6 +15,21 @@ describe("architecture lint enforcement", { timeout: 30_000 }, () => {
       expect(await ruleIds(`export const value = ${access};`, `src/${layer}/boundaryProbe.ts`)).toContain("no-restricted-globals");
     }
   });
+  it.each(portable)("blocks the extended browser-global denylist in %s", async (layer) => {
+    for (const access of [
+      "addEventListener('x', () => {})", "removeEventListener('x', () => {})", "dispatchEvent(new Event('x'))",
+      "performance.now()", "crypto.randomUUID()", "new Blob([])", "URL.createObjectURL(x)", "scrollTo(0, 0)",
+      "queueMicrotask(() => {})", "postMessage(1)", "new ResizeObserver(() => {})", "new IntersectionObserver(() => {})",
+      "new MutationObserver(() => {})", "requestIdleCallback(() => {})", "alert('x')", "confirm('x')", "prompt('x')",
+    ]) {
+      expect(await ruleIds(`export const value = ${access};`, `src/${layer}/boundaryProbe.ts`), access).toContain("no-restricted-globals");
+    }
+  });
+  it("allows timing only in the analysis benchmark and type-only URL references", async () => {
+    expect(await ruleIds("export const value = performance.now();", "src/audio/analysis/probe.performance.bench.ts")).toEqual([]);
+    expect(await ruleIds("export const value = performance.now();", "src/audio/analysis/boundaryProbe.ts")).toContain("no-restricted-globals");
+    expect(await ruleIds("export type Link = URL;", "src/ui/boundaryProbe.ts")).toEqual([]);
+  });
   it.each(portable)("blocks browser adapter imports in %s", async (layer) => {
     expect(await ruleIds('import { value } from "../../audio/browser/nested/adapter"; export { value };', `src/${layer}/boundaryProbe.ts`)).toContain("no-restricted-imports");
   });
@@ -30,6 +45,17 @@ describe("architecture lint enforcement", { timeout: 30_000 }, () => {
   it("blocks React in portable models and domain calculations in UI", async () => {
     expect(await ruleIds('import { useState } from "react"; export { useState };', "src/domains/ensemble-dynamics/boundaryProbe.ts")).toContain("no-restricted-imports");
     expect(await ruleIds('import { simulateEnsemble } from "../../domains/ensemble-dynamics/model"; export { simulateEnsemble };', "src/ui/workbench/boundaryProbe.ts")).toContain("no-restricted-imports");
+  });
+  it("keeps app modules off domains and shared utilities off curriculum", async () => {
+    expect(await ruleIds('import { value } from "../domains/pitch-tuning/lessons"; export { value };', "src/app/boundaryProbe.ts")).toContain("no-restricted-imports");
+    expect(await ruleIds('import { value } from "../curriculum/registry"; export { value };', "src/app/boundaryProbe.ts")).toEqual([]);
+    expect(await ruleIds('import type { FactorValue } from "../../curriculum/contracts"; export type Value = FactorValue;', "src/shared/numeric/boundaryProbe.ts")).toContain("no-restricted-imports");
+  });
+  it("keeps domains and domain support off the curriculum catalog composition root", async () => {
+    const catalogImport = 'import { curriculumRegistry } from "../../curriculum/catalog"; export { curriculumRegistry };';
+    expect(await ruleIds(catalogImport, "src/domains/pitch-tuning/boundaryProbe.ts")).toContain("no-restricted-imports");
+    expect(await ruleIds(catalogImport, "src/domains/support/boundaryProbe.ts")).toContain("no-restricted-imports");
+    expect(await ruleIds('import { createCurriculumRegistry } from "../../curriculum/registry"; export { createCurriculumRegistry };', "src/domains/pitch-tuning/boundaryProbe.ts")).toEqual([]);
   });
   it("blocks a domain importing another domain", async () => {
     expect(await ruleIds('import { value } from "../rhythm-meter/lessons"; export { value };', "src/domains/pitch-tuning/boundaryProbe.ts")).toContain("no-restricted-imports");

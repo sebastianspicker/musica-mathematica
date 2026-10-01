@@ -106,7 +106,7 @@ function restrictImports(forbidden, message, siblingRegexes = []) {
 const audioBrowserSiblingImports = ["^(\\.\\./)+browser(/|$)"];
 
 const applicationImports = ["app", "ui", "audio", "learning", "domains", "react", "react-dom"];
-const domainImports = ["app", "ui", "audio", "learning", "react", "react-dom"];
+const domainImports = ["app", "ui", "audio", "learning", "curriculum/catalog", "react", "react-dom"];
 
 // Fixtures shared by tests live in `*.test-helper.ts` and must never reach production code.
 const testFileGlobs = ["**/*.test.*", "**/*.test-helper.ts"];
@@ -138,6 +138,30 @@ function forbidTestHelperImports(blocks) {
   })];
 }
 
+const portableLayerGlobs = [
+  "src/{shared,curriculum,domains,learning,ui}/**/*.{ts,tsx}",
+  "src/audio/{analysis,protocol}/**/*.{ts,tsx}",
+];
+
+// A denylist, not a complete inventory of browser APIs: it names the globals the code base could plausibly reach for.
+const browserGlobals = [
+  "window", "document", "navigator", "localStorage", "sessionStorage",
+  "globalThis", "self", "location", "history", "indexedDB", "caches",
+  "fetch", "XMLHttpRequest", "WebSocket", "EventSource", "Worker", "SharedWorker",
+  "AudioContext", "OfflineAudioContext", "AudioWorkletNode", "MediaRecorder",
+  "FileReader", "requestAnimationFrame", "cancelAnimationFrame", "matchMedia",
+  "setTimeout", "clearTimeout", "setInterval", "clearInterval", "screen",
+  "alert", "confirm", "prompt", "Notification",
+  "addEventListener", "removeEventListener", "dispatchEvent", "crypto", "Blob", "URL",
+  "scrollTo", "queueMicrotask", "postMessage", "ResizeObserver", "IntersectionObserver",
+  "MutationObserver", "requestIdleCallback",
+];
+
+/** @param {string[]} names */
+function restrictGlobals(names) {
+  return ["error", ...names.map((name) => ({ name, message: "Browser APIs belong in app or audio/browser adapters; inject data and callbacks here." }))];
+}
+
 const domainBoundaryConfigs = domainNames.map((domain) => ({
   files: [`src/domains/${domain}/**/*.ts`, `src/domains/${domain}/**/*.tsx`],
   rules: {
@@ -158,22 +182,15 @@ export default forbidTestHelperImports([
     ],
   },
   {
-    files: [
-      "src/{shared,curriculum,domains,learning,ui}/**/*.{ts,tsx}",
-      "src/audio/{analysis,protocol}/**/*.{ts,tsx}",
-    ],
+    files: portableLayerGlobs,
     ignores: testFileGlobs,
-    rules: {
-      "no-restricted-globals": ["error", ...[
-        "window", "document", "navigator", "localStorage", "sessionStorage",
-        "globalThis", "self", "location", "history", "indexedDB", "caches",
-        "fetch", "XMLHttpRequest", "WebSocket", "EventSource", "Worker", "SharedWorker",
-        "AudioContext", "OfflineAudioContext", "AudioWorkletNode", "MediaRecorder",
-        "FileReader", "requestAnimationFrame", "cancelAnimationFrame", "matchMedia",
-        "setTimeout", "clearTimeout", "setInterval", "clearInterval", "screen",
-        "alert", "confirm", "prompt", "Notification",
-      ].map((name) => ({ name, message: "Browser APIs belong in app or audio/browser adapters; inject data and callbacks here." }))],
-    },
+    rules: { "no-restricted-globals": restrictGlobals(browserGlobals) },
+  },
+  {
+    // The analysis benchmark is the one place that times work in a portable layer.
+    files: portableLayerGlobs,
+    ignores: [...testFileGlobs, "src/audio/analysis/**/*.bench.ts"],
+    rules: { "no-restricted-globals": restrictGlobals([...browserGlobals, "performance"]) },
   },
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
@@ -214,8 +231,17 @@ export default forbidTestHelperImports([
     files: ["src/shared/**/*.ts", "src/shared/**/*.tsx"],
     rules: {
       "no-restricted-imports": restrictImports(
-        applicationImports,
-        "Shared utilities must remain independent of application layers.",
+        [...applicationImports, "curriculum"],
+        "Shared utilities are a leaf: independent of application layers and curriculum.",
+      ),
+    },
+  },
+  {
+    files: ["src/app/**/*.ts", "src/app/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": restrictImports(
+        ["domains"],
+        "App modules reach domain content only through the curriculum registry.",
       ),
     },
   },

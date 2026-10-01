@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AudioSelectionSummary, FrameAnalysis, TemporalHypotheses } from "../../audio/analysis/analysis";
 import type { QueueStatus } from "../../audio/analysis/contracts";
+import { claimById } from "../../curriculum/evidence";
 import { microphoneFrameToEvaluation, selectionToEvaluation } from "./mapAudioEvaluation";
 
 const frame: FrameAnalysis = {
@@ -111,5 +112,40 @@ describe("audio-to-evaluation provenance", () => {
     expect(evaluation.result).toBe("1405 frames · 1 onset candidates");
     expect(evaluation.observables.find(({ id }) => id === "pitch")?.value).toBe("220.00 Hz");
     expect(evaluation.trace).toContainEqual({ x: 29.952, y: 0.8, series: "Spectral flux" });
+  });
+
+  it("cites only evidence claims that exist in the registry", () => {
+    const summary: AudioSelectionSummary = {
+      calibration: "uncalibrated",
+      sampleRateHz: 48_000,
+      frameSize: 2_048,
+      hopSize: 1_024,
+      durationSeconds: 1,
+      frameCount: 1,
+      means: { frameLevelDbfs: -20, spectralCentroidHz: 500, spectralFlatness: 0.2, spectralRolloffHz: 1_200, spectralHarmonicity: 0.7, pitchHz: 220 },
+      waveform: [{ startSample: 0, endSampleExclusive: 1_024, minimum: -0.5, maximum: 0.5, rms: 0.2 }],
+      estimatedNoiseFloorDbfs: -60,
+      spectralFlux: [{ timeSeconds: 0, value: 0.8 }],
+      onsetTimesSeconds: [],
+      tempoHypotheses: [],
+      meterHypotheses: [],
+      chordHypotheses: [],
+    };
+    const evaluations = [
+      microphoneFrameToEvaluation(frame, temporal, queue),
+      selectionToEvaluation(summary, {
+        source: "file",
+        sampleRateHz: 48_000,
+        channelCount: 1,
+        decodedDurationSeconds: 1,
+        analyzedRange: { startSeconds: 0, endSeconds: 1 },
+        calibration: "uncalibrated",
+      }),
+    ];
+
+    for (const evaluation of evaluations) {
+      expect(evaluation.observables.length).toBeGreaterThan(0);
+      for (const observable of evaluation.observables) expect(claimById(observable.claimId), observable.id).toBeDefined();
+    }
   });
 });

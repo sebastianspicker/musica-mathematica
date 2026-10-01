@@ -1,6 +1,5 @@
 import {
   assertEvaluationOutput,
-  audioAnalysisFactors,
   meterBiases,
   type DefinedDomain,
   type CurriculumLessonReader,
@@ -137,20 +136,26 @@ function assertResolvableEvidence(
 }
 
 function assertValidAudioSettings(lesson: LessonDefinition): void {
-  const audioFactors = audioAnalysisFactors(lesson);
+  // Inspect every factor, including toggles, so definitions bypassing the factor types are still rejected at runtime.
+  const audioFactors = lesson.factors.flatMap((factor) => {
+    const setting: unknown = "audioSetting" in factor ? factor.audioSetting : undefined;
+    return setting === undefined ? [] : [{ factor, setting }];
+  });
   if (audioFactors.length === 0) return;
   if (!lesson.inputModes.some((mode) => mode === "microphone" || mode === "file")) {
     throw new RangeError(`Lesson ${lesson.id} defines an audio setting but accepts neither microphone nor file input.`);
   }
-  const settings = new Set<string>();
-  for (const factor of audioFactors) {
-    // Widened so that definitions bypassing the factor types are still rejected at runtime.
-    const setting: string | undefined = factor.audioSetting;
-    const kind: string = factor.kind;
-    if (setting === undefined) continue;
+  const settings = new Set<unknown>();
+  for (const { factor, setting } of audioFactors) {
+    if (setting !== "onsetSensitivity" && setting !== "meterBias") {
+      throw new RangeError(`Factor ${factor.id} has unknown audio setting ${String(setting)}.`);
+    }
+    if (factor.kind === "toggle") {
+      throw new RangeError(`Audio setting ${setting} on factor ${factor.id} requires a number or select factor.`);
+    }
     if (settings.has(setting)) throw new RangeError(`Lesson ${lesson.id} assigns audio setting ${setting} to more than one factor.`);
     settings.add(setting);
-    if (setting === "onsetSensitivity" && kind !== "number") {
+    if (setting === "onsetSensitivity" && factor.kind !== "number") {
       throw new RangeError(`Audio setting onsetSensitivity on factor ${factor.id} requires a number factor.`);
     }
     if (setting === "meterBias" && (factor.kind !== "select"

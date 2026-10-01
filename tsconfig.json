@@ -17,5 +17,6 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "e2e/fixtures", "benchmarks/*.tsx"]
+  "include": ["src", "e2e/fixtures", "benchmarks/*.tsx"],
+  "exclude": ["src/**/*.build.test.ts"]
 }

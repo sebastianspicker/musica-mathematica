@@ -7,11 +7,19 @@ export function assertNonNegativeFinite(name: string, value: number): void {
   assertValidNumber(name, !Number.isFinite(value) || value < 0, "a non-negative finite number");
 }
 
+export function assertFinite(name: string, value: number): void {
+  assertValidNumber(name, !Number.isFinite(value), "finite");
+}
+
+export function assertSafeInteger(name: string, value: number): void {
+  assertValidNumber(name, !Number.isSafeInteger(value), "a safe integer");
+}
+
 export function assertPositiveInteger(name: string, value: number): void {
   assertValidNumber(name, !Number.isSafeInteger(value) || value <= 0, "a positive safe integer");
 }
 
-export function assertNonEmptyFiniteNumbers(values: ArrayLike<number>, name: string): void {
+export function assertNonEmptyFiniteNumbers(name: string, values: ArrayLike<number>): void {
   if (values.length === 0) throw new RangeError(`${name} must not be empty`);
   for (let index = 0; index < values.length; index += 1) {
     if (!Number.isFinite(values[index])) {
