@@ -1,15 +1,11 @@
-/* Import order is dependency-sensitive. */
+/* Import order is dependency-sensitive: tokens first, media overrides last. */
 
 @import "./fonts.css";
 @import "./tokens.css";
 @import "./base.css";
-@import "./app-shell.css";
-@import "./curriculum.css";
-@import "./workbench.css";
-@import "./result-visual.css";
-@import "./inquiry.css";
-@import "./factors.css";
+@import "./shell.css";
+@import "./score.css";
+@import "./runs.css";
 @import "./evidence.css";
-@import "./audio.css";
-@import "./responsive.css";
-@import "./notebook.css";
+@import "./figure.css";
+@import "./media.css";

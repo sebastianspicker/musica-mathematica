@@ -51,11 +51,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Source Serif 4 (latin subset woff2 files in /fonts/)
+Source Serif 4 (latin and greek subset woff2 files in /fonts/)
 Source: https://github.com/adobe-fonts/source-serif
 Copyright 2014-2023 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.
 
-IBM Plex Sans and IBM Plex Mono (latin subset woff2 files in /fonts/)
+IBM Plex Mono (latin subset woff2 files in /fonts/)
 Source: https://github.com/IBM/plex
 Copyright © 2017 IBM Corp., with Reserved Font Name "Plex".
 

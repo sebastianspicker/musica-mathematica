@@ -1,104 +1,165 @@
-/* Approved Guided notebook palette and typography. Keep --mm-* names as component compatibility surfaces. */
+/* Engraved score: design tokens. Every later rule should trace back to these.
+   Light paper is the reference; dark reuses one palette for the system scheme
+   and for presentation mode (projection). See DESIGN_BRIEF.md. */
 
 :root {
-  --mm-canvas: #fcfaf7;
-  --mm-surface: #fffdfb;
-  --mm-surface-subtle: #f1f1ed;
-  --mm-surface-strong: #e8e7e3;
-  --mm-ink: #11172c;
-  --mm-ink-soft: #30374b;
-  --mm-muted: #565b69;
-  --mm-faint: #626674;
-  --mm-line: #d9d6d2;
-  --mm-line-strong: #9699a0;
-  --mm-blue: #7c142b;
-  --mm-blue-deep: #5a1022;
-  --mm-blue-soft: #f5eeee;
-  --mm-primary: var(--mm-blue);
-  --mm-primary-deep: var(--mm-blue-deep);
-  --mm-primary-soft: var(--mm-blue-soft);
-  --mm-primary-mid: #d8b9c0;
-  --mm-orange: #9a7536;
-  --mm-orange-deep: #77561e;
-  --mm-orange-soft: #f5f0e4;
-  --mm-brass: var(--mm-orange);
-  --mm-brass-deep: var(--mm-orange-deep);
-  --mm-brass-soft: var(--mm-orange-soft);
-  --mm-caution: var(--mm-orange);
-  --mm-teal: #356b5c;
-  --mm-teal-soft: #eaf2ed;
-  --mm-danger: #912b28;
-  --mm-danger-soft: #faeee9;
-  --mm-series-0: #7c142b;
-  --mm-series-1: #87631e;
-  --mm-series-2: #377380;
-  --mm-series-3: #735579;
+  color-scheme: light;
 
-  --mm-display: Georgia, "Source Serif 4", serif;
-  --mm-ui: Georgia, "Source Serif 4", serif;
-  --mm-sans: "IBM Plex Sans", system-ui, sans-serif;
-  --mm-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  /* Colour roles */
+  --mm-paper: #f7f4ee;            /* page */
+  --mm-sheet: #fcfaf6;            /* inputs, raised writing surfaces */
+  --mm-tint: #efeae1;             /* recorded run, quiet wells */
+  --mm-ink: #16171d;              /* text, inked (recorded) evidence */
+  --mm-ink-soft: #3a3b42;         /* secondary reading text */
+  --mm-muted: #5f5d57;            /* captions, metadata (AA on every surface) */
+  --mm-graphite: #535a68;         /* pencilled, unrecorded preview */
+  --mm-rule: #ddd6c9;             /* hairline system rules */
+  --mm-rule-strong: #8b8576;      /* control borders, barlines (3:1 non-text) */
+  --mm-rubric: #8a1630;           /* rubrication: current stage, primary action, changed factor */
+  --mm-rubric-deep: #6b0f24;
+  --mm-rubric-wash: #f3e7e6;
+  --mm-on-rubric: #fcfaf6;
+  --mm-ok: #2f6a4f;
+  --mm-caution: #7d5a12;
+  --mm-caution-wash: #f4ecd9;
+  --mm-danger: #9a2a22;
+  --mm-scrim: rgb(22 23 29 / 52%);
+  --mm-series-0: #8a1630;
+  --mm-series-1: #7d5a12;
+  --mm-series-2: #2d6a78;
+  --mm-series-3: #5f4a7a;
 
-  --mm-radius-sm: 5px;
-  --mm-radius: 8px;
-  --mm-radius-lg: 12px;
-  --mm-shadow-plate: none;
+  /* Type: Source Serif 4 is the music, IBM Plex Mono the mathematics. */
+  --mm-serif: "Source Serif 4", "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+  --mm-math: "Source Serif 4", "STIX Two Math", "Cambria Math", "Iowan Old Style", serif;
+  --mm-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  --mm-space-1: 4px;
-  --mm-space-2: 8px;
-  --mm-space-3: 12px;
-  --mm-space-4: 16px;
-  --mm-space-5: 20px;
-  --mm-space-6: 24px;
-  --mm-space-8: 32px;
-  --mm-space-12: 48px;
+  /* Major-third scale anchored at 17px reading text. */
+  --mm-text-2xs: 0.75rem;     /* 12 – mono micro labels only */
+  --mm-text-xs: 0.8125rem;    /* 13 */
+  --mm-text-sm: 0.9375rem;    /* 15 */
+  --mm-text-md: 1.0625rem;    /* 17 – body */
+  --mm-text-lg: 1.3125rem;    /* 21 */
+  --mm-text-xl: 1.625rem;     /* 26 */
+  --mm-text-2xl: 2.0625rem;   /* 33 */
+  --mm-text-3xl: 2.5625rem;   /* 41 */
+  --mm-text-display: clamp(2.375rem, 1.6rem + 3.2vw, 4.0625rem); /* 38 → 65 */
+  --mm-leading-tight: 1.12;
+  --mm-leading-snug: 1.3;
+  --mm-leading-body: 1.55;
+  --mm-measure: 66ch;
 
-  --mm-rail: 268px;
-  --mm-workflow: 320px;
-  --mm-header-h: 72px;
-  --mm-spine-h: 42px;
-  --mm-ease: cubic-bezier(0.25, 1, 0.5, 1);
+  /* Spacing: 4px base. */
+  --mm-space-1: 0.25rem;
+  --mm-space-2: 0.5rem;
+  --mm-space-3: 0.75rem;
+  --mm-space-4: 1rem;
+  --mm-space-5: 1.5rem;
+  --mm-space-6: 2rem;
+  --mm-space-7: 3rem;
+  --mm-space-8: 4rem;
+  --mm-space-9: 6rem;
 
+  /* Layout: a score system is a margin for staff names plus the content staff. */
+  --mm-page-max: 78rem;
+  --mm-gutter: clamp(1rem, 4vw, 3rem);
+  --mm-margin: 0px;              /* the staff-name column; opens on wide screens */
+  --mm-margin-gap: var(--mm-space-5);
+  --mm-target: 44px;
+
+  /* Lines, radii, elevation */
+  --mm-hairline: 1px;
+  --mm-barline: 3px;
+  --mm-radius: 2px;              /* engraved, nearly square */
+  --mm-elevation-dialog: 0 1px 0 var(--mm-rule), 0 24px 48px -24px rgb(22 23 29 / 35%);
+
+  /* Motion: small, functional, and removed under reduced motion. */
+  --mm-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --mm-duration-quick: 120ms;
+  --mm-duration-settle: 220ms;
+
+  background: var(--mm-paper);
   color: var(--mm-ink);
-  background: var(--mm-canvas);
-  font-family: var(--mm-ui);
-  font-size: 16px;
-  line-height: 1.5;
+  font-family: var(--mm-serif);
+  font-size: 100%;
   font-synthesis: none;
+  font-kerning: normal;
+  line-height: var(--mm-leading-body);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
 
+@media (min-width: 1080px) {
+  :root { --mm-margin: 10.5rem; }
+}
+
+/* One dark palette: the system scheme and presentation mode share it. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --mm-paper: #15161b;
+    --mm-sheet: #1c1d23;
+    --mm-tint: #202128;
+    --mm-ink: #ece7dc;
+    --mm-ink-soft: #cfc9bd;
+    --mm-muted: #a7a196;
+    --mm-graphite: #a9b0ba;
+    --mm-rule: #34353c;
+    --mm-rule-strong: #77756f;
+    --mm-rubric: #f0a6b5;
+    --mm-rubric-deep: #ffc6d1;
+    --mm-rubric-wash: #33212a;
+    --mm-on-rubric: #15161b;
+    --mm-ok: #8cc5a5;
+    --mm-caution: #e2b866;
+    --mm-caution-wash: #2c2618;
+    --mm-danger: #f09a8c;
+    --mm-scrim: rgb(0 0 0 / 62%);
+    --mm-series-0: #f0a6b5;
+    --mm-series-1: #e2b866;
+    --mm-series-2: #86c3cf;
+    --mm-series-3: #c4b0e0;
+    --mm-elevation-dialog: 0 0 0 1px var(--mm-rule), 0 24px 48px -24px rgb(0 0 0 / 70%);
+  }
+}
+
+/* Presentation also darkens the page behind the app (overscroll, scrollbars). */
+:root:has(.mm-app--presentation) {
+  background: #15161b;
+  color-scheme: dark;
+}
+
 .mm-app--presentation {
-  --mm-primary: var(--mm-blue);
-  --mm-primary-deep: var(--mm-blue-deep);
-  --mm-primary-soft: var(--mm-blue-soft);
-  --mm-brass: var(--mm-orange);
-  --mm-brass-deep: var(--mm-orange-deep);
-  --mm-brass-soft: var(--mm-orange-soft);
-  --mm-canvas: oklch(0.20 0.015 255);
-  --mm-surface: oklch(0.235 0.016 255);
-  --mm-surface-subtle: oklch(0.20 0.015 255);
-  --mm-surface-strong: oklch(0.175 0.014 255);
-  --mm-ink: oklch(0.93 0.008 110);
-  --mm-ink-soft: oklch(0.82 0.010 140);
-  --mm-muted: oklch(0.68 0.012 160);
-  --mm-faint: oklch(0.55 0.012 200);
-  --mm-line: oklch(0.32 0.015 255);
-  --mm-line-strong: oklch(0.42 0.015 255);
-  --mm-blue: #efb5c2;
-  --mm-blue-deep: #ffd7e1;
-  --mm-blue-soft: #3d2836;
-  --mm-primary-mid: #8c5a69;
-  --mm-orange: oklch(0.76 0.11 75);
-  --mm-orange-deep: oklch(0.82 0.11 75);
-  --mm-orange-soft: oklch(0.32 0.05 70);
-  --mm-teal: oklch(0.72 0.08 205);
-  --mm-teal-soft: oklch(0.28 0.035 205);
-  --mm-danger: oklch(0.68 0.13 30);
-  --mm-danger-soft: oklch(0.28 0.04 30);
-  --mm-series-0: #efb5c2;
-  --mm-series-1: oklch(0.74 0.09 145);
-  --mm-series-2: oklch(0.72 0.08 205);
-  --mm-series-3: oklch(0.63 0.07 165);
+  color-scheme: dark;
+  --mm-paper: #15161b;
+  --mm-sheet: #1c1d23;
+  --mm-tint: #202128;
+  --mm-ink: #ece7dc;
+  --mm-ink-soft: #cfc9bd;
+  --mm-muted: #a7a196;
+  --mm-graphite: #a9b0ba;
+  --mm-rule: #34353c;
+  --mm-rule-strong: #77756f;
+  --mm-rubric: #f0a6b5;
+  --mm-rubric-deep: #ffc6d1;
+  --mm-rubric-wash: #33212a;
+  --mm-on-rubric: #15161b;
+  --mm-ok: #8cc5a5;
+  --mm-caution: #e2b866;
+  --mm-caution-wash: #2c2618;
+  --mm-danger: #f09a8c;
+  --mm-series-0: #f0a6b5;
+  --mm-series-1: #e2b866;
+  --mm-series-2: #86c3cf;
+  --mm-series-3: #c4b0e0;
+
+  /* Projection: every step of the scale grows by a fifth. */
+  --mm-text-xs: 0.9375rem;
+  --mm-text-sm: 1.0625rem;
+  --mm-text-md: 1.25rem;
+  --mm-text-lg: 1.5625rem;
+  --mm-text-xl: 1.875rem;
+  --mm-text-2xl: 2.375rem;
+  --mm-text-3xl: 3rem;
+  --mm-text-display: clamp(2.75rem, 1.8rem + 3.8vw, 4.75rem);
 }

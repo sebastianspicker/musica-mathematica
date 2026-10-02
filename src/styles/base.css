@@ -1,159 +1,291 @@
-/* Reset, form controls, tables, skip-link, icons, utilities */
+/* Reset, form controls, tables, focus, utilities. */
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html {
   min-width: 320px;
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  background: var(--mm-canvas);
+  background: var(--mm-paper);
   color: var(--mm-ink);
   margin: 0;
-  min-width: 320px;
   min-height: 100dvh;
-  transition: background 240ms var(--mm-ease), color 240ms var(--mm-ease);
+  min-width: 320px;
 }
+
+h1, h2, h3, p, dl, dd, figure {
+  margin: 0;
+}
+
+h1, h2, h3 {
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--mm-rubric);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  color: var(--mm-rubric-deep);
+  text-decoration-thickness: 2px;
+}
+
+::selection {
+  background: var(--mm-rubric-wash);
+  color: var(--mm-ink);
+}
+
+/* Controls ------------------------------------------------------------ */
 
 button,
 input,
 select,
 textarea {
-  color: var(--mm-ink);
+  color: inherit;
   font: inherit;
-}
-
-button,
-select,
-input[type="number"],
-input[type="file"],
-textarea {
-  border-radius: var(--mm-radius-sm);
+  letter-spacing: inherit;
 }
 
 button {
   align-items: center;
-  background: var(--mm-canvas);
-  border: 1px solid var(--mm-line-strong);
+  background: transparent;
+  border: var(--mm-hairline) solid var(--mm-rule-strong);
+  border-radius: var(--mm-radius);
   color: var(--mm-ink);
   cursor: pointer;
   display: inline-flex;
-  font-size: 0.875rem;
-  font-weight: 600;
-  gap: 7px;
+  font-size: var(--mm-text-sm);
+  gap: var(--mm-space-2);
   justify-content: center;
-  letter-spacing: 0.01em;
-  min-height: 44px;
-  padding: 0 12px;
+  line-height: 1.25;
+  min-height: var(--mm-target);
+  padding: var(--mm-space-2) var(--mm-space-4);
+  text-align: center;
   touch-action: manipulation;
   transition:
-    background 140ms var(--mm-ease),
-    border-color 140ms var(--mm-ease),
-    color 140ms var(--mm-ease),
-    transform 140ms var(--mm-ease);
+    background-color var(--mm-duration-quick) var(--mm-ease),
+    border-color var(--mm-duration-quick) var(--mm-ease),
+    color var(--mm-duration-quick) var(--mm-ease);
 }
 
 button:hover {
-  background: var(--mm-blue-soft);
-  border-color: var(--mm-blue);
-  color: var(--mm-blue-deep);
+  border-color: var(--mm-ink);
 }
 
-button:active {
-  transform: translateY(1px);
-}
-
-button:disabled,
-fieldset:disabled,
-input:disabled,
-select:disabled,
-textarea:disabled {
-  cursor: not-allowed;
+button:active:not(:disabled) {
+  background: var(--mm-tint);
 }
 
 button:disabled {
-  background: var(--mm-surface);
-  border-color: var(--mm-line);
-  color: var(--mm-faint);
-  opacity: 1;
-  transform: none;
+  border-color: var(--mm-rule);
+  color: var(--mm-muted);
+  cursor: not-allowed;
 }
 
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-summary:focus-visible,
-a:focus-visible,
-[tabindex]:focus-visible {
-  outline: 2px solid var(--mm-blue);
-  outline-offset: 2px;
+/* The primary action is rubricated: the one red instruction on the page. */
+.mm-primary-action {
+  background: var(--mm-rubric);
+  border-color: var(--mm-rubric);
+  color: var(--mm-on-rubric);
+  font-size: var(--mm-text-md);
+  min-height: 48px;
+  padding-inline: var(--mm-space-5);
 }
 
-::selection {
-  background: var(--mm-blue-soft);
+.mm-primary-action:hover {
+  background: var(--mm-rubric-deep);
+  border-color: var(--mm-rubric-deep);
+  color: var(--mm-on-rubric);
+}
+
+.mm-primary-action:active:not(:disabled) {
+  background: var(--mm-rubric-deep);
+}
+
+.mm-primary-action:disabled {
+  background: transparent;
+  color: var(--mm-muted);
+}
+
+.mm-text-action {
+  border-color: transparent;
+  padding-inline: var(--mm-space-1);
+  text-decoration: underline;
+  text-decoration-color: var(--mm-rule-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+}
+
+.mm-text-action:hover {
+  border-color: transparent;
+  text-decoration-color: currentColor;
+}
+
+.mm-text-danger {
+  color: var(--mm-danger);
+}
+
+.mm-danger-action,
+.mm-danger-action:hover {
+  background: var(--mm-danger);
+  border-color: var(--mm-danger);
+  color: var(--mm-on-rubric);
 }
 
 input,
 select,
 textarea {
-  background: var(--mm-canvas);
-  border: 1px solid var(--mm-line-strong);
+  background: var(--mm-sheet);
+  border: var(--mm-hairline) solid var(--mm-rule-strong);
+  border-radius: var(--mm-radius);
+  color: var(--mm-ink);
 }
 
 input[type="number"],
 select {
-  min-height: 44px;
-  padding: 7px 10px;
+  min-height: var(--mm-target);
+  padding: var(--mm-space-2) var(--mm-space-3);
 }
 
-input[type="number"]:hover,
-input[type="file"]:hover,
-select:hover,
-textarea:hover {
-  border-color: var(--mm-muted);
+input[type="number"] {
+  font-family: var(--mm-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+select {
+  cursor: pointer;
+}
+
+textarea {
+  display: block;
+  font-size: var(--mm-text-md);
+  line-height: var(--mm-leading-body);
+  padding: var(--mm-space-3) var(--mm-space-4);
+  resize: vertical;
+  width: 100%;
+}
+
+input:hover:not(:disabled),
+select:hover:not(:disabled),
+textarea:hover:not(:disabled) {
+  border-color: var(--mm-ink-soft);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: var(--mm-tint);
+  color: var(--mm-muted);
+  cursor: not-allowed;
 }
 
 input:user-invalid,
 textarea:user-invalid,
-select:user-invalid {
-  background: var(--mm-danger-soft);
+select:user-invalid,
+input[aria-invalid="true"] {
   border-color: var(--mm-danger);
+  box-shadow: inset 0 0 0 1px var(--mm-danger);
 }
 
 input[type="checkbox"],
 input[type="range"] {
-  accent-color: var(--mm-blue);
+  accent-color: var(--mm-rubric);
+}
+
+input[type="checkbox"] {
+  height: 1.125rem;
+  margin: 0;
+  width: 1.125rem;
+}
+
+input[type="range"] {
+  background: transparent;
+  border: 0;
+  min-height: var(--mm-target);
 }
 
 input[type="file"] {
-  font-size: 0.72rem;
+  font-size: var(--mm-text-xs);
   max-width: 100%;
-  padding: 6px;
+  padding: var(--mm-space-1);
 }
 
 input[type="file"]::file-selector-button {
-  background: var(--mm-canvas);
-  border: 1px solid var(--mm-line-strong);
-  border-radius: var(--mm-radius-sm);
+  background: transparent;
+  border: var(--mm-hairline) solid var(--mm-rule-strong);
+  border-radius: var(--mm-radius);
   color: var(--mm-ink);
   cursor: pointer;
   font: inherit;
-  font-weight: 600;
-  margin-right: 8px;
-  min-height: 44px;
-  padding: 0 9px;
+  margin-right: var(--mm-space-3);
+  min-height: 40px;
+  padding: 0 var(--mm-space-3);
 }
 
-textarea {
-  line-height: 1.5;
-  padding: 11px 12px;
-  resize: vertical;
-  width: 100%;
+/* Focus: a rubric ring with a paper halo, visible on every surface. */
+:is(button, input, select, textarea, summary, a, [tabindex]):focus-visible {
+  outline: 2px solid var(--mm-rubric);
+  outline-offset: 2px;
 }
+
+[tabindex="-1"]:focus {
+  outline: none;
+}
+
+[tabindex="-1"]:focus-visible {
+  outline: 2px solid var(--mm-rubric);
+  outline-offset: 6px;
+}
+
+[tabindex="-1"] {
+  scroll-margin-block: var(--mm-space-6);
+}
+
+/* Disclosures ---------------------------------------------------------- */
+
+summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: var(--mm-space-2);
+  list-style: none;
+  min-height: var(--mm-target);
+  padding-block: var(--mm-space-2);
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A small engraved arrowhead that turns when the disclosure opens. */
+summary::before {
+  border-block: 0.3em solid transparent;
+  border-inline-start: 0.45em solid currentColor;
+  content: "";
+  flex: 0 0 auto;
+  transition: transform var(--mm-duration-quick) var(--mm-ease);
+}
+
+details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+/* Tables --------------------------------------------------------------- */
 
 table {
   border-collapse: collapse;
@@ -163,51 +295,41 @@ table {
 
 caption {
   color: var(--mm-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  padding: 12px 0 8px;
+  font-size: var(--mm-text-xs);
+  font-style: italic;
+  padding: 0 0 var(--mm-space-2);
   text-align: left;
-  text-transform: uppercase;
 }
 
 th,
 td {
-  border-bottom: 1px solid var(--mm-line);
-  padding: 9px 10px;
+  border-bottom: var(--mm-hairline) solid var(--mm-rule);
+  padding: var(--mm-space-3) var(--mm-space-3) var(--mm-space-3) 0;
   text-align: left;
-  vertical-align: top;
+  vertical-align: baseline;
 }
 
 thead th {
+  border-bottom-color: var(--mm-ink);
   color: var(--mm-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: var(--mm-text-xs);
+  font-style: italic;
+  font-weight: 400;
 }
 
-tbody th,
+tbody th {
+  font-weight: 400;
+}
+
 tbody td {
-  font-size: 0.875rem;
+  font-family: var(--mm-mono);
+  font-size: var(--mm-text-sm);
 }
 
-summary {
-  cursor: pointer;
-  min-height: 44px;
-  padding-block: 10px;
-}
-
-input[type="checkbox"] { width: 18px; height: 18px; }
-
-a {
-  color: var(--mm-blue-deep);
-  text-underline-offset: 2px;
-}
+/* Utilities ------------------------------------------------------------ */
 
 .sr-only,
 .mm-lesson-brief__task {
-  clip: rect(0 0 0 0);
   clip-path: inset(50%);
   height: 1px;
   overflow: hidden;
@@ -216,26 +338,30 @@ a {
   width: 1px;
 }
 
+.mm-figure {
+  font-family: var(--mm-mono);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+
 .mm-icon {
   display: block;
   flex: 0 0 auto;
-  height: 18px;
+  height: 1.05em;
   overflow: visible;
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.6;
-  width: 18px;
+  width: 1.05em;
 }
 
 .skip-link {
-  clip-path: inset(100%);
   background: var(--mm-ink);
-  border-radius: 0 0 var(--mm-radius-sm) var(--mm-radius-sm);
-  color: white;
-  font-weight: 700;
-  left: var(--mm-space-6);
-  padding: 10px 14px;
+  color: var(--mm-paper);
+  left: var(--mm-gutter);
+  padding: var(--mm-space-3) var(--mm-space-4);
+  clip-path: inset(50%);
   position: fixed;
   text-decoration: none;
   top: 0;
@@ -245,14 +371,6 @@ a {
 
 .skip-link:focus-visible {
   clip-path: none;
+  color: var(--mm-paper);
   transform: translateY(0);
 }
-
-.mm-text-danger {
-  color: var(--mm-danger);
-}
-
-button:disabled { color: var(--mm-muted); }
-[tabindex="-1"] { scroll-margin-block: 24px; }
-
-input[type="range"] { min-height: 44px; }

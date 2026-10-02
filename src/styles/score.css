@@ -1,0 +1,573 @@
+/* The score page: rehearsal marks, staff names in the margin, the lesson head,
+   typeset equations, and the current stage. */
+
+/* Staff names (cues) ---------------------------------------------------------
+   On wide screens a cue hangs in the margin beside the material it names, the way
+   a score names each instrument at the start of a system. On narrow screens it
+   sits above that material, like a cue in a part. */
+
+.mm-cue {
+  color: var(--mm-muted);
+  display: block;
+  font-size: var(--mm-text-sm);
+  font-style: italic;
+  font-weight: 400;
+  line-height: var(--mm-leading-snug);
+  margin-bottom: var(--mm-space-2);
+}
+
+@media (min-width: 1080px) {
+  .mm-cue {
+    margin: 0;
+    position: absolute;
+    right: calc(100% + var(--mm-margin-gap));
+    text-align: right;
+    top: var(--mm-cue-top, 0);
+    width: calc(var(--mm-margin) - var(--mm-margin-gap));
+  }
+}
+
+/* Rehearsal marks ------------------------------------------------------------ */
+
+.mm-stage-ribbon {
+  padding: var(--mm-space-5) 0 0;
+}
+
+.mm-stage-ribbon__current {
+  display: none;
+}
+
+.mm-stage-ribbon__stages {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* The staff line the marks sit on. */
+.mm-stage-ribbon__stages::before {
+  border-top: var(--mm-hairline) solid var(--mm-rule-strong);
+  content: "";
+  inset: 1.125rem calc(12.5% - 2.25rem) auto 0;
+  position: absolute;
+}
+
+.mm-stage-ribbon__seg {
+  color: var(--mm-muted);
+  display: grid;
+  font-size: var(--mm-text-sm);
+  gap: var(--mm-space-2);
+  justify-items: start;
+  min-width: 0;
+  position: relative;
+}
+
+.mm-stage-ribbon__number {
+  align-items: center;
+  background: var(--mm-paper);
+  border: var(--mm-hairline) solid var(--mm-rule-strong);
+  display: flex;
+  font-family: var(--mm-mono);
+  font-size: var(--mm-text-sm);
+  height: 2.25rem;
+  justify-content: center;
+  transition: background-color var(--mm-duration-settle) var(--mm-ease), color var(--mm-duration-settle) var(--mm-ease);
+  width: 2.25rem;
+}
+
+.mm-stage-ribbon__label {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.mm-stage-ribbon__seg--complete {
+  color: var(--mm-ink-soft);
+}
+
+.mm-stage-ribbon__seg--complete .mm-stage-ribbon__number {
+  border-color: var(--mm-ink);
+  color: var(--mm-ink);
+}
+
+.mm-stage-ribbon__seg--current {
+  color: var(--mm-rubric);
+  font-weight: 600;
+}
+
+.mm-stage-ribbon__seg--current .mm-stage-ribbon__number {
+  background: var(--mm-rubric);
+  border: 2px solid var(--mm-rubric);
+  color: var(--mm-on-rubric);
+  font-weight: 500;
+}
+
+@media (max-width: 960px) {
+  .mm-stage-ribbon__seg {
+    font-size: var(--mm-text-xs);
+  }
+}
+
+@media (max-width: 640px) {
+  .mm-stage-ribbon__current {
+    color: var(--mm-rubric);
+    display: block;
+    font-size: var(--mm-text-sm);
+    font-style: italic;
+    margin-bottom: var(--mm-space-2);
+  }
+
+  .mm-stage-ribbon__label {
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .mm-stage-ribbon__number {
+    height: 2rem;
+    width: 2rem;
+  }
+
+  .mm-stage-ribbon__stages::before {
+    right: calc(12.5% - 2rem);
+    top: 1rem;
+  }
+}
+
+/* The lesson head --------------------------------------------------------------- */
+
+.mm-workbench,
+.mm-workbench__content {
+  min-width: 0;
+}
+
+#mm-current-task {
+  padding-top: var(--mm-space-7);
+}
+
+.mm-lesson-brief__identity {
+  --mm-cue-top: 0.55rem;
+  position: relative;
+}
+
+.mm-lesson-brief__place {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--mm-space-2);
+}
+
+.mm-lesson-brief__place > span {
+  display: block;
+}
+
+.mm-lesson-brief__domain .mm-figure,
+.mm-lesson-brief__level .mm-figure {
+  color: var(--mm-rubric);
+  font-size: 0.9em;
+}
+
+.mm-lesson-brief__level .mm-figure {
+  font-family: var(--mm-serif);
+}
+
+.mm-lesson-brief__level {
+  text-transform: capitalize;
+}
+
+.mm-lesson-brief__domain::after {
+  content: " ·";
+}
+
+@media (min-width: 1080px) {
+  .mm-lesson-brief__place {
+    display: block;
+  }
+
+  .mm-lesson-brief__domain::after {
+    content: none;
+  }
+}
+
+.mm-lesson-brief h1 {
+  font-size: var(--mm-text-display);
+  letter-spacing: -0.022em;
+  line-height: 1.04;
+}
+
+.mm-lesson-brief__question {
+  color: var(--mm-ink-soft);
+  font-size: var(--mm-text-xl);
+  font-style: italic;
+  line-height: var(--mm-leading-snug);
+  margin-top: var(--mm-space-4);
+  max-width: 34em;
+}
+
+/* Later stages lead with the current question; the lesson title steps back. */
+.mm-notebook--reflection #mm-current-task {
+  padding-top: var(--mm-space-6);
+}
+
+.mm-notebook--reflection .mm-lesson-brief h1 {
+  font-size: var(--mm-text-xl);
+  letter-spacing: 0;
+  line-height: var(--mm-leading-snug);
+}
+
+.mm-notebook--reflection .mm-lesson-brief__identity {
+  --mm-cue-top: 0.15rem;
+}
+
+.mm-notebook--reflection .mm-lesson-brief__question {
+  display: none;
+}
+
+/* Typeset equations --------------------------------------------------------------- */
+
+.mm-lesson-brief__equation {
+  --mm-cue-top: 0.6rem;
+  border-block: var(--mm-hairline) solid var(--mm-rule);
+  margin: var(--mm-space-5) 0;
+  padding: var(--mm-space-4) 0;
+  position: relative;
+}
+
+.mm-lesson-brief__formula {
+  font-size: var(--mm-text-2xl);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.mm-lesson-brief__equation > p:last-child {
+  color: var(--mm-muted);
+  font-size: var(--mm-text-sm);
+  font-style: italic;
+  margin-top: var(--mm-space-2);
+}
+
+.mm-equation {
+  font-family: var(--mm-math);
+  font-kerning: normal;
+  white-space: normal;
+}
+
+.mm-equation__var {
+  font-style: italic;
+  padding-inline-end: 0.04em;
+}
+
+.mm-equation__word,
+.mm-equation__num,
+.mm-equation__op {
+  font-style: normal;
+}
+
+.mm-equation__bin {
+  margin-inline: 0.22em;
+}
+
+.mm-equation__rel {
+  margin-inline: 0.3em;
+}
+
+.mm-equation__sep {
+  margin-inline-end: 0.9em;
+}
+
+.mm-equation sub,
+.mm-equation sup {
+  font-size: 0.66em;
+  line-height: 0;
+}
+
+.mm-equation sub .mm-equation__bin,
+.mm-equation sup .mm-equation__bin,
+.mm-equation sub .mm-equation__rel {
+  margin-inline: 0.1em;
+}
+
+.mm-equation__sqrt > span {
+  border-top: 0.06em solid currentColor;
+  padding: 0.08em 0.06em 0;
+}
+
+/* The current stage --------------------------------------------------------------- */
+
+.mm-inquiry {
+  --mm-cue-top: calc(var(--mm-space-6) + 0.2rem);
+  border-top: var(--mm-hairline) solid var(--mm-rule-strong);
+  margin-top: var(--mm-space-6);
+  padding-top: var(--mm-space-6);
+  position: relative;
+}
+
+/* The rehearsal mark of the current stage stands in the margin. */
+.mm-cue--mark {
+  display: none;
+}
+
+@media (min-width: 1080px) {
+  .mm-cue--mark {
+    align-items: center;
+    color: var(--mm-rubric);
+    display: flex;
+    flex-direction: row-reverse;
+    gap: var(--mm-space-3);
+  }
+
+  .mm-cue--mark > span {
+    align-items: center;
+    border: 2px solid var(--mm-rubric);
+    display: flex;
+    flex: 0 0 auto;
+    font-family: var(--mm-mono);
+    font-size: var(--mm-text-lg);
+    font-style: normal;
+    font-weight: 500;
+    height: 2.75rem;
+    justify-content: center;
+    width: 2.75rem;
+  }
+}
+
+.mm-stage-card h2 {
+  font-size: var(--mm-text-3xl);
+  letter-spacing: -0.015em;
+  line-height: var(--mm-leading-tight);
+  margin-bottom: var(--mm-space-4);
+}
+
+.mm-stage-card h2:focus-visible {
+  outline-offset: 8px;
+}
+
+.mm-stage-card > p {
+  color: var(--mm-ink-soft);
+  font-size: var(--mm-text-lg);
+  line-height: 1.45;
+  max-width: var(--mm-measure);
+}
+
+.mm-stage-card > p + p {
+  margin-top: var(--mm-space-3);
+}
+
+.mm-stage-card > p.mm-stage-card__method {
+  color: var(--mm-muted);
+  font-size: var(--mm-text-md);
+  font-style: italic;
+}
+
+.mm-stage-card > label {
+  display: grid;
+  gap: var(--mm-space-3);
+  margin-top: var(--mm-space-5);
+  max-width: 48rem;
+}
+
+.mm-stage-card > label > span {
+  font-size: var(--mm-text-lg);
+  line-height: var(--mm-leading-snug);
+}
+
+.mm-stage-card textarea {
+  font-size: var(--mm-text-lg);
+  line-height: 1.5;
+  min-height: 9.5rem;
+}
+
+.mm-stage-card > p.mm-stage-card__hint {
+  color: var(--mm-muted);
+  font-size: var(--mm-text-sm);
+  font-style: italic;
+  margin-top: var(--mm-space-2);
+}
+
+.mm-stage-card > .mm-primary-action {
+  margin-top: var(--mm-space-5);
+}
+
+.mm-inquiry > .mm-primary-action {
+  margin-top: var(--mm-space-5);
+}
+
+.mm-inquiry-message {
+  border-inline-start: var(--mm-barline) solid var(--mm-caution);
+  color: var(--mm-ink);
+  font-size: var(--mm-text-sm);
+  margin-top: var(--mm-space-4);
+  max-width: var(--mm-measure);
+  padding: var(--mm-space-1) 0 var(--mm-space-1) var(--mm-space-3);
+}
+
+/* A newly opened stage settles into place. */
+.mm-stage-card {
+  animation: mm-settle var(--mm-duration-settle) var(--mm-ease);
+}
+
+@keyframes mm-settle {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* The committed prediction ------------------------------------------------------- */
+
+.mm-notebook-prediction {
+  --mm-cue-top: 0.65rem;
+  border-inline-start: var(--mm-barline) solid var(--mm-rubric);
+  margin-top: var(--mm-space-5);
+  max-width: 52rem;
+  padding: var(--mm-space-2) 0 var(--mm-space-2) var(--mm-space-4);
+  position: relative;
+}
+
+.mm-notebook-prediction .mm-cue > span {
+  color: var(--mm-muted);
+  display: inline;
+  font-family: var(--mm-mono);
+  font-size: var(--mm-text-2xs);
+  font-style: normal;
+  letter-spacing: 0.04em;
+  margin-inline-start: var(--mm-space-1);
+}
+
+@media (min-width: 1080px) {
+  .mm-notebook-prediction .mm-cue > span {
+    display: block;
+    margin: var(--mm-space-1) 0 0;
+  }
+}
+
+.mm-notebook-prediction p {
+  font-size: var(--mm-text-lg);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+/* The model's limit -------------------------------------------------------------- */
+
+.mm-interpretation-boundary {
+  --mm-cue-top: calc(var(--mm-space-5) + 0.2rem);
+  border-top: var(--mm-hairline) solid var(--mm-rule-strong);
+  margin-top: var(--mm-space-7);
+  padding: var(--mm-space-5) 0;
+  position: relative;
+}
+
+.mm-interpretation-boundary .mm-cue {
+  color: var(--mm-caution);
+  font-size: var(--mm-text-sm);
+}
+
+.mm-interpretation-boundary p {
+  font-size: var(--mm-text-lg);
+  line-height: 1.45;
+  max-width: var(--mm-measure);
+}
+
+/* Supporting material ------------------------------------------------------------ */
+
+.mm-notebook-detail {
+  border-top: var(--mm-hairline) solid var(--mm-rule);
+}
+
+.mm-notebook-detail > summary {
+  color: var(--mm-ink-soft);
+  font-size: var(--mm-text-md);
+  min-height: 3.25rem;
+}
+
+.mm-notebook-detail > summary:hover {
+  color: var(--mm-ink);
+}
+
+.mm-notebook-detail[open] > summary {
+  color: var(--mm-ink);
+}
+
+.mm-notebook-detail[open] {
+  padding-bottom: var(--mm-space-6);
+}
+
+.mm-lesson-footer {
+  align-items: center;
+  border-top: var(--mm-hairline) solid var(--mm-rule);
+  color: var(--mm-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--mm-text-xs);
+  font-style: italic;
+  gap: var(--mm-space-2) var(--mm-space-4);
+  justify-content: space-between;
+  padding-top: var(--mm-space-3);
+}
+
+.mm-lesson-footer button {
+  border-color: transparent;
+  color: var(--mm-ink-soft);
+  font-size: var(--mm-text-sm);
+  font-style: normal;
+  margin-inline-end: calc(-1 * var(--mm-space-3));
+  text-decoration: underline;
+  text-decoration-color: var(--mm-rule-strong);
+  text-underline-offset: 0.25em;
+}
+
+.mm-lesson-footer button:hover {
+  border-color: transparent;
+  color: var(--mm-danger);
+  text-decoration-color: currentColor;
+}
+
+.mm-workbench__bench {
+  padding: var(--mm-space-6) 0;
+}
+
+.mm-workbench__bench h2 {
+  font-size: var(--mm-text-2xl);
+  margin-bottom: var(--mm-space-3);
+}
+
+.mm-workbench__bench p {
+  color: var(--mm-ink-soft);
+  margin-bottom: var(--mm-space-4);
+  max-width: var(--mm-measure);
+}
+
+/* Phones: the part, not the score. The current task and its action come first. */
+@media (max-width: 640px) {
+  #mm-current-task {
+    padding-top: var(--mm-space-5);
+  }
+
+  .mm-lesson-brief__question {
+    font-size: var(--mm-text-lg);
+    margin-top: var(--mm-space-3);
+  }
+
+  .mm-inquiry {
+    margin-top: var(--mm-space-5);
+    padding-top: var(--mm-space-5);
+  }
+
+  .mm-stage-card h2 {
+    font-size: var(--mm-text-2xl);
+  }
+
+  .mm-stage-card > p {
+    font-size: var(--mm-text-md);
+  }
+
+  .mm-stage-card > p.mm-stage-card__method {
+    font-size: var(--mm-text-sm);
+  }
+
+  .mm-stage-card > .mm-primary-action,
+  .mm-inquiry > .mm-primary-action {
+    width: 100%;
+  }
+}

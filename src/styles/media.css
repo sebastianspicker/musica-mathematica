@@ -1,0 +1,56 @@
+/* Reduced motion and print. */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
+/* Print is an engraved copy: paper and ink only, every disclosure open. */
+@media print {
+  :root,
+  .mm-app,
+  .mm-app--presentation {
+    --mm-paper: #fff;
+    --mm-sheet: #fff;
+    --mm-tint: #f4f4f4;
+    --mm-ink: #000;
+    --mm-ink-soft: #222;
+    --mm-muted: #444;
+    --mm-graphite: #444;
+    --mm-rule: #bbb;
+    --mm-rule-strong: #777;
+    --mm-rubric: #6b0f24;
+    --mm-text-display: 2.25rem;
+  }
+
+  .mm-app {
+    padding: 0;
+  }
+
+  .mm-global-actions,
+  .mm-transport,
+  .mm-global-message,
+  dialog,
+  button {
+    display: none !important;
+  }
+
+  details > * {
+    display: block !important;
+  }
+
+  details::details-content {
+    content-visibility: visible;
+  }
+
+  .mm-result-visual__svg {
+    max-height: 280px;
+  }
+}

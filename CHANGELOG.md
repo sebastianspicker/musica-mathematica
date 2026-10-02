@@ -6,6 +6,17 @@ User-visible changes are listed here by release.
 
 ### Changed
 
+- Visual redesign ("engraved score"). Stages are numbered rehearsal marks;
+  lesson identity, predictions, runs and model limits are labelled in a
+  margin, as a score names its staves; the unrecorded preview is drawn in
+  pencil (dashed graphite) and recorded runs in ink. Equations are typeset
+  with italic variables, sub- and superscripts and Greek letters. The lesson
+  index reads as a contents page. The app follows the system dark scheme, and
+  presentation mode enlarges type for projection. Fonts are now Source Serif 4
+  (regular, italic, semibold, Greek) and IBM Plex Mono; IBM Plex Sans is
+  removed. Wording changes: the orient stage heading ("What you will find
+  out"), the prediction lock note, "Limit of the model", and "Claims, limits
+  and sources". See [DESIGN_BRIEF.md](DESIGN_BRIEF.md).
 - Architecture reconstruction. Domains share one authoring API
   (`src/domains/support/`), and the ensemble domain has four source files.
   Lesson policy, such as which factors feed audio analysis, is declared on

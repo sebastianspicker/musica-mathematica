@@ -1,0 +1,410 @@
+/* The experiment: recorded runs are inked, the live preview is pencilled.
+   Readings are ruled columns, like a tuning table. */
+
+.mm-notebook-experiment {
+  margin-top: var(--mm-space-5);
+}
+
+.mm-notebook-run {
+  --mm-cue-top: calc(var(--mm-space-4) - 0.1rem);
+  border-top: var(--mm-hairline) solid var(--mm-ink);
+  padding: var(--mm-space-4) 0 var(--mm-space-3);
+  position: relative;
+}
+
+.mm-notebook-run + form,
+.mm-notebook-empty + form {
+  margin-top: var(--mm-space-5);
+}
+
+/* Ink: a recorded run settles onto the page. */
+.mm-notebook-run--recorded {
+  animation: mm-settle var(--mm-duration-settle) var(--mm-ease);
+}
+
+/* Pencil: a dashed graphite rule, graphite figures, a tentative label. */
+.mm-notebook-run--preview {
+  border-top: 2px dashed var(--mm-graphite);
+  color: var(--mm-graphite);
+}
+
+.mm-notebook-run h3.mm-cue {
+  color: var(--mm-ink);
+  font-size: var(--mm-text-lg);
+  font-style: normal;
+  line-height: 1.2;
+}
+
+.mm-notebook-run--preview h3.mm-cue {
+  color: var(--mm-graphite);
+  font-style: italic;
+}
+
+.mm-notebook-run h3.mm-cue > span {
+  color: var(--mm-muted);
+  font-size: var(--mm-text-xs);
+  font-style: italic;
+  margin-inline-start: var(--mm-space-2);
+}
+
+.mm-notebook-run--preview h3.mm-cue > span {
+  color: var(--mm-graphite);
+}
+
+@media (min-width: 1080px) {
+  .mm-notebook-run h3.mm-cue > span {
+    display: block;
+    margin: var(--mm-space-1) 0 0;
+  }
+}
+
+.mm-notebook-empty {
+  border-top: var(--mm-hairline) solid var(--mm-rule-strong);
+  color: var(--mm-muted);
+  font-style: italic;
+  padding: var(--mm-space-4) 0;
+}
+
+.mm-notebook-pending {
+  color: var(--mm-muted);
+  font-style: italic;
+}
+
+.mm-notebook-run__note {
+  border-inline-start: var(--mm-hairline) solid var(--mm-rule-strong);
+  color: var(--mm-ink-soft);
+  font-size: var(--mm-text-sm);
+  font-style: italic;
+  margin-top: var(--mm-space-3);
+  padding-inline-start: var(--mm-space-3);
+}
+
+/* Readings ---------------------------------------------------------------------- */
+
+/* Columns ruled on their left; the rule of whichever cell starts a row is clipped
+   away, so wrapped rows stay flush with the content edge. */
+.mm-notebook-readings {
+  clip-path: inset(0 0 0 1px);
+  display: grid;
+  gap: var(--mm-space-4) 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
+  margin: 0 0 0 calc(-1 * var(--mm-space-4));
+}
+
+.mm-notebook-readings > div {
+  box-shadow: inset 1px 0 var(--mm-rule);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-inline: var(--mm-space-4) var(--mm-space-2);
+}
+
+.mm-notebook-readings dd {
+  margin-top: auto;
+}
+
+.mm-notebook-readings dt {
+  color: var(--mm-muted);
+  font-size: var(--mm-text-xs);
+  font-style: italic;
+  line-height: var(--mm-leading-snug);
+  margin-bottom: var(--mm-space-1);
+}
+
+.mm-notebook-readings dd {
+  font-family: var(--mm-mono);
+  font-size: var(--mm-text-lg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+/* Factors held constant: a single quiet line beneath the readings. */
+.mm-notebook-readings.mm-notebook-context {
+  border-top: var(--mm-hairline) dotted var(--mm-rule);
+  clip-path: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mm-space-1) var(--mm-space-5);
+  margin: var(--mm-space-3) 0 0;
+  padding-top: var(--mm-space-2);
+}
+
+.mm-notebook-context:empty {
+  display: none;
+}
+
+.mm-notebook-readings.mm-notebook-context > div {
+  align-items: baseline;
+  box-shadow: none;
+  display: flex;
+  flex-direction: row;
+  flex: 0 1 auto;
+  gap: var(--mm-space-2);
+  padding: 0;
+}
+
+.mm-notebook-context dt {
+  margin: 0;
+}
+
+.mm-notebook-readings.mm-notebook-context dd {
+  font-size: var(--mm-text-sm);
+  margin-top: 0;
+}
+
+.mm-notebook-run > .mm-notebook-readings + .mm-notebook-readings:not(.mm-notebook-context) {
+  margin-top: var(--mm-space-4);
+}
+
+/* Predict stage: the model's inputs before any result. */
+.mm-stage-card > .mm-notebook-readings {
+  border-block: var(--mm-hairline) solid var(--mm-rule);
+  clip-path: inset(0 0 0 calc(var(--mm-space-4) + 1px));
+  margin-top: var(--mm-space-4);
+  max-width: 48rem;
+  padding-block: var(--mm-space-3);
+}
+
+/* The preview: controls on the left, live readings on the right. */
+.mm-notebook-preview {
+  align-items: start;
+  display: grid;
+  gap: var(--mm-space-5) var(--mm-space-6);
+  grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr);
+}
+
+@media (max-width: 760px) {
+  .mm-notebook-preview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Factor controls ------------------------------------------------------------------ */
+
+.mm-inspector-stack {
+  min-width: 0;
+}
+
+.mm-factor-inspector {
+  color: var(--mm-ink);
+}
+
+.mm-factor-inspector__heading {
+  display: none;
+}
+
+.mm-factor-inspector fieldset {
+  border: 0;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.mm-factor-inspector legend {
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+}
+
+.mm-factor-inspector__guidance,
+.mm-model-source,
+.mm-factor-inspector__source > p {
+  color: var(--mm-muted);
+  font-size: var(--mm-text-xs);
+  font-style: italic;
+  line-height: 1.45;
+}
+
+.mm-model-source {
+  margin-bottom: var(--mm-space-3);
+}
+
+.mm-factor-inspector .mm-factor-inspector__source {
+  display: grid;
+  gap: var(--mm-space-2);
+  margin-bottom: var(--mm-space-4);
+}
+
+.mm-factor-inspector__source label,
+.mm-factor-control > label {
+  color: var(--mm-ink);
+  display: block;
+  font-size: var(--mm-text-sm);
+  margin-bottom: var(--mm-space-2);
+}
+
+.mm-factor-inspector select {
+  max-width: 100%;
+  width: 100%;
+}
+
+.mm-factor-inspector__factors {
+  display: grid;
+  gap: var(--mm-space-4) var(--mm-space-5);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+}
+
+.mm-factor-control > p {
+  color: var(--mm-muted);
+  font-size: var(--mm-text-xs);
+  line-height: 1.45;
+  margin-top: var(--mm-space-2);
+}
+
+.mm-notebook-preview .mm-factor-help {
+  display: none;
+}
+
+.mm-factor-control > .mm-factor-error {
+  color: var(--mm-danger);
+  font-style: normal;
+}
+
+.mm-factor-control--toggle label {
+  align-items: center;
+  display: flex;
+  gap: var(--mm-space-3);
+  min-height: var(--mm-target);
+}
+
+/* The stepper: − value + unit, with the value set in mono. */
+.mm-number-stepper {
+  align-items: stretch;
+  display: flex;
+  gap: 0;
+}
+
+.mm-number-stepper button {
+  font-family: var(--mm-mono);
+  font-size: var(--mm-text-lg);
+  min-width: var(--mm-target);
+  padding: 0;
+}
+
+.mm-number-stepper button:first-child {
+  border-end-end-radius: 0;
+  border-start-end-radius: 0;
+}
+
+.mm-number-stepper input {
+  appearance: textfield;
+  border-inline: 0;
+  border-radius: 0;
+  font-size: var(--mm-text-lg);
+  min-width: 0;
+  padding-inline: var(--mm-space-1);
+  text-align: center;
+  width: 5.5rem;
+}
+
+.mm-number-stepper input::-webkit-inner-spin-button,
+.mm-number-stepper input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.mm-number-stepper input + button {
+  border-end-start-radius: 0;
+  border-start-start-radius: 0;
+}
+
+.mm-number-stepper > span {
+  align-self: center;
+  color: var(--mm-muted);
+  font-family: var(--mm-mono);
+  font-size: var(--mm-text-sm);
+  margin-inline-start: var(--mm-space-3);
+}
+
+.mm-number-stepper input:focus-visible {
+  outline-offset: 0;
+  position: relative;
+}
+
+.mm-other-factors {
+  margin-top: var(--mm-space-3);
+}
+
+.mm-other-factors > summary {
+  color: var(--mm-ink-soft);
+  font-size: var(--mm-text-sm);
+}
+
+.mm-other-factors[open] .mm-factor-inspector__factors {
+  padding-top: var(--mm-space-2);
+}
+
+.mm-other-factors[open] .mm-factor-help {
+  display: inline;
+}
+
+/* Disabled factors (before a prediction) read as a locked part. */
+.mm-factor-inspector fieldset:disabled .mm-number-stepper button,
+.mm-factor-inspector fieldset:disabled input {
+  border-color: var(--mm-rule);
+}
+
+/* Recording ---------------------------------------------------------------------------- */
+
+.mm-notebook-record-row {
+  align-items: start;
+  display: grid;
+  gap: var(--mm-space-2);
+  justify-items: start;
+  margin-top: var(--mm-space-4);
+}
+
+.mm-notebook-notes {
+  width: 100%;
+}
+
+.mm-notebook-notes > summary {
+  color: var(--mm-ink-soft);
+  font-size: var(--mm-text-sm);
+}
+
+.mm-notebook-notes label {
+  display: grid;
+  gap: var(--mm-space-2);
+  max-width: 48rem;
+  padding-bottom: var(--mm-space-3);
+}
+
+.mm-notebook-notes label > span {
+  color: var(--mm-muted);
+  font-size: var(--mm-text-xs);
+  font-style: italic;
+}
+
+.mm-notebook-notes textarea {
+  font-size: var(--mm-text-md);
+  min-height: 5rem;
+}
+
+.mm-inline-actions {
+  align-items: center;
+  border-top: var(--mm-hairline) solid var(--mm-rule);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mm-space-3);
+  margin-top: var(--mm-space-5);
+  padding-top: var(--mm-space-4);
+}
+
+.mm-stage-card > .mm-comparison-readiness {
+  color: var(--mm-muted);
+  font-size: var(--mm-text-sm);
+  font-style: italic;
+  margin-top: var(--mm-space-2);
+}
+
+.mm-audio-message {
+  color: var(--mm-muted);
+  font-size: var(--mm-text-xs);
+  font-style: italic;
+  line-height: 1.5;
+  margin-top: var(--mm-space-3);
+}

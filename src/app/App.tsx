@@ -91,9 +91,7 @@ export function App({ curriculum, demoMode = false, storageFactory = browserStor
     <main className={presentationMode ? "mm-app mm-app--presentation" : "mm-app"}>
       <a className="skip-link" href="#mm-current-task">Skip to current task</a>
       <header className="mm-global-header">
-        <div className="mm-brand-lockup">
-          <div><span>Musica Mathematica</span></div>
-        </div>
+        <p className="mm-brand-lockup">Musica <span>Mathematica</span></p>
         <nav className="mm-global-actions" aria-label="Notebook navigation">
           <button id="mm-curriculum-toggle" aria-haspopup="dialog" aria-controls="mm-lessons-dialog" type="button" onClick={(event) => { event.currentTarget.focus(); lessonsDialogRef.current?.showModal(); }}>Lessons</button>
           <button aria-haspopup="dialog" aria-controls="mm-learning-dialog" type="button" onClick={(event) => { event.currentTarget.focus(); learningDialogRef.current?.showModal(); }}>My learning</button>

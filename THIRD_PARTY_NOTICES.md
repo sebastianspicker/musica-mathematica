@@ -9,8 +9,7 @@ apply to those components. Musica Mathematica itself is still `UNLICENSED`.
 | React | 19.2.5 | MIT | <https://github.com/facebook/react> |
 | React DOM | 19.2.5 | MIT | <https://github.com/facebook/react> |
 | Scheduler | 0.27.0 | MIT | <https://github.com/facebook/react/tree/main/packages/scheduler> |
-| Source Serif 4 | Latin WOFF2 subsets | SIL OFL 1.1 | <https://github.com/adobe-fonts/source-serif> |
-| IBM Plex Sans | Latin WOFF2 subsets | SIL OFL 1.1 | <https://github.com/IBM/plex> |
+| Source Serif 4 | Latin and Greek WOFF2 subsets | SIL OFL 1.1 | <https://github.com/adobe-fonts/source-serif> |
 | IBM Plex Mono | Latin WOFF2 subsets | SIL OFL 1.1 | <https://github.com/IBM/plex> |
 
 Fonts are included in [public/fonts/](public/fonts/) and served from the same

@@ -39,11 +39,11 @@ export function InquiryStage(props: InquiryStageProps): ReactElement {
 }
 
 function OrientStage({ lesson, onBeginPrediction }: Readonly<{ lesson: LessonDefinition; onBeginPrediction: () => void }>): ReactElement {
-  return <div className="mm-stage-card"><h2 tabIndex={-1}>Start with a prediction</h2><p>{lesson.objective}</p><button className="mm-primary-action" type="button" onClick={onBeginPrediction}>Start with a prediction</button></div>;
+  return <div className="mm-stage-card"><h2 tabIndex={-1}>What you will find out</h2><p>{lesson.objective}</p><p className="mm-stage-card__method">You commit a prediction first, then record two runs that differ in exactly one factor, compare them, and explain the difference in your own words.</p><button className="mm-primary-action" type="button" onClick={onBeginPrediction}>Start with a prediction</button></div>;
 }
 
 function PredictionStage({ lesson, onSavePrediction, stageContent }: Readonly<{ stageContent?: ReactElement; lesson: LessonDefinition; onSavePrediction: (event: FormEvent<HTMLFormElement>) => void }>): ReactElement {
-  return <form className="mm-stage-card" onSubmit={onSavePrediction}><h2 tabIndex={-1}>Predict</h2>{stageContent}<label><span>{lesson.predictionPrompt}</span><textarea required minLength={8} name="prediction" rows={3} /></label><button className="mm-primary-action" type="submit">Commit prediction & begin</button></form>;
+  return <form className="mm-stage-card" onSubmit={onSavePrediction}><h2 tabIndex={-1}>Predict</h2>{stageContent}<label><span>{lesson.predictionPrompt}</span><textarea required minLength={8} name="prediction" rows={3} /></label><p className="mm-stage-card__hint">Your prediction is locked once the experiment begins, so the comparison can test it.</p><button className="mm-primary-action" type="submit">Commit prediction & begin</button></form>;
 }
 
 function ExperimentStage(props: InquiryStageProps): ReactElement {
@@ -71,6 +71,7 @@ function DebriefStage({ attempt }: Readonly<{ attempt: LessonAttemptV2 }>): Reac
   return <div className="mm-stage-card mm-stage-card--complete"><h2 tabIndex={-1}>Your inquiry is recorded</h2><p>Review your evidence and reflections. Completion is not a grade or a measure of learning effectiveness.</p><dl><div><dt>Prediction</dt><dd>{attempt.prediction}</dd></div><div><dt>Interpretation</dt><dd>{attempt.explanation}</dd></div><div><dt>Performance reflection</dt><dd>{attempt.performanceReflection}</dd></div><div><dt>Transfer</dt><dd>{attempt.transferResponse}</dd></div></dl></div>;
 }
 
+/** Stages are set as rehearsal marks: numbered boxes a class can call out ("we are at 4"). */
 export function StageProgress({ stage }: Readonly<{ stage: LessonAttemptV2["stage"] }>): ReactElement {
   const current = lessonStages.indexOf(stage);
   return (
@@ -85,8 +86,8 @@ export function StageProgress({ stage }: Readonly<{ stage: LessonAttemptV2["stag
             className={`mm-stage-ribbon__seg mm-stage-ribbon__seg--${state}`}
             aria-current={index === current ? "step" : undefined}
           >
-            <span className="mm-stage-ribbon__number">{index + 1}</span>
-            <span className="mm-stage-ribbon__label">{stageLabel(item)}</span>
+            <span className="mm-stage-ribbon__number" aria-hidden="true">{index + 1}</span>
+            <span className="mm-stage-ribbon__label">{stageLabel(item)}{state === "complete" ? <span className="sr-only"> (done)</span> : null}</span>
           </li>
         );
       })}
@@ -95,6 +96,6 @@ export function StageProgress({ stage }: Readonly<{ stage: LessonAttemptV2["stag
   );
 }
 
-function stageLabel(stage: (typeof lessonStages)[number]): string {
+export function stageLabel(stage: (typeof lessonStages)[number]): string {
   return `${stage[0].toUpperCase()}${stage.slice(1)}`;
 }
