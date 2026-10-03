@@ -79,6 +79,8 @@ The selected file must:
 
 - have an `audio/*` media type;
 - have a positive size no greater than 25 MiB;
+- expose a finite duration no greater than 90 seconds through the browser's
+  metadata reader before full decoding begins;
 - decode through the browser's `decodeAudioData` implementation;
 - decode to a positive duration no greater than 90 seconds; and
 - provide a positive selected range within the decoded audio, no longer than
@@ -90,6 +92,13 @@ channel-specific phase information and may cancel out-of-phase content. Neither
 the file name nor the original encoded bytes enter provenance or the portfolio.
 When the app transfers the selected `Float32Array` to the worker, the array is
 detached from the UI context.
+
+The metadata check uses a short-lived local object URL, fails closed when the
+browser cannot establish a finite duration, and releases the URL before the
+encoded bytes are read. The decoded-duration check remains in place so metadata
+and decoder results are both constrained. Cancelling the request prevents a
+pending metadata or file-read stage from starting the decoder; browser Web Audio
+does not expose a way to interrupt a native decode that has already begun.
 
 ## Scheduling and bounded work
 

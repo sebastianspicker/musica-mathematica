@@ -248,7 +248,12 @@ export async function analyzeFileSelection(request: FileAnalysisRequest): Promis
   const cleanup = createFileCleanup(context, controller);
   gate.registerCleanup(cleanup);
   try {
-    const decoded = await decodeAudioSelection(file, context, { startSeconds: selectionStart, endSeconds: selectionStart + selectionDuration });
+    const decoded = await decodeAudioSelection(
+      file,
+      context,
+      { startSeconds: selectionStart, endSeconds: selectionStart + selectionDuration },
+      { signal: controller.signal },
+    );
     if (!isCurrentFileAnalysis(gate, controller)) return;
     const analysis = await analyzeDecodedFile({ analysisSettings, controller, decoded, frameSize });
     if (!isCurrentFileAnalysis(gate, controller)) return;

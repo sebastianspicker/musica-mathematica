@@ -98,6 +98,7 @@ describe("browser audio capture boundary", () => {
       { type: "audio/wav", size: 8, arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) },
       { decodeAudioData: () => Promise.resolve(decoded) },
       { startSeconds: 0, endSeconds: 1 },
+      { metadataProbe: async () => 1 },
     );
 
     expect(Array.from(result.samples)).toEqual([0, 0.5, 0.5, 0]);
