@@ -94,9 +94,7 @@ renders.
 Total render time fell because there were fewer updates and no repeated chart
 work. Median time per commit increased, so these results do not show faster
 individual commits. Development timings vary and should be read separately
-from production browser tests. The
-[browser recovery test](../e2e/frontend-recovery.spec.ts) also checks that
-playback advances without rendering `ResultVisual` again.
+from production browser measurements.
 
 Run the current measurement with:
 

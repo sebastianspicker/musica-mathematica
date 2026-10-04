@@ -136,14 +136,13 @@ for processing details and interpretation limits.
   automatic grading, or remote collaboration.
 - Audio estimates can be ambiguous or wrong. Pitch estimation is monophonic;
   dBFS is not sound pressure level, and chord labels are hypotheses.
-- Automated browser tests cover Chromium, Firefox, and WebKit. They do not
-  establish support for every browser version, codec, or microphone device.
+- Support for particular browser versions, codecs, and microphone devices has
+  not been established.
 - Formal accessibility conformance and classroom effectiveness have not been
   established.
 
 The [scientific basis](docs/SCIENTIFIC_BASIS.md) explains how the models work
-and how to interpret their results. See [release status](RELEASE_STATUS.md) for alpha support
-and licensing limits.
+and how to interpret their results.
 
 ## Development and documentation
 

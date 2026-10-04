@@ -213,7 +213,7 @@ origin-root bundle to `dist/`. `pnpm typecheck` covers the type-checking. `pnpm 
 worklet, and font assets aware of that base, and enables isolated demo storage.
 
 On pushes and pull requests, CI installs the frozen lockfile with Node 22 and
-runs `pnpm verify` in one job and `pnpm test:e2e` in a separate job. The GitHub
+runs `pnpm verify`. The GitHub
 Pages workflow is manual. It runs `pnpm typecheck` and `pnpm test:unit`, then
 builds, uploads, and deploys the Pages artifact. Repository settings, the live origin, response
 headers, and cache behavior remain part of the deployment environment.
@@ -250,8 +250,7 @@ tolerance of 1e-6 because floating-point results differ across platforms) and
 the exported portfolio JSON (`src/learning/portfolio/golden-json.test.ts`). An
 intentional model change regenerates the evaluator golden file, and that diff is
 reviewed as a behavior change. The unit tests also check asset URLs in the Pages
-build. The Playwright suite covers lesson completion, navigation, storage,
-playback, and analysis of generated audio files in the root and Pages builds.
+build.
 
 Local automated checks cannot establish browser permission behavior, microphone
 hardware behavior, codec availability, applied media constraints, deployed

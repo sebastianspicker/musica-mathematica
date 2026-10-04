@@ -1,6 +1,6 @@
 /* Engraved score: design tokens. Every later rule should trace back to these.
    Light paper is the reference; dark reuses one palette for the system scheme
-   and for presentation mode (projection). See DESIGN_BRIEF.md. */
+   and for presentation mode (projection). */
 
 :root {
   color-scheme: light;

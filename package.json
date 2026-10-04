@@ -15,7 +15,6 @@
     "build:pages": "vite build --mode pages",
     "lint": "eslint .",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build"
   },

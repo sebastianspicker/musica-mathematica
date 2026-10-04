@@ -208,12 +208,12 @@ export default forbidTestHelperImports([
     rules: coreRules,
   },
   {
-    files: ["benchmarks/**/*.mjs", "scripts/**/*.mjs", "**/*.config.*", "e2e/**"],
+    files: ["benchmarks/**/*.mjs", "scripts/**/*.mjs", "**/*.config.*"],
     languageOptions: { globals: globals.node },
   },
   {
     // These scripts and fixtures run in the page or pass callbacks to Playwright's `page.evaluate`.
-    files: ["benchmarks/workbench.mjs", "benchmarks/workbenchProfileMain.tsx", "e2e/fixtures/**", "scripts/capture-screenshots.mjs"],
+    files: ["benchmarks/workbench.mjs", "benchmarks/workbenchProfileMain.tsx", "scripts/capture-screenshots.mjs"],
     languageOptions: { globals: globals.browser },
   },
   {

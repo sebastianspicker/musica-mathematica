@@ -130,3 +130,6 @@ Thumbs.db
 /audit-output*
 /implementation-report*
 /completion-report*
+/DESIGN_BRIEF.md
+/RELEASE_STATUS.md
+/e2e/

@@ -10,10 +10,9 @@ The [Pages workflow](../.github/workflows/pages.yml) builds an interactive
 example under `/musica-mathematica/`. It runs only when dispatched manually.
 Ordinary pushes run CI without deploying.
 
-Before deployment, run `pnpm verify` and `pnpm test:e2e` for the intended
+Before deployment, run `pnpm verify` and `pnpm build:pages` for the intended
 revision, as described in [Contributing](../CONTRIBUTING.md#tests-and-verification).
-The browser tests build both the root app and the Pages demo. The Pages
-workflow itself runs `pnpm typecheck` and `pnpm test:unit` before building.
+The Pages workflow itself runs `pnpm typecheck` and `pnpm test:unit` before building.
 
 ### Publish to Pages
 
@@ -54,9 +53,8 @@ overwrite, or clear the ordinary `musicaMathematica.learning.v2` or legacy
 
 A fork with the same repository name can keep the existing Pages base path.
 If you rename it, change `pagesBase` in [vite.config.ts](../vite.config.ts)
-to `/<repository-name>/`. Update the Pages base in
-[playwright.config.ts](../playwright.config.ts), the README demo link, and the
-screenshot preview URL to match, then rerun the build and browser tests.
+to `/<repository-name>/`. Update the README demo link and the
+screenshot preview URL to match, then rerun the build.
 
 For a Pages site served at an origin root, use `/` as the Pages base and update
 the test and preview URLs accordingly. Using Pages mode preserves the demo

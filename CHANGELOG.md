@@ -16,7 +16,7 @@ User-visible changes are listed here by release.
   (regular, italic, semibold, Greek) and IBM Plex Mono; IBM Plex Sans is
   removed. Wording changes: the orient stage heading ("What you will find
   out"), the prediction lock note, "Limit of the model", and "Claims, limits
-  and sources". See [DESIGN_BRIEF.md](DESIGN_BRIEF.md).
+  and sources".
 - Architecture reconstruction. Domains share one authoring API
   (`src/domains/support/`), and the ensemble domain has four source files.
   Lesson policy, such as which factors feed audio analysis, is declared on
@@ -29,7 +29,7 @@ User-visible changes are listed here by release.
   portfolio JSON. See [Architecture](docs/ARCHITECTURE.md).
 - Tooling. ESLint 10 checks the whole repository. The supported Node range is
   `^20.19.0 || ^22.13.0 || >=24`. The bare test script is removed; use
-  `pnpm test:unit` and `pnpm test:e2e`. `pnpm typecheck` covers the browser
+  `pnpm test:unit`. `pnpm typecheck` covers the browser
   program and the Node-side configuration, and `pnpm build` no longer
   type-checks by itself. `pnpm verify` runs lint, typecheck, unit tests, and
   build.

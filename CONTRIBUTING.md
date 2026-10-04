@@ -49,27 +49,14 @@ production code may not import them.
 | --- | --- |
 | `pnpm dev` | The Vite development server. |
 | `pnpm lint` | `eslint .` over the whole repository (ESLint 10 flat config with explicit ignores). It checks React Hooks, import boundaries between layers, and browser-global bans in portable layers. |
-| `pnpm typecheck` | `tsc --noEmit` for the browser program (`src`, `e2e/fixtures`, `benchmarks/*.tsx`), then `tsc --noEmit -p tsconfig.node.json` for e2e specs, the Pages bundle build test (`src/**/*.build.test.ts`), `playwright.config.ts`, `vite.config.ts`, and `eslint.config.mjs`. |
+| `pnpm typecheck` | `tsc --noEmit` for the browser program (`src`, `benchmarks/*.tsx`), then `tsc --noEmit -p tsconfig.node.json` for the Pages bundle build test (`src/**/*.build.test.ts`), `vite.config.ts`, and `eslint.config.mjs`. |
 | `pnpm test:unit` | `vitest run`. |
 | `pnpm build` | `vite build` for the origin-root bundle. It does not type-check. |
 | `pnpm build:pages` | `vite build --mode pages` for the GitHub Pages demo. Not part of `pnpm verify`. |
 | `pnpm verify` | Lint, typecheck, unit tests, then build. |
-| `pnpm test:e2e` | Playwright over the root and Pages builds in Chromium, Firefox, and WebKit. |
 
 Run the narrowest relevant command first, then `pnpm verify`. If a check
-cannot run, record the exact command and failure. CI runs `pnpm verify` and,
-in a separate job, `pnpm test:e2e`.
-
-Browser checks need the browsers installed once:
-
-```sh
-pnpm exec playwright install chromium firefox webkit
-pnpm test:e2e
-```
-
-The browser suite covers complete lessons, numeric limits, navigation focus,
-playback, reduced motion, restart, clearing, export, storage separation, and
-analysis of generated audio files. It does not test microphone hardware.
+cannot run, record the exact command and failure. CI runs `pnpm verify`.
 
 Evaluator outputs are pinned by `src/curriculum/__golden__/evaluations.json`,
 which `evaluator-golden.test.ts` compares with a relative tolerance of 1e-6.
