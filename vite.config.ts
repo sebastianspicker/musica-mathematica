@@ -3,6 +3,16 @@ import { defineConfig } from "vitest/config";
 
 const pagesBase = "/musica-mathematica/";
 
+// The Vite development server needs inline styles and its HMR WebSocket; built bundles need neither.
+const developmentOnlyCsp = [" 'unsafe-inline'", " ws://127.0.0.1:* ws://localhost:*"];
+
+function productionCsp(html: string): string {
+  return developmentOnlyCsp.reduce((result, source) => {
+    if (!result.includes(source)) throw new Error(`index.html CSP no longer contains "${source.trim()}"; update vite.config.ts.`);
+    return result.replace(source, "");
+  }, html);
+}
+
 export default defineConfig(({ mode }) => {
   const isPagesBuild = mode === "pages";
 
@@ -13,6 +23,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
+      { name: "production-csp", apply: "build" as const, transformIndexHtml: productionCsp },
       ...(isPagesBuild
         ? [
             {

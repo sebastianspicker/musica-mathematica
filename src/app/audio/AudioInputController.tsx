@@ -37,8 +37,12 @@ export function AudioInputController({ mode, lesson, factors, onAnalysis }: Audi
   const analysisState = { onAnalysis, setBusy, setStatus };
 
   useEffect(() => {
-    cancelPendingAnalysis(requestVersionRef, cleanupRef);
+    // The file input unmounts with the mode, so the selection must not outlive it.
     fileRef.current = null;
+  }, [mode]);
+
+  useEffect(() => {
+    cancelPendingAnalysis(requestVersionRef, cleanupRef);
     setBusy(false);
     setSettings(null);
     setStatus("No bounded segment has been analyzed.");

@@ -51,6 +51,10 @@ describe("GitHub Pages audio production bundle", () => {
     const indexHtml = await readFile(join(outputDirectory, "index.html"), "utf8");
     expect(indexHtml).toContain(`${pagesBase}assets/`);
     expect(indexHtml).toContain(`href="${pagesBase}favicon.svg"`);
+    expect(indexHtml).toContain("style-src 'self';");
+    expect(indexHtml).toContain("connect-src 'self';");
+    expect(indexHtml).not.toContain("'unsafe-inline'");
+    expect(indexHtml).not.toContain("ws:");
 
     const stylesheetAssetName = assetNames.find((name) => /^index-.+\.css$/.test(name));
     if (!stylesheetAssetName) throw new Error("The build emitted no index stylesheet.");

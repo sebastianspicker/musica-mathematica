@@ -6,14 +6,23 @@ const workerClient = vi.hoisted(() => ({
   prepareMicrophoneAnalysisPipeline: vi.fn(),
 }));
 
+const fileInput = vi.hoisted(() => ({
+  decodeAudioSelection: vi.fn(),
+}));
+
 vi.mock("../../audio/browser/workerClient", () => workerClient);
+vi.mock("../../audio/browser/fileInput", () => fileInput);
+vi.mock("./mapAudioEvaluation", async (importOriginal) => ({
+  ...await importOriginal<typeof import("./mapAudioEvaluation")>(),
+  selectionToEvaluation: vi.fn(() => ({ headline: "Local audio observation" })),
+}));
 vi.mock("../../audio/browser/runtime", () => ({
   captureProcessorModuleUrl: "/capture.js",
   createSelectionAnalysisWorker: vi.fn(),
   createStreamingAnalysisWorker: vi.fn(),
 }));
 
-import { startMicrophoneAnalysis } from "./audioInputAnalysis";
+import { analyzeFileSelection, startMicrophoneAnalysis } from "./audioInputAnalysis";
 
 class AudioContextHarness {
   static instances: AudioContextHarness[] = [];
@@ -220,5 +229,43 @@ describe("microphone analysis orchestration", () => {
     expect(AudioContextHarness.instances[0].close).toHaveBeenCalledOnce();
     expect(state.setBusy).toHaveBeenLastCalledWith(false);
     expect(state.setStatus).toHaveBeenLastCalledWith("setup failed");
+  });
+});
+
+describe("file analysis orchestration", () => {
+  function fileRequest(fileRef: { current: File | null }, state = stateHarness()) {
+    return {
+      request: {
+        analysisSettings: {},
+        fileRef,
+        frameSize: 2_048 as const,
+        gate: gateHarness().gate,
+        selectionDuration: 4,
+        selectionStart: 0,
+        state,
+      },
+      state,
+    };
+  }
+
+  it("keeps the selected file after a completed analysis so a changed factor can be re-analyzed", async () => {
+    fileInput.decodeAudioSelection.mockResolvedValue({
+      samples: new Float32Array(8),
+      provenance: { source: "file", sampleRateHz: 48_000 },
+    });
+    workerClient.analyzeSelectionInWorker.mockResolvedValue({ durationSeconds: 4, frameCount: 92 });
+    const file = { type: "audio/wav", size: 1_024 } as File;
+    const fileRef = { current: file };
+
+    const first = fileRequest(fileRef);
+    await analyzeFileSelection(first.request);
+    expect(first.state.onAnalysis).toHaveBeenLastCalledWith(expect.objectContaining({ headline: "Local audio observation" }));
+    expect(fileRef.current).toBe(file);
+
+    const second = fileRequest(fileRef);
+    await analyzeFileSelection(second.request);
+    expect(fileInput.decodeAudioSelection).toHaveBeenCalledTimes(2);
+    expect(second.state.setStatus).toHaveBeenLastCalledWith(expect.stringContaining("Local analysis complete"));
+    expect(AudioContextHarness.instances.every((context) => context.close.mock.calls.length === 1)).toBe(true);
   });
 });

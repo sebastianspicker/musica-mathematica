@@ -73,6 +73,9 @@ debrief.
 ## Run locally
 
 Use Node.js `^20.19.0`, `^22.13.0`, or `>=24` and pnpm `11.6.0`.
+If `pnpm` is not on your path, install it with
+`npm install --global pnpm@11.6.0`. Node.js 25 and later no longer bundle
+Corepack, so `corepack enable` works only on older Node.js releases.
 
 ```sh
 git clone https://github.com/sebastianspicker/musica-mathematica.git

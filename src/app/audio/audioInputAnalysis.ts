@@ -257,7 +257,7 @@ export async function analyzeFileSelection(request: FileAnalysisRequest): Promis
     if (!isCurrentFileAnalysis(gate, controller)) return;
     const analysis = await analyzeDecodedFile({ analysisSettings, controller, decoded, frameSize });
     if (!isCurrentFileAnalysis(gate, controller)) return;
-    publishFileAnalysis({ analysis, analysisSettings, fileRef, onAnalysis, provenance: decoded.provenance, setStatus });
+    publishFileAnalysis({ analysis, analysisSettings, onAnalysis, provenance: decoded.provenance, setStatus });
   } catch (error) {
     if (gate.isCurrent()) {
       setStatus(error instanceof Error ? error.message : "The local file analysis failed.");
@@ -299,13 +299,11 @@ async function analyzeDecodedFile(request: Readonly<{
 function publishFileAnalysis(request: Readonly<{
   analysis: Awaited<ReturnType<typeof analyzeSelectionInWorker>>;
   analysisSettings: AudioAnalysisSettings;
-  fileRef: MutableRefObject<File | null>;
   onAnalysis: AnalysisStateSetters["onAnalysis"];
   provenance: Awaited<ReturnType<typeof decodeAudioSelection>>["provenance"];
   setStatus: AnalysisStateSetters["setStatus"];
 }>): void {
-  const { analysis, analysisSettings, fileRef, onAnalysis, provenance, setStatus } = request;
+  const { analysis, analysisSettings, onAnalysis, provenance, setStatus } = request;
   onAnalysis(selectionToEvaluation(analysis, provenance, analysisSettings));
-  fileRef.current = null;
   setStatus(`Local analysis complete: ${analysis.durationSeconds.toFixed(2)} s, ${analysis.frameCount} frames. Raw audio was discarded.`);
 }

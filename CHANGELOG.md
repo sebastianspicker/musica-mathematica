@@ -2,7 +2,18 @@
 
 User-visible changes are listed here by release.
 
-## Unreleased
+## [0.1.0-alpha.1] - Unreleased
+
+### Added
+
+- 24 music mathematics lessons across eight domains, running in the browser.
+- Optional microphone and audio-file analysis in three critique lessons.
+- A learning portfolio saved in the browser, with direct links to lessons.
+- An interactive Pages demo with example comparisons and storage separate
+  from ordinary learning records. Deployment is manual.
+- Migration of valid version 1 Ensemble Coupling Lab records into version 2
+  lessons. Migration converts units, keeps the factors used by each lesson,
+  and marks the trials with a legacy protocol identifier.
 
 ### Changed
 
@@ -38,6 +49,10 @@ User-visible changes are listed here by release.
   Candidate family."
 - Documentation keeps one home per topic: commands and verification in
   Contributing, structure and boundaries in Architecture.
+- The built app ships a stricter Content Security Policy: inline styles and
+  loopback WebSocket connections are allowed only by the development server.
+- The setup instructions explain how to install pnpm 11.6.0 when Corepack is
+  not available (Node.js 25 and later).
 
 ### Removed
 
@@ -48,19 +63,10 @@ User-visible changes are listed here by release.
 
 - `benchmarks/workbench.mjs` works again. It now opens the collapsed
   "Explore the model, charts and playback" section first.
-
-## [0.1.0-alpha.1] - Unreleased
-
-### Added
-
-- 24 music mathematics lessons across eight domains, running in the browser.
-- Optional microphone and audio-file analysis in three critique lessons.
-- A learning portfolio saved in the browser, with direct links to lessons.
-- An interactive Pages demo with example comparisons and storage separate
-  from ordinary learning records. Deployment is manual.
-- Migration of valid version 1 Ensemble Coupling Lab records into version 2
-  lessons. Migration converts units, keeps the factors used by each lesson,
-  and marks the trials with a legacy protocol identifier.
+- File-based audio analysis keeps the chosen file after a factor change or a
+  completed analysis, so a controlled comparison can analyze the same file for
+  Run A and Run B without choosing it again. Switching between microphone and
+  file input still clears the selection.
 
 ### Limitations
 

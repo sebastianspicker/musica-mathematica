@@ -69,8 +69,8 @@ Hash-based lesson routes do not require a server-side route fallback.
 Review the Content Security Policy in [index.html](../index.html) along with
 your host's response headers and caching policy. HTML cannot configure those
 headers or caching. On Pages, GitHub controls them. The policy allows
-same-origin resources and, for Vite development, loopback WebSocket
-connections.
+same-origin resources. Only the Vite development server also allows loopback
+WebSocket connections and inline styles; production builds remove both.
 
 ## Rollback
 

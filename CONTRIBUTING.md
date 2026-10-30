@@ -7,6 +7,9 @@ Keep a change focused on one problem and include a way to check the result.
 
 Use Node.js `^20.19.0`, `^22.13.0`, or `>=24` and pnpm `11.6.0`, as
 specified in [package.json](package.json).
+If `pnpm` is not on your path, install it with
+`npm install --global pnpm@11.6.0`. Node.js 25 and later no longer bundle
+Corepack, so `corepack enable` works only on older Node.js releases.
 
 ```sh
 pnpm install --frozen-lockfile

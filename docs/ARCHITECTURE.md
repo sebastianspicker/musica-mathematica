@@ -218,7 +218,8 @@ Pages workflow is manual. It runs `pnpm typecheck` and `pnpm test:unit`, then
 builds, uploads, and deploys the Pages artifact. Repository settings, the live origin, response
 headers, and cache behavior remain part of the deployment environment.
 `index.html` includes a same-origin meta Content Security Policy, with loopback
-WebSocket access for Vite development. A deployed host should also send
+WebSocket access and inline styles for Vite development. Production builds
+remove both (`vite.config.ts`). A deployed host should also send
 appropriate security headers.
 
 ## Stable contracts and extension points

@@ -231,9 +231,10 @@ build includes the adapter.
 
 Synthetic fixtures and focused tests cover framing, windowing, the FFT adapter
 shape, feature arithmetic, hypothesis ranking, queue accounting, input limits,
-sanitization, track stopping, worker transfer, and portfolio privacy. The browser
-suite exercises root and Pages builds in Chromium, Firefox, and WebKit,
-including synthetic lessons and analysis of generated audio files.
+sanitization, track stopping, worker transfer, and portfolio privacy. These
+checks run in Node. The repository has no automated browser suite, so the
+AudioWorklet, browser decoding, and worker path is not exercised in a real
+browser by the automated checks.
 
 Microphone hardware, codec availability, permission UI, applied constraints,
 overload behavior, and acoustic validity vary across browsers and devices. They
