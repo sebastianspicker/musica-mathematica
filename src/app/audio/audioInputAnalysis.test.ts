@@ -191,7 +191,7 @@ describe("microphone analysis orchestration", () => {
       finish: vi.fn(() => Promise.resolve({
         result: null,
         temporal: { onsetTimesSeconds: [], tempoHypotheses: [], meterHypotheses: [] },
-        queue: { accepted: true, staleFrames: 0, overflowFrames: 0, sequenceGaps: 0, queuedFrames: 0 },
+        queue: { accepted: true, staleFrames: 0, sequenceGaps: 0 },
       })),
       stop: vi.fn(),
     };

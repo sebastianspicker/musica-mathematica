@@ -28,8 +28,10 @@ export function createDemoStorage(
     },
     setItem(key, value) {
       if (key !== portfolioStorageKey) return;
+      // Memory holds only a value the backing failed to store, so another tab's reset is not undone here.
       memory.set(demoPortfolioStorageKey, value);
       write(backing, demoPortfolioStorageKey, value);
+      memory.delete(demoPortfolioStorageKey);
     },
     removeItem(key) {
       if (key !== portfolioStorageKey && key !== legacyPortfolioStorageKey) return;

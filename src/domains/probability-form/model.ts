@@ -1,6 +1,7 @@
 import { assertNonNegativeFinite } from "../../shared/numeric/validation";
+import type { RandomSource } from "../../shared/numeric/random";
 
-export type RandomSource = () => number;
+export { createSeededRandom, type RandomSource } from "../../shared/numeric/random";
 
 function assertProbability(value: number, name: string, allowZero: boolean): void {
   if (!Number.isFinite(value) || value > 1 || (allowZero ? value < 0 : value <= 0)) {
@@ -15,19 +16,6 @@ function assertDistribution(probabilities: readonly number[], name: string): voi
   });
   const total = probabilities.reduce((sum, probability) => sum + probability, 0);
   if (Math.abs(total - 1) > 1e-12) throw new RangeError(`${name} must sum to 1.`);
-}
-
-/** Creates a reproducible Mulberry32 pseudo-random source from a 32-bit seed. */
-export function createSeededRandom(seed: number): RandomSource {
-  if (!Number.isInteger(seed)) throw new RangeError("seed must be an integer.");
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let value = state;
-    value = Math.imul(value ^ (value >>> 15), value | 1);
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 /** Normalizes each non-negative transition row independently. */

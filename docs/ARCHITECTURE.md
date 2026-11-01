@@ -65,7 +65,7 @@ curriculum registry and does not import `domains`. `src/ui/` does not import
 | `src/domains/support/` | `construction.ts` (definition builders) and `evaluation.ts` (`observable`, `result`, and `readNumber`, `readString`, `readBoolean`). |
 | `src/learning/` | `stages.ts` (ordered stages); `inquiry/comparison.ts` (controlled A/B rule) and `inquiry/recording.ts` (recording blockers, factors for an attempt); `portfolio/` with `schema.ts` (persisted version 2 types, `StoragePort`, keys, limits), `aggregate.ts`, `validate.ts`, `compact.ts`, `repository.ts`; and `portfolio/legacy/` (version 1 schema, validation, migration). |
 | `src/audio/analysis/` | Portable windowing, FFT-backed analysis, features, and ranked hypotheses. |
-| `src/audio/protocol/` | Worker and AudioWorklet messages and bounded frame queues. |
+| `src/audio/protocol/` | Worker and AudioWorklet messages and frame-sequence accounting. |
 | `src/audio/browser/` | Media capture, file decoding, workers, AudioWorklet integration, and resource cleanup. |
 | `src/ui/` | Presentational React components driven by supplied state and callbacks. `format.ts` holds shared formatters and `workbench/types.ts` the runtime view contract. `audio/` holds the audio input controls. |
 | `src/app/` | `App.tsx` (routing, focus, dialogs, layout); `portfolio/` (`usePortfolio.ts`, `browserStorage.ts`, `download.ts`); `routing/hashRoute.ts`; `workbench/` (lesson and playback controllers and `playbackStore.ts`); `audio/` (audio controllers and mapping of results to evaluations); and `demo/` (Pages-only seed and isolated storage). |
@@ -167,7 +167,22 @@ are not needed for the comparison stage, and finally removes the oldest
 non-active attempts. It retains the active attempt and the two trials required
 at comparison and later stages. The UI reports compaction and storage failures.
 If stored JSON is larger than 8 MiB, the app leaves the original value untouched,
-disables automatic persistence, and displays recovery guidance.
+disables automatic persistence, and displays recovery guidance. If a stored
+version 2 record cannot be read, the repository first copies it to
+`musicaMathematica.learning.v2.backup` and shows a notice before starting a
+new portfolio; when that copy cannot be written and read back, it behaves as
+for oversized data. The same one-slot copy is made before a load rewrites a
+record, for example to drop attempts for lessons this build does not know. An
+unknown active lesson falls back to the default lesson instead of discarding
+the other attempts. Clearing local work also removes the copy.
+
+Each tab holds the portfolio in memory and saves the whole record. A tab
+reloads the record when another tab writes one of the app's keys (the browser
+`storage` event), keeping its own current lesson, so a later save does not
+discard work saved in another tab. A reload never rewrites the record; it may
+only take the backup copy, and a best-effort copy never replaces an existing
+one. If a tab cannot read what another tab stored, it keeps its own work and
+turns automatic saving off.
 
 Portfolio records never contain raw audio, encoded files, file names, media
 streams, object URLs, or device identifiers.
@@ -195,9 +210,8 @@ A microphone capture lasts from 5 through 20 seconds. An audio file must have
 an `audio/*` media type, occupy no more than 25 MiB, and decode to no more than
 90 seconds. The selected range may be at most 30 seconds. Analysis uses frames
 of 2,048 or 4,096 samples with 50% overlap. Credits on the worklet connection
-and a bounded worker queue prevent an unlimited backlog. The provenance
-dropped-frame total covers stale frames, overflow, and sequence gaps, while the
-expensive analysis stays off the UI thread.
+prevent an unlimited backlog. The provenance dropped-frame total covers stale
+frames and sequence gaps, while the expensive analysis stays off the UI thread.
 
 Only Recorded-Onset Hypotheses can save an audio-derived controlled-comparison
 snapshot. Chord Hypotheses and Time-Varying Timbre show audio results as an

@@ -68,7 +68,7 @@ class CaptureProcessor extends AudioWorkletProcessor {
     const channel = inputs.at(0)?.at(0);
     if (!channel) return true;
     for (let index = 0; index < channel.length; index += 1) {
-      this.captureSample(channel.at(index) ?? 0);
+      this.captureSample(channel[index]);
     }
     return true;
   }

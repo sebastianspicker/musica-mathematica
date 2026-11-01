@@ -64,7 +64,7 @@ export async function startMicrophoneAnalysis(request: MicrophoneAnalysisRequest
       onResult: (frame, queue, temporal) => {
         if (!gate.isCurrent() || analysisFailed) return;
         onAnalysis(microphoneFrameToEvaluation(frame, temporal, queue, analysisSettings));
-        setStatus(`Capturing locally · ${Math.max(0, durationSeconds).toFixed(0)} s maximum · ${queue.sequenceGaps + queue.overflowFrames + queue.staleFrames} reported frame gaps`);
+        setStatus(`Capturing locally · ${Math.max(0, durationSeconds).toFixed(0)} s maximum · ${queue.sequenceGaps + queue.staleFrames} reported frame gaps`);
       },
       onError: (message) => {
         if (!gate.isCurrent()) return;

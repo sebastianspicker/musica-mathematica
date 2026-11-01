@@ -47,9 +47,7 @@ export type AudioFrame = Readonly<{
 export type QueueStatus = Readonly<{
   accepted: boolean;
   staleFrames: number;
-  overflowFrames: number;
   sequenceGaps: number;
-  queuedFrames: number;
 }>;
 
 export class AudioInputError extends Error {

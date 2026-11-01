@@ -29,8 +29,7 @@ export type AnalysisPipeline = Readonly<{
 
 export type AnalysisPipelineOptions = Readonly<{
   workletModuleUrl: URL | string;
-  workerModuleUrl?: URL | string;
-  workerFactory?: () => Worker;
+  workerFactory: () => Worker;
   frameSize?: 2048 | 4096;
   queueCapacity?: number;
   onsetSensitivity?: number;
@@ -50,11 +49,7 @@ export function prepareMicrophoneAnalysisPipeline(
   options: AnalysisPipelineOptions,
 ): PreparedAnalysisPipeline {
   const settings = validatePipelineOptions(options);
-  const worker = createWorker(
-    options.workerModuleUrl,
-    options.workerFactory,
-    "musica-mathematica-audio-analysis",
-  );
+  const worker = options.workerFactory();
   let stopped = false;
   let connected = false;
   let setupError: unknown;
@@ -234,7 +229,7 @@ function connectPreparedPipeline(
       stopTracks(stream);
       source.disconnect();
       completionTimer = setTimeout(() => {
-        finishWithError(new Error("Audio analysis did not finish within 1 second of capture ending."));
+        finishWithError(new Error(`Audio analysis did not finish within ${settings.completionTimeoutMilliseconds} ms of capture ending.`));
       }, settings.completionTimeoutMilliseconds);
       return finishing;
     },
@@ -253,8 +248,7 @@ function cancellationError(): DOMException {
 }
 
 export type SelectionAnalysisWorkerOptions = Readonly<{
-  workerModuleUrl?: URL | string;
-  workerFactory?: () => Worker;
+  workerFactory: () => Worker;
   frameSize?: 2048 | 4096;
   onsetSensitivity?: number;
   signal?: AbortSignal;
@@ -278,11 +272,7 @@ export function analyzeSelectionInWorker(
   const durationError = selectionDurationValidationError(samples.length, sampleRateHz);
   if (durationError) return Promise.reject(durationError);
   return new Promise((resolve, reject) => {
-    const worker = createWorker(
-      options.workerModuleUrl,
-      options.workerFactory,
-      "musica-mathematica-selection-analysis",
-    );
+    const worker = options.workerFactory();
     const requestId = "bounded-selection";
     const finish = () => {
       options.signal?.removeEventListener("abort", abort);
@@ -325,16 +315,4 @@ export function analyzeSelectionInWorker(
       reject(error instanceof Error ? error : new Error("Audio analysis worker could not receive the selection."));
     }
   });
-}
-
-function createWorker(
-  workerModuleUrl: URL | string | undefined,
-  workerFactory: (() => Worker) | undefined,
-  name: string,
-): Worker {
-  if (workerFactory) return workerFactory();
-  if (workerModuleUrl == null) {
-    throw new TypeError("workerFactory or workerModuleUrl is required");
-  }
-  return new Worker(workerModuleUrl, { type: "module", name });
 }

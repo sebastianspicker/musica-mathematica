@@ -43,6 +43,16 @@ describe("createDemoStorage", () => {
     expect(storage.getItem(portfolioStorageKey)).toContain('"stage":"compare"');
   });
 
+  it("does not undo another tab's reset with a value this tab stored earlier", () => {
+    const values = new Map<string, string>();
+    const tabA = createDemoStorage(curriculumRegistry, mapStorage(values));
+    const tabB = createDemoStorage(curriculumRegistry, mapStorage(values));
+    tabB.setItem(portfolioStorageKey, "tab B demo");
+    tabA.removeItem(portfolioStorageKey);
+
+    expect(tabB.getItem(portfolioStorageKey)).toContain('"stage":"compare"');
+  });
+
   it("reports backing write failures while keeping the demo readable in memory", () => {
     const storage = createDemoStorage(curriculumRegistry, {
       getItem: () => null,

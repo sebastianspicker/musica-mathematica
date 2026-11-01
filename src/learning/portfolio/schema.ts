@@ -9,6 +9,8 @@ export type StoragePort = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 export const portfolioStorageKey = "musicaMathematica.learning.v2";
 export const legacyPortfolioStorageKey = "ensembleCouplingLab.learning.v1";
+/** One-slot copy of a stored v2 value kept before this build replaces or rewrites it. */
+export const portfolioBackupStorageKey = "musicaMathematica.learning.v2.backup";
 export const maximumTrialsPerLesson = 12;
 export const maximumTracePointsPerTrial = 256;
 export const maximumObservablesPerTrial = 24;

@@ -3,6 +3,7 @@ import {
   type TrialSnapshotV2,
   maximumResponseCodePoints,
   maximumTracePointsPerTrial,
+  maximumTrialsPerLesson,
 } from "./schema";
 import {
   activeAttempt,
@@ -10,6 +11,7 @@ import {
   createAttemptV2,
   createPortfolio,
   createTrialSnapshot,
+  nextRunIndex,
   recordTrial,
   recordedRunWasTrimmed,
   runLabel,
@@ -157,6 +159,15 @@ describe("trial snapshots", () => {
 
   it("labels the first runs A and B, then by position", () => {
     expect([0, 1, 2, 5].map(runLabel)).toEqual(["Run A", "Run B", "Run 3", "Run 6"]);
+  });
+
+  it("keeps numbering runs after the oldest ones drop out at the trial cap", () => {
+    const labelled = (labels: readonly string[]) => labels.map((id) => ({ id })) as unknown as TrialSnapshotV2[];
+    expect(nextRunIndex([])).toBe(0);
+    expect(nextRunIndex(labelled(["Run A", "Run B"]))).toBe(2);
+    const full = Array.from({ length: maximumTrialsPerLesson }, (_, index) => runLabel(index));
+    expect(runLabel(nextRunIndex(labelled(full)))).toBe("Run 13");
+    expect(runLabel(nextRunIndex(labelled([...full.slice(1), "Run 13"])))).toBe("Run 14");
   });
 
   it("copies evaluation data and trims the note", () => {

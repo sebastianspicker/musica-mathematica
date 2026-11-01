@@ -97,7 +97,7 @@ describe("analysis worker", () => {
     expect(postedMessages()).toMatchObject([{
       type: "analysis-result",
       result: { sequence: 0 },
-      queue: { accepted: true, queuedFrames: 0 },
+      queue: { accepted: true },
     }]);
     expect(port.postMessage).toHaveBeenLastCalledWith({ type: "credits", count: 1 });
     expect(port.postMessage).toHaveBeenCalledTimes(2);
@@ -156,7 +156,7 @@ describe("analysis worker", () => {
     expect(postedMessages().at(-1)).toMatchObject({
       type: "analysis-complete",
       result: { sequence: 24 },
-      queue: { accepted: true, queuedFrames: 0 },
+      queue: { accepted: true },
     });
     expect(port.postMessage.mock.calls.filter(([message]) => (
       (message as { type?: string }).type === "credits"

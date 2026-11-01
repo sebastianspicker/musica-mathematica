@@ -30,7 +30,7 @@ function linearDelayedPhase(
   }
   let candidate: EnsembleState | undefined;
   for (const entry of history) {
-    if (entry.time > targetTime) break;
+    if (entry.time > targetTime + 1e-10) break;
     candidate = entry;
   }
   if (!candidate) return fallback.oscillators[oscillatorIndex]?.phase ?? 0;

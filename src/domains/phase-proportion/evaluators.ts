@@ -3,6 +3,7 @@ import {
   circularPhaseDifference,
   greatestCommonDivisor,
   leastCommonMultiple,
+  normalizeCircularPhase,
   phaseAtTime,
 } from "./model";
 import { axes, readNumber, observable, result } from "../support/evaluation";
@@ -71,7 +72,7 @@ export function evaluatePhaseOnTheCircle(factors: Factors): EvaluationOutput {
   const offset = readNumber(factors, "offset");
   const phaseA = phaseAtTime(elapsed, periodA);
   const phaseB = phaseAtTime(elapsed, periodB) + offset;
-  const wrappedB = ((phaseB % 1) + 1) % 1;
+  const wrappedB = normalizeCircularPhase(phaseB);
   const difference = circularPhaseDifference(phaseA, wrappedB);
   return result({
     headline: "Circular state",

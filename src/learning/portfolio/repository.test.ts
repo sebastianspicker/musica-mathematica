@@ -6,6 +6,7 @@ import {
   maximumRawPortfolioJsonBytes,
   maximumResponseCodePoints,
   portfolioStorageKey,
+  portfolioBackupStorageKey,
 } from "./schema";
 import {
   clearPortfolio,
@@ -103,6 +104,81 @@ describe("portfolio repository", () => {
   it("keeps the established storage keys stable", () => {
     expect(portfolioStorageKey).toBe("musicaMathematica.learning.v2");
     expect(legacyPortfolioStorageKey).toBe("ensembleCouplingLab.learning.v1");
+    expect(portfolioBackupStorageKey).toBe("musicaMathematica.learning.v2.backup");
+  });
+
+  it("keeps a copy of unreadable v2 data and says so before the first save replaces it", () => {
+    const storage = new MemoryStorage();
+    const unreadable = JSON.stringify({ version: 2, active: {}, attempts: [] });
+    storage.values.set(portfolioStorageKey, unreadable);
+
+    const loaded = loadPortfolioDetailed(storage, testCurriculum);
+    expect(loaded).toMatchObject({ source: "empty", normalizationStatus: "invalid", automaticPersistenceEnabled: true });
+    expect(loaded.notice).toContain("could not be read");
+    savePortfolioDetailed(loaded.portfolio, storage, testCurriculum);
+
+    expect(storage.values.get(portfolioBackupStorageKey)).toBe(unreadable);
+    expect(storage.values.get(portfolioStorageKey)).not.toBe(unreadable);
+    expect(clearPortfolio(storage)).toBe(true);
+    expect(storage.values.has(portfolioBackupStorageKey)).toBe(false);
+  });
+
+  it("keeps every valid attempt when the stored active lesson is unknown", () => {
+    const storage = new MemoryStorage();
+    const portfolio = updateAttempt(testCurriculum, createPortfolio(testCurriculum), {
+      ...createAttemptV2(testCurriculum, "ensemble-dynamics", "lock-in-and-order", "2026-08-28T10:00:00.000Z"),
+      stage: "predict",
+      prediction: "Stronger coupling raises coherence.",
+    });
+    storage.values.set(portfolioStorageKey, JSON.stringify({ ...portfolio, active: { labId: "ensemble-dynamics", lessonId: "added-later" } }));
+
+    const loaded = loadPortfolioDetailed(storage, testCurriculum);
+
+    expect(loaded.source).toBe("v2");
+    expect(loaded.portfolio.active).toEqual({ labId: "phase-proportion", lessonId: "from-bpm-to-period" });
+    expect(loaded.portfolio.attempts["ensemble-dynamics:lock-in-and-order"]?.prediction).toBe("Stronger coupling raises coherence.");
+  });
+
+  it("does not trust a storage adapter that silently ignores the backup key", () => {
+    const values = new Map([[portfolioStorageKey, "{"]]);
+    const loaded = loadPortfolioDetailed({
+      getItem: (key) => key === portfolioStorageKey ? values.get(key) ?? null : null,
+      setItem: (key, value) => { if (key === portfolioStorageKey) values.set(key, value); },
+      removeItem: () => undefined,
+    }, testCurriculum);
+
+    expect(loaded).toMatchObject({ normalizationStatus: "blocked", automaticPersistenceEnabled: false });
+    expect(loaded.notice).toContain("no copy of it could be kept");
+  });
+
+  it("keeps the original before a load rewrites it without attempts for lessons this build lacks", () => {
+    const storage = new MemoryStorage();
+    const portfolio = createPortfolio(testCurriculum);
+    const later = { ...createAttemptV2(testCurriculum, "phase-proportion", "from-bpm-to-period", "2026-08-28T10:00:00.000Z"), lessonId: "added-later" };
+    const raw = JSON.stringify({ ...portfolio, attempts: { "phase-proportion:added-later": later } });
+    storage.values.set(portfolioStorageKey, raw);
+
+    const loaded = loadPortfolioDetailed(storage, testCurriculum);
+
+    expect(loaded.portfolio.attempts).toEqual({});
+    expect(storage.values.get(portfolioStorageKey)).not.toBe(raw);
+    expect(storage.values.get(portfolioBackupStorageKey)).toBe(raw);
+
+    storage.values.set(portfolioStorageKey, `${raw} `);
+    loadPortfolioDetailed(storage, testCurriculum);
+    expect(storage.values.get(portfolioBackupStorageKey)).toBe(raw);
+  });
+
+  it("does not replace unreadable v2 data when no copy can be kept", () => {
+    const values = new Map([[portfolioStorageKey, "{"]]);
+    const loaded = loadPortfolioDetailed({
+      getItem: (key) => values.get(key) ?? null,
+      setItem: () => { throw new Error("quota"); },
+      removeItem: () => undefined,
+    }, testCurriculum);
+
+    expect(loaded).toMatchObject({ normalizationStatus: "blocked", automaticPersistenceEnabled: false });
+    expect(values.get(portfolioStorageKey)).toBe("{");
   });
 
   it("leaves oversized v2 storage untouched and disables automatic persistence", () => {

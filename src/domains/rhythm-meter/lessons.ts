@@ -17,7 +17,7 @@ const lessons = [
         transferPrompt: "Map one generated cycle to an instrumental pattern and choose an accent deliberately.",
         factors: [
           numberFactor("steps", "Cycle length", 16, 4, 32, 1, "steps", "Number of equal positions in the cycle."),
-          numberFactor("pulses", "Onsets", 5, 0, 16, 1, "onsets", "Onsets distributed across the cycle."),
+          numberFactor("pulses", "Onsets", 5, 0, 16, 1, "onsets", "Onsets distributed across the cycle. Values above the cycle length are capped."),
           numberFactor("rotation", "Rotation", 0, -16, 16, 1, "steps", "Cyclic displacement of the pattern."),
         ],
         claimIds: commonClaims,
@@ -38,7 +38,7 @@ const lessons = [
         transferPrompt: "Mark two plausible meters for the same pattern and perform both accent schemes.",
         factors: [
           numberFactor("steps", "Cycle length", 12, 4, 32, 1, "steps", "Number of positions in the cyclic onset vector."),
-          numberFactor("pulses", "Onsets", 5, 1, 12, 1, "onsets", "Distributed onsets used to generate the vector."),
+          numberFactor("pulses", "Onsets", 5, 1, 12, 1, "onsets", "Distributed onsets used to generate the vector. Values above the cycle length are capped."),
           numberFactor("rotation", "Rotation", 0, -12, 12, 1, "steps", "Cyclic downbeat displacement."),
         ],
         claimIds: [...commonClaims, "heuristic.transparent"],

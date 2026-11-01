@@ -1,3 +1,4 @@
+import { createSeededRandom } from "../../shared/numeric/random";
 import { assertNonEmptyFiniteNumbers } from "../../shared/numeric/validation";
 
 export type DistributionSummary = Readonly<{
@@ -172,11 +173,8 @@ export function deterministicCenteredSample(
   if (!Number.isFinite(halfWidth) || halfWidth < 0) throw new RangeError("halfWidth must be non-negative and finite");
   if (!Number.isSafeInteger(count) || count <= 0) throw new RangeError("count must be a positive safe integer");
   if (!Number.isSafeInteger(seed)) throw new RangeError("seed must be a safe integer");
-  let state = seed >>> 0;
-  return Array.from({ length: count }, () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return center + (state / 4294967296 * 2 - 1) * halfWidth;
-  });
+  const random = createSeededRandom(seed);
+  return Array.from({ length: count }, () => center + (random() * 2 - 1) * halfWidth);
 }
 
 /** Reproducible onset fixture with bounded displacement around an isochronous grid. */

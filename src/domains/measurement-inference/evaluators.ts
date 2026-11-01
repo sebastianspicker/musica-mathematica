@@ -56,7 +56,7 @@ export function evaluateParameterRecovery(factors: Readonly<Record<string, Facto
     headline: "Synthetic parameter recovery",
     result: `${recovered.toFixed(2)} BPM from ${tempo.toFixed(1)} BPM generator`,
     observables: [
-      observable({ id: "recovered", label: "Recovered tempo hypothesis", value: recovered, unit: "BPM", claimId: "hypothesis.transcription", precision: 2, aggregation: "distribution" }),
+      observable({ id: "recovered", label: "Recovered tempo hypothesis", value: recovered, unit: "BPM", claimId: "model.deterministic", precision: 2, aggregation: "distribution" }),
       observable({ id: "error", label: "Recovery error", value: recovered - tempo, unit: "BPM", claimId: "model.deterministic", precision: 2 }),
       observable({ id: "intervalIqr", label: "Inter-onset IQR", value: iqr * 1000, unit: "ms", claimId: "model.deterministic", precision: 1, aggregation: "distribution" }),
     ],
@@ -86,9 +86,9 @@ export function evaluateDescriptiveComparison(factors: Readonly<Record<string, F
     headline: "Descriptive event alignment",
     result: `Median ${signed(median, 1)} ms; IQR ${lower.toFixed(1)} to ${upper.toFixed(1)} ms`,
     observables: [
-      observable({ id: "median", label: "Median signed difference", value: median, unit: "ms", claimId: "measurement.local", precision: 1, aggregation: "distribution" }),
-      observable({ id: "iqr", label: "Interquartile range", value: upper - lower, unit: "ms", claimId: "measurement.local", precision: 1, aggregation: "distribution" }),
-      observable({ id: "direction", label: "Neutral description", value: direction, unit: null, claimId: "measurement.local" }),
+      observable({ id: "median", label: "Median signed difference", value: median, unit: "ms", claimId: "model.deterministic", precision: 1, aggregation: "distribution" }),
+      observable({ id: "iqr", label: "Interquartile range", value: upper - lower, unit: "ms", claimId: "model.deterministic", precision: 1, aggregation: "distribution" }),
+      observable({ id: "direction", label: "Neutral description", value: direction, unit: null, claimId: "model.deterministic" }),
     ],
     trace: differences.map((value, index) => ({ x: index + 1, y: value, series: "Signed event differences" })),
     visualKind: "measurement",

@@ -1,20 +1,12 @@
-import { AUDIO_ANALYSIS_LIMITS, type AudioFrame, type QueueStatus } from "../analysis/contracts";
+import type { AudioFrame, QueueStatus } from "../analysis/contracts";
 
-/** Bounded streaming queue with explicit stale, overflow, and gap accounting. */
-export class BoundedAudioFrameQueue {
-  private readonly frames: AudioFrame[] = [];
+/** Tracks stale frames and sequence gaps; backpressure is enforced by worklet credits. */
+export class AudioFrameSequenceTracker {
   private lastSequence: number | null = null;
   private staleFrames = 0;
-  private overflowFrames = 0;
   private sequenceGaps = 0;
 
-  constructor(private readonly capacity: number = AUDIO_ANALYSIS_LIMITS.defaultQueueCapacity) {
-    if (!Number.isSafeInteger(capacity) || capacity <= 0) {
-      throw new RangeError("capacity must be a positive safe integer");
-    }
-  }
-
-  push(frame: AudioFrame): QueueStatus {
+  accept(frame: AudioFrame): QueueStatus {
     if (!Number.isSafeInteger(frame.sequence) || frame.sequence < 0) {
       throw new RangeError("frame.sequence must be a non-negative safe integer");
     }
@@ -30,20 +22,7 @@ export class BoundedAudioFrameQueue {
     // counting it.
     this.sequenceGaps += Math.max(inferredGap, Math.max(0, frame.droppedBefore));
     this.lastSequence = frame.sequence;
-    this.frames.push(frame);
-    while (this.frames.length > this.capacity) {
-      this.frames.shift();
-      this.overflowFrames += 1;
-    }
     return this.status(true);
-  }
-
-  shift(): AudioFrame | undefined {
-    return this.frames.shift();
-  }
-
-  drain(): AudioFrame[] {
-    return this.frames.splice(0, this.frames.length);
   }
 
   getStatus(): QueueStatus {
@@ -54,9 +33,7 @@ export class BoundedAudioFrameQueue {
     return Object.freeze({
       accepted,
       staleFrames: this.staleFrames,
-      overflowFrames: this.overflowFrames,
       sequenceGaps: this.sequenceGaps,
-      queuedFrames: this.frames.length,
     });
   }
 }

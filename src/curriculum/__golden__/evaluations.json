@@ -685,7 +685,7 @@
         "unit": null,
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpread",
@@ -694,7 +694,7 @@
         "unit": "rad",
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpreadEquivalent",
@@ -703,7 +703,7 @@
         "unit": "ms",
         "claimId": "model.ensemble",
         "precision": 1,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "peerShare",
@@ -1556,7 +1556,7 @@
         "unit": null,
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpread",
@@ -1565,7 +1565,7 @@
         "unit": "rad",
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpreadEquivalent",
@@ -1574,7 +1574,7 @@
         "unit": "ms",
         "claimId": "model.ensemble",
         "precision": 1,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "peerShare",
@@ -2427,7 +2427,7 @@
         "unit": null,
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpread",
@@ -2436,7 +2436,7 @@
         "unit": "rad",
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpreadEquivalent",
@@ -2445,7 +2445,7 @@
         "unit": "ms",
         "claimId": "model.ensemble",
         "precision": 1,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "peerShare",
@@ -3298,7 +3298,7 @@
         "unit": null,
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpread",
@@ -3307,7 +3307,7 @@
         "unit": "rad",
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpreadEquivalent",
@@ -3316,7 +3316,7 @@
         "unit": "ms",
         "claimId": "model.ensemble",
         "precision": 1,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "peerShare",
@@ -4169,7 +4169,7 @@
         "unit": null,
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpread",
@@ -4178,7 +4178,7 @@
         "unit": "rad",
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpreadEquivalent",
@@ -4187,7 +4187,7 @@
         "unit": "ms",
         "claimId": "model.ensemble",
         "precision": 1,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "peerShare",
@@ -5040,7 +5040,7 @@
         "unit": null,
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpread",
@@ -5049,7 +5049,7 @@
         "unit": "rad",
         "claimId": "model.ensemble",
         "precision": 3,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "phaseSpreadEquivalent",
@@ -5058,7 +5058,7 @@
         "unit": "ms",
         "claimId": "model.ensemble",
         "precision": 1,
-        "aggregation": "terminal-mean"
+        "aggregation": "instantaneous"
       },
       {
         "id": "peerShare",
@@ -6575,7 +6575,7 @@
       {
         "id": "onsetCount",
         "label": "Events above threshold",
-        "value": 8,
+        "value": 12,
         "unit": null,
         "claimId": "hypothesis.transcription",
         "precision": 0,
@@ -6613,42 +6613,122 @@
       {
         "x": 0,
         "y": 0.65,
-        "series": "Detected onset strength"
+        "series": "Candidate onset strength"
       },
       {
         "x": 0.5555555556,
         "y": 0.8979162026,
-        "series": "Detected onset strength"
+        "series": "Candidate onset strength"
       },
       {
         "x": 1.111111111,
         "y": 0.5861147245,
-        "series": "Detected onset strength"
+        "series": "Candidate onset strength"
       },
       {
         "x": 1.666666667,
         "y": 0.4185463294,
-        "series": "Detected onset strength"
+        "series": "Candidate onset strength"
       },
       {
         "x": 2.222222222,
         "y": 0.7735283378,
-        "series": "Detected onset strength"
+        "series": "Candidate onset strength"
       },
       {
         "x": 2.777777778,
         "y": 0.8496217782,
-        "series": "Detected onset strength"
+        "series": "Candidate onset strength"
       },
       {
         "x": 3.333333333,
         "y": 0.4750313281,
-        "series": "Detected onset strength"
+        "series": "Candidate onset strength"
       },
       {
         "x": 3.888888889,
         "y": 0.4954657219,
-        "series": "Detected onset strength"
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 4.444444444,
+        "y": 0.8647904537,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 5,
+        "y": 0.7491851433,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 5.555555556,
+        "y": 0.409650627,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 6.111111111,
+        "y": 0.6127502435,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 0,
+        "y": 0.65,
+        "series": "Above threshold"
+      },
+      {
+        "x": 0.5555555556,
+        "y": 0.8979162026,
+        "series": "Above threshold"
+      },
+      {
+        "x": 1.111111111,
+        "y": 0.5861147245,
+        "series": "Above threshold"
+      },
+      {
+        "x": 1.666666667,
+        "y": 0.4185463294,
+        "series": "Above threshold"
+      },
+      {
+        "x": 2.222222222,
+        "y": 0.7735283378,
+        "series": "Above threshold"
+      },
+      {
+        "x": 2.777777778,
+        "y": 0.8496217782,
+        "series": "Above threshold"
+      },
+      {
+        "x": 3.333333333,
+        "y": 0.4750313281,
+        "series": "Above threshold"
+      },
+      {
+        "x": 3.888888889,
+        "y": 0.4954657219,
+        "series": "Above threshold"
+      },
+      {
+        "x": 4.444444444,
+        "y": 0.8647904537,
+        "series": "Above threshold"
+      },
+      {
+        "x": 5,
+        "y": 0.7491851433,
+        "series": "Above threshold"
+      },
+      {
+        "x": 5.555555556,
+        "y": 0.409650627,
+        "series": "Above threshold"
+      },
+      {
+        "x": 6.111111111,
+        "y": 0.6127502435,
+        "series": "Above threshold"
       }
     ],
     "traceAxes": {
@@ -6676,7 +6756,7 @@
       {
         "id": "onsetCount",
         "label": "Events above threshold",
-        "value": 2,
+        "value": 0,
         "unit": null,
         "claimId": "hypothesis.transcription",
         "precision": 0,
@@ -6714,12 +6794,62 @@
       {
         "x": 0,
         "y": 0.65,
-        "series": "Detected onset strength"
+        "series": "Candidate onset strength"
       },
       {
         "x": 0.2727272727,
         "y": 0.8979162026,
-        "series": "Detected onset strength"
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 0.5454545455,
+        "y": 0.5861147245,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 0.8181818182,
+        "y": 0.4185463294,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 1.090909091,
+        "y": 0.7735283378,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 1.363636364,
+        "y": 0.8496217782,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 1.636363636,
+        "y": 0.4750313281,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 1.909090909,
+        "y": 0.4954657219,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 2.181818182,
+        "y": 0.8647904537,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 2.454545455,
+        "y": 0.7491851433,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 2.727272727,
+        "y": 0.409650627,
+        "series": "Candidate onset strength"
+      },
+      {
+        "x": 3,
+        "y": 0.6127502435,
+        "series": "Candidate onset strength"
       }
     ],
     "traceAxes": {
@@ -12062,7 +12192,7 @@
     "trace": [
       {
         "x": 0,
-        "y": 1,
+        "y": 0,
         "series": "Seeded events"
       },
       {
@@ -12077,12 +12207,12 @@
       },
       {
         "x": 3,
-        "y": 0,
+        "y": 1,
         "series": "Seeded events"
       },
       {
         "x": 4,
-        "y": 1,
+        "y": 0,
         "series": "Seeded events"
       },
       {
@@ -12097,7 +12227,7 @@
       },
       {
         "x": 7,
-        "y": 0,
+        "y": 1,
         "series": "Seeded events"
       },
       {
@@ -12107,42 +12237,42 @@
       },
       {
         "x": 9,
-        "y": 1,
+        "y": 0,
         "series": "Seeded events"
       },
       {
         "x": 10,
-        "y": 1,
+        "y": 0,
         "series": "Seeded events"
       },
       {
         "x": 11,
-        "y": 0,
-        "series": "Seeded events"
-      },
-      {
-        "x": 12,
-        "y": 0,
-        "series": "Seeded events"
-      },
-      {
-        "x": 13,
         "y": 1,
         "series": "Seeded events"
       },
       {
-        "x": 14,
+        "x": 12,
+        "y": 1,
+        "series": "Seeded events"
+      },
+      {
+        "x": 13,
         "y": 0,
+        "series": "Seeded events"
+      },
+      {
+        "x": 14,
+        "y": 1,
         "series": "Seeded events"
       },
       {
         "x": 15,
-        "y": 0,
+        "y": 1,
         "series": "Seeded events"
       },
       {
         "x": 16,
-        "y": 0,
+        "y": 1,
         "series": "Seeded events"
       },
       {
@@ -12152,12 +12282,12 @@
       },
       {
         "x": 18,
-        "y": 1,
+        "y": 0,
         "series": "Seeded events"
       },
       {
         "x": 19,
-        "y": 0,
+        "y": 1,
         "series": "Seeded events"
       },
       {
@@ -12404,7 +12534,7 @@
       },
       {
         "x": 34,
-        "y": 1,
+        "y": 0,
         "series": "Seeded events"
       },
       {
@@ -12634,7 +12764,7 @@
       },
       {
         "x": 80,
-        "y": 1,
+        "y": 0,
         "series": "Seeded events"
       },
       {
@@ -12674,7 +12804,7 @@
       },
       {
         "x": 88,
-        "y": 0,
+        "y": 1,
         "series": "Seeded events"
       },
       {
@@ -12704,7 +12834,7 @@
       },
       {
         "x": 94,
-        "y": 1,
+        "y": 0,
         "series": "Seeded events"
       },
       {
@@ -12789,7 +12919,7 @@
       },
       {
         "x": 111,
-        "y": 0,
+        "y": 1,
         "series": "Seeded events"
       },
       {
@@ -12804,7 +12934,7 @@
       },
       {
         "x": 114,
-        "y": 1,
+        "y": 0,
         "series": "Seeded events"
       },
       {
@@ -12854,7 +12984,7 @@
       },
       {
         "x": 124,
-        "y": 1,
+        "y": 0,
         "series": "Seeded events"
       },
       {
@@ -12893,12 +13023,12 @@
   },
   "measurement-inference/provenance-and-uncertainty/default": {
     "headline": "Synthetic uncertainty summary",
-    "result": "99.11 ± 2.06 units",
+    "result": "101.15 ± 1.76 units",
     "observables": [
       {
         "id": "mean",
         "label": "Sample mean",
-        "value": 99.10813789,
+        "value": 101.1476639,
         "unit": "units",
         "claimId": "model.deterministic",
         "precision": 2,
@@ -12907,7 +13037,7 @@
       {
         "id": "standardError",
         "label": "Estimated standard error",
-        "value": 1.052401818,
+        "value": 0.9000019183,
         "unit": "units",
         "claimId": "heuristic.transparent",
         "precision": 2,
@@ -12916,7 +13046,7 @@
       {
         "id": "interval",
         "label": "Approximate 95% interval",
-        "value": "97.05–101.17",
+        "value": "99.38–102.91",
         "unit": "units",
         "claimId": "heuristic.transparent",
         "precision": 2,
@@ -12926,122 +13056,122 @@
     "trace": [
       {
         "x": 1,
-        "y": 95.83289512,
+        "y": 95.17966269,
         "series": "Synthetic observations"
       },
       {
         "x": 2,
-        "y": 93.51841272,
+        "y": 105.6193727,
         "series": "Synthetic observations"
       },
       {
         "x": 3,
-        "y": 107.7105314,
+        "y": 94.26825771,
         "series": "Synthetic observations"
       },
       {
         "x": 4,
-        "y": 92.01622706,
+        "y": 105.1467475,
         "series": "Synthetic observations"
       },
       {
         "x": 5,
-        "y": 98.11637905,
+        "y": 103.5808704,
         "series": "Synthetic observations"
       },
       {
         "x": 6,
-        "y": 97.61928466,
+        "y": 103.0217858,
         "series": "Synthetic observations"
       },
       {
         "x": 7,
-        "y": 95.56894753,
+        "y": 96.20349494,
         "series": "Synthetic observations"
       },
       {
         "x": 8,
-        "y": 106.1665962,
+        "y": 106.711268,
         "series": "Synthetic observations"
       },
       {
         "x": 9,
-        "y": 93.37942885,
+        "y": 94.09378647,
         "series": "Synthetic observations"
       },
       {
         "x": 10,
-        "y": 93.58134381,
+        "y": 102.1166483,
         "series": "Synthetic observations"
       },
       {
         "x": 11,
-        "y": 106.0841013,
+        "y": 103.1682524,
         "series": "Synthetic observations"
       },
       {
         "x": 12,
-        "y": 106.414002,
+        "y": 101.3965663,
         "series": "Synthetic observations"
       },
       {
         "x": 13,
-        "y": 98.48928159,
+        "y": 96.5348765,
         "series": "Synthetic observations"
       },
       {
         "x": 14,
-        "y": 99.22359424,
+        "y": 107.0050676,
         "series": "Synthetic observations"
       },
       {
         "x": 15,
-        "y": 92.98702968,
+        "y": 96.59235972,
         "series": "Synthetic observations"
       },
       {
         "x": 16,
-        "y": 103.3537241,
+        "y": 103.6843409,
         "series": "Synthetic observations"
       },
       {
         "x": 17,
-        "y": 93.37793268,
+        "y": 102.2715854,
         "series": "Synthetic observations"
       },
       {
         "x": 18,
-        "y": 99.17564793,
+        "y": 97.87098762,
         "series": "Synthetic observations"
       },
       {
         "x": 19,
-        "y": 93.14042278,
+        "y": 100.5687398,
         "series": "Synthetic observations"
       },
       {
         "x": 20,
-        "y": 102.011279,
+        "y": 106.3590132,
         "series": "Synthetic observations"
       },
       {
         "x": 21,
-        "y": 103.9142061,
+        "y": 105.8489417,
         "series": "Synthetic observations"
       },
       {
         "x": 22,
-        "y": 101.7146388,
+        "y": 99.28524769,
         "series": "Synthetic observations"
       },
       {
         "x": 23,
-        "y": 98.91850618,
+        "y": 105.9790036,
         "series": "Synthetic observations"
       },
       {
         "x": 24,
-        "y": 106.2808965,
+        "y": 95.03705571,
         "series": "Synthetic observations"
       }
     ],
@@ -13065,12 +13195,12 @@
   },
   "measurement-inference/provenance-and-uncertainty/variant": {
     "headline": "Synthetic uncertainty summary",
-    "result": "198.28 ± 2.80 units",
+    "result": "199.82 ± 2.80 units",
     "observables": [
       {
         "id": "mean",
         "label": "Sample mean",
-        "value": 198.275714,
+        "value": 199.8158104,
         "unit": "units",
         "claimId": "model.deterministic",
         "precision": 2,
@@ -13079,7 +13209,7 @@
       {
         "id": "standardError",
         "label": "Estimated standard error",
-        "value": 1.427543869,
+        "value": 1.430746749,
         "unit": "units",
         "claimId": "heuristic.transparent",
         "precision": 2,
@@ -13088,7 +13218,7 @@
       {
         "id": "interval",
         "label": "Approximate 95% interval",
-        "value": "195.48–201.07",
+        "value": "197.01–202.62",
         "unit": "units",
         "claimId": "heuristic.transparent",
         "precision": 2,
@@ -13098,1282 +13228,1282 @@
     "trace": [
       {
         "x": 1,
-        "y": 168.8963753,
+        "y": 173.6494344,
         "series": "Synthetic observations"
       },
       {
         "x": 2,
-        "y": 178.041182,
+        "y": 231.1138439,
         "series": "Synthetic observations"
       },
       {
         "x": 3,
-        "y": 177.4039108,
+        "y": 226.1162832,
         "series": "Synthetic observations"
       },
       {
         "x": 4,
-        "y": 223.5607705,
+        "y": 199.2950631,
         "series": "Synthetic observations"
       },
       {
         "x": 5,
-        "y": 190.4151032,
+        "y": 167.7177763,
         "series": "Synthetic observations"
       },
       {
         "x": 6,
-        "y": 238.6213988,
+        "y": 163.5675645,
         "series": "Synthetic observations"
       },
       {
         "x": 7,
-        "y": 182.6409344,
+        "y": 178.5733656,
         "series": "Synthetic observations"
       },
       {
         "x": 8,
-        "y": 180.2800397,
+        "y": 223.9239296,
         "series": "Synthetic observations"
       },
       {
         "x": 9,
-        "y": 172.0317699,
+        "y": 206.9744179,
         "series": "Synthetic observations"
       },
       {
         "x": 10,
-        "y": 160.7427639,
+        "y": 203.1130137,
         "series": "Synthetic observations"
       },
       {
         "x": 11,
-        "y": 207.9586639,
+        "y": 167.4755135,
         "series": "Synthetic observations"
       },
       {
         "x": 12,
-        "y": 173.9560782,
+        "y": 205.6224008,
         "series": "Synthetic observations"
       },
       {
         "x": 13,
-        "y": 179.9476426,
+        "y": 160.0523143,
         "series": "Synthetic observations"
       },
       {
         "x": 14,
-        "y": 168.761986,
+        "y": 190.4011679,
         "series": "Synthetic observations"
       },
       {
         "x": 15,
-        "y": 163.617357,
+        "y": 204.2356541,
         "series": "Synthetic observations"
       },
       {
         "x": 16,
-        "y": 160.0718456,
+        "y": 231.4416409,
         "series": "Synthetic observations"
       },
       {
         "x": 17,
-        "y": 167.73612,
+        "y": 177.8329471,
         "series": "Synthetic observations"
       },
       {
         "x": 18,
-        "y": 183.9672311,
+        "y": 224.9980536,
         "series": "Synthetic observations"
       },
       {
         "x": 19,
-        "y": 234.2049692,
+        "y": 193.2648721,
         "series": "Synthetic observations"
       },
       {
         "x": 20,
-        "y": 205.2141226,
+        "y": 209.5516052,
         "series": "Synthetic observations"
       },
       {
         "x": 21,
-        "y": 216.2890209,
+        "y": 203.0247941,
         "series": "Synthetic observations"
       },
       {
         "x": 22,
-        "y": 181.3798806,
+        "y": 216.4441173,
         "series": "Synthetic observations"
       },
       {
         "x": 23,
-        "y": 164.5600052,
+        "y": 170.0645311,
         "series": "Synthetic observations"
       },
       {
         "x": 24,
-        "y": 181.5705807,
+        "y": 187.8901323,
         "series": "Synthetic observations"
       },
       {
         "x": 25,
-        "y": 229.7784989,
+        "y": 161.8746019,
         "series": "Synthetic observations"
       },
       {
         "x": 26,
-        "y": 234.7594139,
+        "y": 231.2758425,
         "series": "Synthetic observations"
       },
       {
         "x": 27,
-        "y": 212.3349958,
+        "y": 231.6263615,
         "series": "Synthetic observations"
       },
       {
         "x": 28,
-        "y": 207.7549781,
+        "y": 218.4919095,
         "series": "Synthetic observations"
       },
       {
         "x": 29,
-        "y": 173.884581,
+        "y": 180.6759344,
         "series": "Synthetic observations"
       },
       {
         "x": 30,
-        "y": 211.0614167,
+        "y": 198.6658724,
         "series": "Synthetic observations"
       },
       {
         "x": 31,
-        "y": 223.450599,
+        "y": 203.5307765,
         "series": "Synthetic observations"
       },
       {
         "x": 32,
-        "y": 167.2104797,
+        "y": 235.4958257,
         "series": "Synthetic observations"
       },
       {
         "x": 33,
-        "y": 202.5383318,
+        "y": 167.3040971,
         "series": "Synthetic observations"
       },
       {
         "x": 34,
-        "y": 215.598713,
+        "y": 233.0425937,
         "series": "Synthetic observations"
       },
       {
         "x": 35,
-        "y": 186.690327,
+        "y": 236.7312001,
         "series": "Synthetic observations"
       },
       {
         "x": 36,
-        "y": 175.4411021,
+        "y": 232.755057,
         "series": "Synthetic observations"
       },
       {
         "x": 37,
-        "y": 199.4306425,
+        "y": 231.3776739,
         "series": "Synthetic observations"
       },
       {
         "x": 38,
-        "y": 189.1556239,
+        "y": 181.8824215,
         "series": "Synthetic observations"
       },
       {
         "x": 39,
-        "y": 203.6858974,
+        "y": 193.1727199,
         "series": "Synthetic observations"
       },
       {
         "x": 40,
-        "y": 207.3212848,
+        "y": 206.0710056,
         "series": "Synthetic observations"
       },
       {
         "x": 41,
-        "y": 200.5366452,
+        "y": 191.5201186,
         "series": "Synthetic observations"
       },
       {
         "x": 42,
-        "y": 198.3053494,
+        "y": 173.4809067,
         "series": "Synthetic observations"
       },
       {
         "x": 43,
-        "y": 230.5432101,
+        "y": 200.813737,
         "series": "Synthetic observations"
       },
       {
         "x": 44,
-        "y": 235.7335847,
+        "y": 210.7445908,
         "series": "Synthetic observations"
       },
       {
         "x": 45,
-        "y": 223.9057517,
+        "y": 200.1142988,
         "series": "Synthetic observations"
       },
       {
         "x": 46,
-        "y": 180.180477,
+        "y": 234.4404334,
         "series": "Synthetic observations"
       },
       {
         "x": 47,
-        "y": 207.3589486,
+        "y": 201.9837502,
         "series": "Synthetic observations"
       },
       {
         "x": 48,
-        "y": 172.7844965,
+        "y": 197.272529,
         "series": "Synthetic observations"
       },
       {
         "x": 49,
-        "y": 212.9673174,
+        "y": 183.917419,
         "series": "Synthetic observations"
       },
       {
         "x": 50,
-        "y": 162.9466142,
+        "y": 182.6187929,
         "series": "Synthetic observations"
       },
       {
         "x": 51,
-        "y": 171.8778066,
+        "y": 183.0953447,
         "series": "Synthetic observations"
       },
       {
         "x": 52,
-        "y": 204.8483986,
+        "y": 202.5196955,
         "series": "Synthetic observations"
       },
       {
         "x": 53,
-        "y": 179.6019311,
+        "y": 208.4099061,
         "series": "Synthetic observations"
       },
       {
         "x": 54,
-        "y": 163.2291462,
+        "y": 217.5758507,
         "series": "Synthetic observations"
       },
       {
         "x": 55,
-        "y": 213.5403396,
+        "y": 204.9122462,
         "series": "Synthetic observations"
       },
       {
         "x": 56,
-        "y": 212.6896228,
+        "y": 176.9617597,
         "series": "Synthetic observations"
       },
       {
         "x": 57,
-        "y": 173.2283281,
+        "y": 197.6395862,
         "series": "Synthetic observations"
       },
       {
         "x": 58,
-        "y": 181.7431191,
+        "y": 170.5129697,
         "series": "Synthetic observations"
       },
       {
         "x": 59,
-        "y": 224.1714417,
+        "y": 170.695216,
         "series": "Synthetic observations"
       },
       {
         "x": 60,
-        "y": 187.9126497,
+        "y": 222.4156866,
         "series": "Synthetic observations"
       },
       {
         "x": 61,
-        "y": 202.1559301,
+        "y": 219.1042062,
         "series": "Synthetic observations"
       },
       {
         "x": 62,
-        "y": 178.3762471,
+        "y": 176.2211791,
         "series": "Synthetic observations"
       },
       {
         "x": 63,
-        "y": 221.5594468,
+        "y": 203.1700642,
         "series": "Synthetic observations"
       },
       {
         "x": 64,
-        "y": 216.9904294,
+        "y": 161.0324274,
         "series": "Synthetic observations"
       },
       {
         "x": 65,
-        "y": 173.4530086,
+        "y": 219.3526981,
         "series": "Synthetic observations"
       },
       {
         "x": 66,
-        "y": 167.9750459,
+        "y": 210.9889941,
         "series": "Synthetic observations"
       },
       {
         "x": 67,
-        "y": 202.1758551,
+        "y": 187.5752237,
         "series": "Synthetic observations"
       },
       {
         "x": 68,
-        "y": 224.1208265,
+        "y": 219.2215592,
         "series": "Synthetic observations"
       },
       {
         "x": 69,
-        "y": 177.5804744,
+        "y": 176.7898722,
         "series": "Synthetic observations"
       },
       {
         "x": 70,
-        "y": 198.0840903,
+        "y": 228.4589305,
         "series": "Synthetic observations"
       },
       {
         "x": 71,
-        "y": 179.2856853,
+        "y": 219.2172539,
         "series": "Synthetic observations"
       },
       {
         "x": 72,
-        "y": 164.1611902,
+        "y": 212.2442724,
         "series": "Synthetic observations"
       },
       {
         "x": 73,
-        "y": 184.0412917,
+        "y": 166.4457686,
         "series": "Synthetic observations"
       },
       {
         "x": 74,
-        "y": 229.8883969,
+        "y": 168.4428859,
         "series": "Synthetic observations"
       },
       {
         "x": 75,
-        "y": 202.6984503,
+        "y": 173.8521658,
         "series": "Synthetic observations"
       },
       {
         "x": 76,
-        "y": 176.8910502,
+        "y": 211.6097501,
         "series": "Synthetic observations"
       },
       {
         "x": 77,
-        "y": 234.2955166,
+        "y": 175.8125428,
         "series": "Synthetic observations"
       },
       {
         "x": 78,
-        "y": 203.608932,
+        "y": 200.7846685,
         "series": "Synthetic observations"
       },
       {
         "x": 79,
-        "y": 176.4097595,
+        "y": 208.7873035,
         "series": "Synthetic observations"
       },
       {
         "x": 80,
-        "y": 233.8529366,
+        "y": 221.8712191,
         "series": "Synthetic observations"
       },
       {
         "x": 81,
-        "y": 238.1909618,
+        "y": 239.5117547,
         "series": "Synthetic observations"
       },
       {
         "x": 82,
-        "y": 189.6012445,
+        "y": 217.6455983,
         "series": "Synthetic observations"
       },
       {
         "x": 83,
-        "y": 190.3835449,
+        "y": 212.8304433,
         "series": "Synthetic observations"
       },
       {
         "x": 84,
-        "y": 189.0213252,
+        "y": 160.4458,
         "series": "Synthetic observations"
       },
       {
         "x": 85,
-        "y": 180.1594855,
+        "y": 203.6964629,
         "series": "Synthetic observations"
       },
       {
         "x": 86,
-        "y": 226.4072236,
+        "y": 165.7562417,
         "series": "Synthetic observations"
       },
       {
         "x": 87,
-        "y": 182.7249129,
+        "y": 235.6141714,
         "series": "Synthetic observations"
       },
       {
         "x": 88,
-        "y": 204.5497079,
+        "y": 178.9518488,
         "series": "Synthetic observations"
       },
       {
         "x": 89,
-        "y": 201.428905,
+        "y": 219.4835852,
         "series": "Synthetic observations"
       },
       {
         "x": 90,
-        "y": 187.0099816,
+        "y": 235.6278224,
         "series": "Synthetic observations"
       },
       {
         "x": 91,
-        "y": 168.4936207,
+        "y": 215.6879,
         "series": "Synthetic observations"
       },
       {
         "x": 92,
-        "y": 182.8457882,
+        "y": 160.6208907,
         "series": "Synthetic observations"
       },
       {
         "x": 93,
-        "y": 204.5005366,
+        "y": 192.8005173,
         "series": "Synthetic observations"
       },
       {
         "x": 94,
-        "y": 194.5418618,
+        "y": 213.1168242,
         "series": "Synthetic observations"
       },
       {
         "x": 95,
-        "y": 211.4081779,
+        "y": 237.2681941,
         "series": "Synthetic observations"
       },
       {
         "x": 96,
-        "y": 216.2248012,
+        "y": 177.3798033,
         "series": "Synthetic observations"
       },
       {
         "x": 97,
-        "y": 166.1423588,
+        "y": 232.0303144,
         "series": "Synthetic observations"
       },
       {
         "x": 98,
-        "y": 208.6955713,
+        "y": 167.2708536,
         "series": "Synthetic observations"
       },
       {
         "x": 99,
-        "y": 214.6905733,
+        "y": 231.9178778,
         "series": "Synthetic observations"
       },
       {
         "x": 100,
-        "y": 165.3909591,
+        "y": 182.6995277,
         "series": "Synthetic observations"
       },
       {
         "x": 101,
-        "y": 205.147802,
+        "y": 168.85747,
         "series": "Synthetic observations"
       },
       {
         "x": 102,
-        "y": 224.0884387,
+        "y": 168.3516356,
         "series": "Synthetic observations"
       },
       {
         "x": 103,
-        "y": 187.3016261,
+        "y": 210.0621788,
         "series": "Synthetic observations"
       },
       {
         "x": 104,
-        "y": 177.9970215,
+        "y": 199.1204195,
         "series": "Synthetic observations"
       },
       {
         "x": 105,
-        "y": 191.1101623,
+        "y": 162.3554217,
         "series": "Synthetic observations"
       },
       {
         "x": 106,
-        "y": 221.829797,
+        "y": 186.2233413,
         "series": "Synthetic observations"
       },
       {
         "x": 107,
-        "y": 221.8169626,
+        "y": 217.796865,
         "series": "Synthetic observations"
       },
       {
         "x": 108,
-        "y": 218.5319906,
+        "y": 191.1717322,
         "series": "Synthetic observations"
       },
       {
         "x": 109,
-        "y": 220.4626405,
+        "y": 224.5966052,
         "series": "Synthetic observations"
       },
       {
         "x": 110,
-        "y": 235.5414916,
+        "y": 215.3243466,
         "series": "Synthetic observations"
       },
       {
         "x": 111,
-        "y": 160.1936179,
+        "y": 212.7654113,
         "series": "Synthetic observations"
       },
       {
         "x": 112,
-        "y": 220.7869315,
+        "y": 234.805174,
         "series": "Synthetic observations"
       },
       {
         "x": 113,
-        "y": 186.0340062,
+        "y": 178.1190875,
         "series": "Synthetic observations"
       },
       {
         "x": 114,
-        "y": 193.0815126,
+        "y": 169.636315,
         "series": "Synthetic observations"
       },
       {
         "x": 115,
-        "y": 223.6772624,
+        "y": 238.6022753,
         "series": "Synthetic observations"
       },
       {
         "x": 116,
-        "y": 174.1489179,
+        "y": 206.6886409,
         "series": "Synthetic observations"
       },
       {
         "x": 117,
-        "y": 206.3698871,
+        "y": 162.2306073,
         "series": "Synthetic observations"
       },
       {
         "x": 118,
-        "y": 175.2207532,
+        "y": 191.4837887,
         "series": "Synthetic observations"
       },
       {
         "x": 119,
-        "y": 223.1000532,
+        "y": 222.062087,
         "series": "Synthetic observations"
       },
       {
         "x": 120,
-        "y": 194.9731017,
+        "y": 194.3250293,
         "series": "Synthetic observations"
       },
       {
         "x": 121,
-        "y": 181.0696827,
+        "y": 225.3618888,
         "series": "Synthetic observations"
       },
       {
         "x": 122,
-        "y": 232.5228921,
+        "y": 218.4299952,
         "series": "Synthetic observations"
       },
       {
         "x": 123,
-        "y": 185.8191108,
+        "y": 167.6977515,
         "series": "Synthetic observations"
       },
       {
         "x": 124,
-        "y": 174.2829092,
+        "y": 224.3290689,
         "series": "Synthetic observations"
       },
       {
         "x": 125,
-        "y": 198.3891037,
+        "y": 236.1212786,
         "series": "Synthetic observations"
       },
       {
         "x": 126,
-        "y": 201.6774015,
+        "y": 183.6885615,
         "series": "Synthetic observations"
       },
       {
         "x": 127,
-        "y": 215.5456206,
+        "y": 223.794254,
         "series": "Synthetic observations"
       },
       {
         "x": 128,
-        "y": 213.0483606,
+        "y": 228.7659215,
         "series": "Synthetic observations"
       },
       {
         "x": 129,
-        "y": 181.3583357,
+        "y": 236.0300246,
         "series": "Synthetic observations"
       },
       {
         "x": 130,
-        "y": 222.5356798,
+        "y": 178.6034014,
         "series": "Synthetic observations"
       },
       {
         "x": 131,
-        "y": 221.3145597,
+        "y": 211.0381728,
         "series": "Synthetic observations"
       },
       {
         "x": 132,
-        "y": 196.2925158,
+        "y": 225.6934053,
         "series": "Synthetic observations"
       },
       {
         "x": 133,
-        "y": 218.6658285,
+        "y": 222.5821025,
         "series": "Synthetic observations"
       },
       {
         "x": 134,
-        "y": 197.1003097,
+        "y": 171.0531775,
         "series": "Synthetic observations"
       },
       {
         "x": 135,
-        "y": 171.8450479,
+        "y": 233.7037469,
         "series": "Synthetic observations"
       },
       {
         "x": 136,
-        "y": 237.2760443,
+        "y": 232.420547,
         "series": "Synthetic observations"
       },
       {
         "x": 137,
-        "y": 166.5577104,
+        "y": 213.7005929,
         "series": "Synthetic observations"
       },
       {
         "x": 138,
-        "y": 211.7174405,
+        "y": 223.3057987,
         "series": "Synthetic observations"
       },
       {
         "x": 139,
-        "y": 191.5413251,
+        "y": 201.4078775,
         "series": "Synthetic observations"
       },
       {
         "x": 140,
-        "y": 223.0099212,
+        "y": 194.5910287,
         "series": "Synthetic observations"
       },
       {
         "x": 141,
-        "y": 168.0028265,
+        "y": 221.2580129,
         "series": "Synthetic observations"
       },
       {
         "x": 142,
-        "y": 203.7222965,
+        "y": 204.727139,
         "series": "Synthetic observations"
       },
       {
         "x": 143,
-        "y": 234.384352,
+        "y": 192.9003679,
         "series": "Synthetic observations"
       },
       {
         "x": 144,
-        "y": 232.3462468,
+        "y": 214.0254274,
         "series": "Synthetic observations"
       },
       {
         "x": 145,
-        "y": 235.3734038,
+        "y": 206.1338253,
         "series": "Synthetic observations"
       },
       {
         "x": 146,
-        "y": 213.7878092,
+        "y": 228.5211063,
         "series": "Synthetic observations"
       },
       {
         "x": 147,
-        "y": 211.9640372,
+        "y": 189.674812,
         "series": "Synthetic observations"
       },
       {
         "x": 148,
-        "y": 177.8971923,
+        "y": 179.701992,
         "series": "Synthetic observations"
       },
       {
         "x": 149,
-        "y": 182.8913392,
+        "y": 196.0324376,
         "series": "Synthetic observations"
       },
       {
         "x": 150,
-        "y": 185.2263757,
+        "y": 219.031614,
         "series": "Synthetic observations"
       },
       {
         "x": 151,
-        "y": 191.9020887,
+        "y": 180.8687581,
         "series": "Synthetic observations"
       },
       {
         "x": 152,
-        "y": 163.0320699,
+        "y": 173.7969149,
         "series": "Synthetic observations"
       },
       {
         "x": 153,
-        "y": 175.0901144,
+        "y": 168.2943356,
         "series": "Synthetic observations"
       },
       {
         "x": 154,
-        "y": 211.4947412,
+        "y": 169.883287,
         "series": "Synthetic observations"
       },
       {
         "x": 155,
-        "y": 222.9154902,
+        "y": 196.5050351,
         "series": "Synthetic observations"
       },
       {
         "x": 156,
-        "y": 185.2025284,
+        "y": 207.4385409,
         "series": "Synthetic observations"
       },
       {
         "x": 157,
-        "y": 177.5423345,
+        "y": 214.474136,
         "series": "Synthetic observations"
       },
       {
         "x": 158,
-        "y": 233.1520067,
+        "y": 208.6688399,
         "series": "Synthetic observations"
       },
       {
         "x": 159,
-        "y": 162.770603,
+        "y": 226.5275659,
         "series": "Synthetic observations"
       },
       {
         "x": 160,
-        "y": 236.8458733,
+        "y": 175.3676249,
         "series": "Synthetic observations"
       },
       {
         "x": 161,
-        "y": 216.1028922,
+        "y": 164.5489446,
         "series": "Synthetic observations"
       },
       {
         "x": 162,
-        "y": 205.5207621,
+        "y": 183.2958397,
         "series": "Synthetic observations"
       },
       {
         "x": 163,
-        "y": 225.3778923,
+        "y": 207.0786518,
         "series": "Synthetic observations"
       },
       {
         "x": 164,
-        "y": 195.1165119,
+        "y": 185.3104022,
         "series": "Synthetic observations"
       },
       {
         "x": 165,
-        "y": 170.917757,
+        "y": 235.9580322,
         "series": "Synthetic observations"
       },
       {
         "x": 166,
-        "y": 178.3013439,
+        "y": 191.4828769,
         "series": "Synthetic observations"
       },
       {
         "x": 167,
-        "y": 183.277279,
+        "y": 199.3278903,
         "series": "Synthetic observations"
       },
       {
         "x": 168,
-        "y": 191.6955243,
+        "y": 214.5775991,
         "series": "Synthetic observations"
       },
       {
         "x": 169,
-        "y": 171.4483889,
+        "y": 176.6469539,
         "series": "Synthetic observations"
       },
       {
         "x": 170,
-        "y": 228.3892179,
+        "y": 203.4680146,
         "series": "Synthetic observations"
       },
       {
         "x": 171,
-        "y": 221.7641159,
+        "y": 160.5541566,
         "series": "Synthetic observations"
       },
       {
         "x": 172,
-        "y": 173.9283579,
+        "y": 192.6746161,
         "series": "Synthetic observations"
       },
       {
         "x": 173,
-        "y": 198.7617778,
+        "y": 224.2755726,
         "series": "Synthetic observations"
       },
       {
         "x": 174,
-        "y": 207.1454872,
+        "y": 223.4893749,
         "series": "Synthetic observations"
       },
       {
         "x": 175,
-        "y": 220.9057897,
+        "y": 163.1465185,
         "series": "Synthetic observations"
       },
       {
         "x": 176,
-        "y": 188.5406482,
+        "y": 218.1326722,
         "series": "Synthetic observations"
       },
       {
         "x": 177,
-        "y": 161.3361076,
+        "y": 165.420719,
         "series": "Synthetic observations"
       },
       {
         "x": 178,
-        "y": 163.3705248,
+        "y": 193.0902008,
         "series": "Synthetic observations"
       },
       {
         "x": 179,
-        "y": 181.6989473,
+        "y": 187.8536868,
         "series": "Synthetic observations"
       },
       {
         "x": 180,
-        "y": 219.1821641,
+        "y": 169.91311,
         "series": "Synthetic observations"
       },
       {
         "x": 181,
-        "y": 210.6320448,
+        "y": 182.9441824,
         "series": "Synthetic observations"
       },
       {
         "x": 182,
-        "y": 163.2307317,
+        "y": 197.055753,
         "series": "Synthetic observations"
       },
       {
         "x": 183,
-        "y": 212.6173474,
+        "y": 212.2268447,
         "series": "Synthetic observations"
       },
       {
         "x": 184,
-        "y": 189.0488781,
+        "y": 170.7807048,
         "series": "Synthetic observations"
       },
       {
         "x": 185,
-        "y": 202.6796531,
+        "y": 231.5307718,
         "series": "Synthetic observations"
       },
       {
         "x": 186,
-        "y": 168.3884195,
+        "y": 167.7483383,
         "series": "Synthetic observations"
       },
       {
         "x": 187,
-        "y": 192.800337,
+        "y": 173.6939507,
         "series": "Synthetic observations"
       },
       {
         "x": 188,
-        "y": 199.8331614,
+        "y": 170.985996,
         "series": "Synthetic observations"
       },
       {
         "x": 189,
-        "y": 191.9309321,
+        "y": 233.5141842,
         "series": "Synthetic observations"
       },
       {
         "x": 190,
-        "y": 173.584818,
+        "y": 180.7673503,
         "series": "Synthetic observations"
       },
       {
         "x": 191,
-        "y": 208.1319532,
+        "y": 219.5036813,
         "series": "Synthetic observations"
       },
       {
         "x": 192,
-        "y": 218.2521048,
+        "y": 215.5114615,
         "series": "Synthetic observations"
       },
       {
         "x": 193,
-        "y": 183.6279816,
+        "y": 184.6277481,
         "series": "Synthetic observations"
       },
       {
         "x": 194,
-        "y": 184.9262087,
+        "y": 202.5399972,
         "series": "Synthetic observations"
       },
       {
         "x": 195,
-        "y": 236.4606494,
+        "y": 184.6104578,
         "series": "Synthetic observations"
       },
       {
         "x": 196,
-        "y": 201.4039633,
+        "y": 198.6914195,
         "series": "Synthetic observations"
       },
       {
         "x": 197,
-        "y": 190.9367905,
+        "y": 166.7802804,
         "series": "Synthetic observations"
       },
       {
         "x": 198,
-        "y": 200.1231819,
+        "y": 162.5819444,
         "series": "Synthetic observations"
       },
       {
         "x": 199,
-        "y": 218.2096474,
+        "y": 192.091618,
         "series": "Synthetic observations"
       },
       {
         "x": 200,
-        "y": 232.202727,
+        "y": 182.9616997,
         "series": "Synthetic observations"
       },
       {
         "x": 201,
-        "y": 223.096651,
+        "y": 201.979495,
         "series": "Synthetic observations"
       },
       {
         "x": 202,
-        "y": 211.9330198,
+        "y": 237.7401343,
         "series": "Synthetic observations"
       },
       {
         "x": 203,
-        "y": 228.6279132,
+        "y": 196.3848721,
         "series": "Synthetic observations"
       },
       {
         "x": 204,
-        "y": 176.1408161,
+        "y": 203.4598362,
         "series": "Synthetic observations"
       },
       {
         "x": 205,
-        "y": 170.8351975,
+        "y": 190.7115311,
         "series": "Synthetic observations"
       },
       {
         "x": 206,
-        "y": 196.0552044,
+        "y": 178.9621593,
         "series": "Synthetic observations"
       },
       {
         "x": 207,
-        "y": 167.9317594,
+        "y": 202.4460189,
         "series": "Synthetic observations"
       },
       {
         "x": 208,
-        "y": 230.6299013,
+        "y": 201.0654623,
         "series": "Synthetic observations"
       },
       {
         "x": 209,
-        "y": 215.2990708,
+        "y": 232.4579247,
         "series": "Synthetic observations"
       },
       {
         "x": 210,
-        "y": 224.7300501,
+        "y": 191.9635068,
         "series": "Synthetic observations"
       },
       {
         "x": 211,
-        "y": 165.587071,
+        "y": 211.0400494,
         "series": "Synthetic observations"
       },
       {
         "x": 212,
-        "y": 238.169849,
+        "y": 184.3686646,
         "series": "Synthetic observations"
       },
       {
         "x": 213,
-        "y": 166.7502071,
+        "y": 162.7910134,
         "series": "Synthetic observations"
       },
       {
         "x": 214,
-        "y": 227.2904619,
+        "y": 226.1141062,
         "series": "Synthetic observations"
       },
       {
         "x": 215,
-        "y": 194.9821575,
+        "y": 180.2529285,
         "series": "Synthetic observations"
       },
       {
         "x": 216,
-        "y": 214.5957918,
+        "y": 195.2053644,
         "series": "Synthetic observations"
       },
       {
         "x": 217,
-        "y": 239.2777519,
+        "y": 169.1152765,
         "series": "Synthetic observations"
       },
       {
         "x": 218,
-        "y": 218.9168176,
+        "y": 208.1154011,
         "series": "Synthetic observations"
       },
       {
         "x": 219,
-        "y": 214.7412293,
+        "y": 231.4299856,
         "series": "Synthetic observations"
       },
       {
         "x": 220,
-        "y": 163.6533239,
+        "y": 160.877242,
         "series": "Synthetic observations"
       },
       {
         "x": 221,
-        "y": 187.7755996,
+        "y": 188.7980364,
         "series": "Synthetic observations"
       },
       {
         "x": 222,
-        "y": 238.8449762,
+        "y": 223.5461645,
         "series": "Synthetic observations"
       },
       {
         "x": 223,
-        "y": 172.9284993,
+        "y": 177.4161281,
         "series": "Synthetic observations"
       },
       {
         "x": 224,
-        "y": 229.1518208,
+        "y": 179.4340473,
         "series": "Synthetic observations"
       },
       {
         "x": 225,
-        "y": 233.4355569,
+        "y": 230.9004626,
         "series": "Synthetic observations"
       },
       {
         "x": 226,
-        "y": 219.2774104,
+        "y": 232.1247398,
         "series": "Synthetic observations"
       },
       {
         "x": 227,
-        "y": 190.3929091,
+        "y": 175.568704,
         "series": "Synthetic observations"
       },
       {
         "x": 228,
-        "y": 175.9458855,
+        "y": 189.7046945,
         "series": "Synthetic observations"
       },
       {
         "x": 229,
-        "y": 184.0061323,
+        "y": 197.6286885,
         "series": "Synthetic observations"
       },
       {
         "x": 230,
-        "y": 186.2474644,
+        "y": 182.0903256,
         "series": "Synthetic observations"
       },
       {
         "x": 231,
-        "y": 219.5034812,
+        "y": 230.4956817,
         "series": "Synthetic observations"
       },
       {
         "x": 232,
-        "y": 170.9949182,
+        "y": 222.7381963,
         "series": "Synthetic observations"
       },
       {
         "x": 233,
-        "y": 215.0669499,
+        "y": 234.0355233,
         "series": "Synthetic observations"
       },
       {
         "x": 234,
-        "y": 173.6867368,
+        "y": 171.6130401,
         "series": "Synthetic observations"
       },
       {
         "x": 235,
-        "y": 174.5252951,
+        "y": 169.2490507,
         "series": "Synthetic observations"
       },
       {
         "x": 236,
-        "y": 215.7508116,
+        "y": 192.3290101,
         "series": "Synthetic observations"
       },
       {
         "x": 237,
-        "y": 238.5687887,
+        "y": 226.5867705,
         "series": "Synthetic observations"
       },
       {
         "x": 238,
-        "y": 211.9455887,
+        "y": 182.2942071,
         "series": "Synthetic observations"
       },
       {
         "x": 239,
-        "y": 189.886089,
+        "y": 209.9793855,
         "series": "Synthetic observations"
       },
       {
         "x": 240,
-        "y": 161.1237716,
+        "y": 187.9018293,
         "series": "Synthetic observations"
       },
       {
         "x": 241,
-        "y": 164.8892466,
+        "y": 203.2601451,
         "series": "Synthetic observations"
       },
       {
         "x": 242,
-        "y": 212.0167758,
+        "y": 208.3587744,
         "series": "Synthetic observations"
       },
       {
         "x": 243,
-        "y": 202.5834862,
+        "y": 194.3605944,
         "series": "Synthetic observations"
       },
       {
         "x": 244,
-        "y": 176.2762625,
+        "y": 215.5640591,
         "series": "Synthetic observations"
       },
       {
         "x": 245,
-        "y": 184.6540291,
+        "y": 174.4289914,
         "series": "Synthetic observations"
       },
       {
         "x": 246,
-        "y": 226.7122068,
+        "y": 200.9676653,
         "series": "Synthetic observations"
       },
       {
         "x": 247,
-        "y": 234.9828471,
+        "y": 168.9114112,
         "series": "Synthetic observations"
       },
       {
         "x": 248,
-        "y": 202.4950768,
+        "y": 209.2197924,
         "series": "Synthetic observations"
       },
       {
         "x": 249,
-        "y": 216.5738641,
+        "y": 221.3240416,
         "series": "Synthetic observations"
       },
       {
         "x": 250,
-        "y": 230.0428263,
+        "y": 195.4339897,
         "series": "Synthetic observations"
       },
       {
         "x": 251,
-        "y": 214.2557453,
+        "y": 223.6652162,
         "series": "Synthetic observations"
       },
       {
         "x": 252,
-        "y": 223.3915313,
+        "y": 235.4042529,
         "series": "Synthetic observations"
       },
       {
         "x": 253,
-        "y": 167.5470402,
+        "y": 231.9185138,
         "series": "Synthetic observations"
       },
       {
         "x": 254,
-        "y": 176.0516218,
+        "y": 220.1770548,
         "series": "Synthetic observations"
       },
       {
         "x": 255,
-        "y": 184.7090694,
+        "y": 212.9304176,
         "series": "Synthetic observations"
       },
       {
         "x": 256,
-        "y": 162.679787,
+        "y": 160.5812903,
         "series": "Synthetic observations"
       }
     ],
@@ -14397,21 +14527,21 @@
   },
   "measurement-inference/recovering-parameters/default": {
     "headline": "Synthetic parameter recovery",
-    "result": "120.03 BPM from 120.0 BPM generator",
+    "result": "120.34 BPM from 120.0 BPM generator",
     "observables": [
       {
         "id": "recovered",
         "label": "Recovered tempo hypothesis",
-        "value": 120.0272454,
+        "value": 120.3359427,
         "unit": "BPM",
-        "claimId": "hypothesis.transcription",
+        "claimId": "model.deterministic",
         "precision": 2,
         "aggregation": "distribution"
       },
       {
         "id": "error",
         "label": "Recovery error",
-        "value": 0.02724537091,
+        "value": 0.335942683,
         "unit": "BPM",
         "claimId": "model.deterministic",
         "precision": 2,
@@ -14420,7 +14550,7 @@
       {
         "id": "intervalIqr",
         "label": "Inter-onset IQR",
-        "value": 20.80465405,
+        "value": 18.30134674,
         "unit": "ms",
         "claimId": "model.deterministic",
         "precision": 1,
@@ -14430,117 +14560,117 @@
     "trace": [
       {
         "x": 1,
-        "y": 499.8865034,
+        "y": 486.1982625,
         "series": "Inter-onset intervals"
       },
       {
         "x": 2,
-        "y": 510.0553005,
+        "y": 523.536331,
         "series": "Inter-onset intervals"
       },
       {
         "x": 3,
-        "y": 499.1380283,
+        "y": 492.436094,
         "series": "Inter-onset intervals"
       },
       {
         "x": 4,
-        "y": 506.6186773,
+        "y": 486.6751185,
         "series": "Inter-onset intervals"
       },
       {
         "x": 5,
-        "y": 481.7683412,
+        "y": 525.5724399,
         "series": "Inter-onset intervals"
       },
       {
         "x": 6,
-        "y": 512.1691939,
+        "y": 502.0534512,
         "series": "Inter-onset intervals"
       },
       {
         "x": 7,
-        "y": 487.408505,
+        "y": 496.4304795,
         "series": "Inter-onset intervals"
       },
       {
         "x": 8,
-        "y": 517.8210695,
+        "y": 473.790958,
         "series": "Inter-onset intervals"
       },
       {
         "x": 9,
-        "y": 475.7535743,
+        "y": 504.4921043,
         "series": "Inter-onset intervals"
       },
       {
         "x": 10,
-        "y": 526.2176792,
+        "y": 526.2253646,
         "series": "Inter-onset intervals"
       },
       {
         "x": 11,
-        "y": 490.4420811,
+        "y": 488.2888087,
         "series": "Inter-onset intervals"
       },
       {
         "x": 12,
-        "y": 513.1054976,
+        "y": 496.8318305,
         "series": "Inter-onset intervals"
       },
       {
         "x": 13,
-        "y": 476.3454336,
+        "y": 506.9642646,
         "series": "Inter-onset intervals"
       },
       {
         "x": 14,
-        "y": 514.8619008,
+        "y": 490.3788338,
         "series": "Inter-onset intervals"
       },
       {
         "x": 15,
-        "y": 493.3824601,
+        "y": 486.7368194,
         "series": "Inter-onset intervals"
       },
       {
         "x": 16,
-        "y": 503.474872,
+        "y": 502.7577768,
         "series": "Inter-onset intervals"
       },
       {
         "x": 17,
-        "y": 499.3337103,
+        "y": 498.003373,
         "series": "Inter-onset intervals"
       },
       {
         "x": 18,
-        "y": 496.1445336,
+        "y": 512.3030586,
         "series": "Inter-onset intervals"
       },
       {
         "x": 19,
-        "y": 519.8644954,
+        "y": 503.2401151,
         "series": "Inter-onset intervals"
       },
       {
         "x": 20,
-        "y": 493.2233022,
+        "y": 516.9186052,
         "series": "Inter-onset intervals"
       },
       {
         "x": 21,
-        "y": 505.075029,
+        "y": 466.9151067,
         "series": "Inter-onset intervals"
       },
       {
         "x": 22,
-        "y": 468.6333383,
+        "y": 508.3060714,
         "series": "Inter-onset intervals"
       },
       {
         "x": 23,
-        "y": 527.3804011,
+        "y": 498.6041465,
         "series": "Inter-onset intervals"
       }
     ],
@@ -14564,21 +14694,21 @@
   },
   "measurement-inference/recovering-parameters/variant": {
     "headline": "Synthetic parameter recovery",
-    "result": "221.55 BPM from 220.0 BPM generator",
+    "result": "221.23 BPM from 220.0 BPM generator",
     "observables": [
       {
         "id": "recovered",
         "label": "Recovered tempo hypothesis",
-        "value": 221.5530834,
+        "value": 221.2309686,
         "unit": "BPM",
-        "claimId": "hypothesis.transcription",
+        "claimId": "model.deterministic",
         "precision": 2,
         "aggregation": "distribution"
       },
       {
         "id": "error",
         "label": "Recovery error",
-        "value": 1.553083391,
+        "value": 1.230968551,
         "unit": "BPM",
         "claimId": "model.deterministic",
         "precision": 2,
@@ -14587,7 +14717,7 @@
       {
         "id": "intervalIqr",
         "label": "Inter-onset IQR",
-        "value": 132.543698,
+        "value": 158.0510454,
         "unit": "ms",
         "claimId": "model.deterministic",
         "precision": 1,
@@ -14597,637 +14727,637 @@
     "trace": [
       {
         "x": 1,
-        "y": 300.1616928,
+        "y": 445.1205014,
         "series": "Inter-onset intervals"
       },
       {
         "x": 2,
-        "y": 270.8154591,
+        "y": 257.7345906,
         "series": "Inter-onset intervals"
       },
       {
         "x": 3,
-        "y": 411.1978518,
+        "y": 192.2636125,
         "series": "Inter-onset intervals"
       },
       {
         "x": 4,
-        "y": 173.290271,
+        "y": 177.9954122,
         "series": "Inter-onset intervals"
       },
       {
         "x": 5,
-        "y": 417.3461592,
+        "y": 260.2766375,
         "series": "Inter-onset intervals"
       },
       {
         "x": 6,
-        "y": 104.7858798,
+        "y": 317.744676,
         "series": "Inter-onset intervals"
       },
       {
         "x": 7,
-        "y": 265.6445886,
+        "y": 408.7789646,
         "series": "Inter-onset intervals"
       },
       {
         "x": 8,
-        "y": 247.9824633,
+        "y": 221.8787377,
         "series": "Inter-onset intervals"
       },
       {
         "x": 9,
-        "y": 238.8602546,
+        "y": 261.1430602,
         "series": "Inter-onset intervals"
       },
       {
         "x": 10,
-        "y": 414.3749728,
+        "y": 165.8147719,
         "series": "Inter-onset intervals"
       },
       {
         "x": 11,
-        "y": 170.7195155,
+        "y": 387.1679349,
         "series": "Inter-onset intervals"
       },
       {
         "x": 12,
-        "y": 290.7019661,
+        "y": 136.0170132,
         "series": "Inter-onset intervals"
       },
       {
         "x": 13,
-        "y": 239.1703028,
+        "y": 363.7738334,
         "series": "Inter-onset intervals"
       },
       {
         "x": 14,
-        "y": 257.2933858,
+        "y": 314.2307315,
         "series": "Inter-onset intervals"
       },
       {
         "x": 15,
-        "y": 262.0907386,
+        "y": 354.3452331,
         "series": "Inter-onset intervals"
       },
       {
         "x": 16,
-        "y": 295.7200957,
+        "y": 111.9011914,
         "series": "Inter-onset intervals"
       },
       {
         "x": 17,
-        "y": 321.4206061,
+        "y": 414.2225922,
         "series": "Inter-onset intervals"
       },
       {
         "x": 18,
-        "y": 423.440487,
+        "y": 177.5277281,
         "series": "Inter-onset intervals"
       },
       {
         "x": 19,
-        "y": 185.7547329,
+        "y": 321.5874719,
         "series": "Inter-onset intervals"
       },
       {
         "x": 20,
-        "y": 305.9519676,
+        "y": 253.1468396,
         "series": "Inter-onset intervals"
       },
       {
         "x": 21,
-        "y": 167.9998517,
+        "y": 312.9852424,
         "series": "Inter-onset intervals"
       },
       {
         "x": 22,
-        "y": 222.2676467,
+        "y": 133.5885139,
         "series": "Inter-onset intervals"
       },
       {
         "x": 23,
-        "y": 323.7589993,
+        "y": 326.2040763,
         "series": "Inter-onset intervals"
       },
       {
         "x": 24,
-        "y": 417.3510272,
+        "y": 194.6806816,
         "series": "Inter-onset intervals"
       },
       {
         "x": 25,
-        "y": 287.6700178,
+        "y": 480.9309945,
         "series": "Inter-onset intervals"
       },
       {
         "x": 26,
-        "y": 205.4540184,
+        "y": 273.7788298,
         "series": "Inter-onset intervals"
       },
       {
         "x": 27,
-        "y": 258.9872198,
+        "y": 233.3239168,
         "series": "Inter-onset intervals"
       },
       {
         "x": 28,
-        "y": 171.1160813,
+        "y": 159.2793475,
         "series": "Inter-onset intervals"
       },
       {
         "x": 29,
-        "y": 384.2577797,
+        "y": 326.6970867,
         "series": "Inter-onset intervals"
       },
       {
         "x": 30,
-        "y": 309.8948198,
+        "y": 287.3219849,
         "series": "Inter-onset intervals"
       },
       {
         "x": 31,
-        "y": 104.0069147,
+        "y": 368.6224203,
         "series": "Inter-onset intervals"
       },
       {
         "x": 32,
-        "y": 378.7108291,
+        "y": 68.15208706,
         "series": "Inter-onset intervals"
       },
       {
         "x": 33,
-        "y": 311.9084165,
+        "y": 469.9427625,
         "series": "Inter-onset intervals"
       },
       {
         "x": 34,
-        "y": 186.0021147,
+        "y": 283.7930918,
         "series": "Inter-onset intervals"
       },
       {
         "x": 35,
-        "y": 238.9795981,
+        "y": 260.7988435,
         "series": "Inter-onset intervals"
       },
       {
         "x": 36,
-        "y": 344.6958939,
+        "y": 268.5951234,
         "series": "Inter-onset intervals"
       },
       {
         "x": 37,
-        "y": 241.9022167,
+        "y": 124.2415157,
         "series": "Inter-onset intervals"
       },
       {
         "x": 38,
-        "y": 316.3180935,
+        "y": 306.5981679,
         "series": "Inter-onset intervals"
       },
       {
         "x": 39,
-        "y": 283.6334349,
+        "y": 311.4221297,
         "series": "Inter-onset intervals"
       },
       {
         "x": 40,
-        "y": 252.3733539,
+        "y": 229.0746118,
         "series": "Inter-onset intervals"
       },
       {
         "x": 41,
-        "y": 266.0333851,
+        "y": 218.6096369,
         "series": "Inter-onset intervals"
       },
       {
         "x": 42,
-        "y": 369.440855,
+        "y": 354.7257637,
         "series": "Inter-onset intervals"
       },
       {
         "x": 43,
-        "y": 288.2983963,
+        "y": 302.5198342,
         "series": "Inter-onset intervals"
       },
       {
         "x": 44,
-        "y": 237.2437737,
+        "y": 240.8363967,
         "series": "Inter-onset intervals"
       },
       {
         "x": 45,
-        "y": 141.5514487,
+        "y": 375.7056766,
         "series": "Inter-onset intervals"
       },
       {
         "x": 46,
-        "y": 354.2626875,
+        "y": 175.3572232,
         "series": "Inter-onset intervals"
       },
       {
         "x": 47,
-        "y": 169.0039165,
+        "y": 258.5936089,
         "series": "Inter-onset intervals"
       },
       {
         "x": 48,
-        "y": 393.2757355,
+        "y": 232.6619427,
         "series": "Inter-onset intervals"
       },
       {
         "x": 49,
-        "y": 122.665163,
+        "y": 268.8313944,
         "series": "Inter-onset intervals"
       },
       {
         "x": 50,
-        "y": 299.5208498,
+        "y": 274.1569281,
         "series": "Inter-onset intervals"
       },
       {
         "x": 51,
-        "y": 371.6390489,
+        "y": 331.0003253,
         "series": "Inter-onset intervals"
       },
       {
         "x": 52,
-        "y": 196.9878701,
+        "y": 290.3979044,
         "series": "Inter-onset intervals"
       },
       {
         "x": 53,
-        "y": 223.6089182,
+        "y": 300.2251065,
         "series": "Inter-onset intervals"
       },
       {
         "x": 54,
-        "y": 423.6608528,
+        "y": 234.7364594,
         "series": "Inter-onset intervals"
       },
       {
         "x": 55,
-        "y": 270.1751222,
+        "y": 188.875813,
         "series": "Inter-onset intervals"
       },
       {
         "x": 56,
-        "y": 154.3433888,
+        "y": 334.7607524,
         "series": "Inter-onset intervals"
       },
       {
         "x": 57,
-        "y": 298.2716456,
+        "y": 191.3474232,
         "series": "Inter-onset intervals"
       },
       {
         "x": 58,
-        "y": 400.0122406,
+        "y": 273.2740117,
         "series": "Inter-onset intervals"
       },
       {
         "x": 59,
-        "y": 163.9508967,
+        "y": 427.8886843,
         "series": "Inter-onset intervals"
       },
       {
         "x": 60,
-        "y": 315.4571138,
+        "y": 262.7928315,
         "series": "Inter-onset intervals"
       },
       {
         "x": 61,
-        "y": 201.3882238,
+        "y": 144.0781916,
         "series": "Inter-onset intervals"
       },
       {
         "x": 62,
-        "y": 402.2768717,
+        "y": 353.573928,
         "series": "Inter-onset intervals"
       },
       {
         "x": 63,
-        "y": 259.0202208,
+        "y": 146.3143623,
         "series": "Inter-onset intervals"
       },
       {
         "x": 64,
-        "y": 142.1150101,
+        "y": 447.6880849,
         "series": "Inter-onset intervals"
       },
       {
         "x": 65,
-        "y": 256.2933847,
+        "y": 247.6361606,
         "series": "Inter-onset intervals"
       },
       {
         "x": 66,
-        "y": 375.3297003,
+        "y": 202.4859615,
         "series": "Inter-onset intervals"
       },
       {
         "x": 67,
-        "y": 338.5621868,
+        "y": 367.6662793,
         "series": "Inter-onset intervals"
       },
       {
         "x": 68,
-        "y": 133.1062166,
+        "y": 145.4322117,
         "series": "Inter-onset intervals"
       },
       {
         "x": 69,
-        "y": 334.2381203,
+        "y": 427.7344475,
         "series": "Inter-onset intervals"
       },
       {
         "x": 70,
-        "y": 216.3320577,
+        "y": 245.0022431,
         "series": "Inter-onset intervals"
       },
       {
         "x": 71,
-        "y": 227.3537876,
+        "y": 251.8083283,
         "series": "Inter-onset intervals"
       },
       {
         "x": 72,
-        "y": 332.367577,
+        "y": 135.3317612,
         "series": "Inter-onset intervals"
       },
       {
         "x": 73,
-        "y": 410.2685884,
+        "y": 278.7186245,
         "series": "Inter-onset intervals"
       },
       {
         "x": 74,
-        "y": 191.157433,
+        "y": 288.9551126,
         "series": "Inter-onset intervals"
       },
       {
         "x": 75,
-        "y": 195.3050725,
+        "y": 386.0000255,
         "series": "Inter-onset intervals"
       },
       {
         "x": 76,
-        "y": 444.9406717,
+        "y": 165.3356511,
         "series": "Inter-onset intervals"
       },
       {
         "x": 77,
-        "y": 180.667519,
+        "y": 347.6436496,
         "series": "Inter-onset intervals"
       },
       {
         "x": 78,
-        "y": 191.1297553,
+        "y": 296.7351778,
         "series": "Inter-onset intervals"
       },
       {
         "x": 79,
-        "y": 445.056804,
+        "y": 311.9790195,
         "series": "Inter-onset intervals"
       },
       {
         "x": 80,
-        "y": 285.7413484,
+        "y": 325.6488798,
         "series": "Inter-onset intervals"
       },
       {
         "x": 81,
-        "y": 126.9581208,
+        "y": 207.1288035,
         "series": "Inter-onset intervals"
       },
       {
         "x": 82,
-        "y": 275.074174,
+        "y": 258.2818077,
         "series": "Inter-onset intervals"
       },
       {
         "x": 83,
-        "y": 268.6406134,
+        "y": 115.5733427,
         "series": "Inter-onset intervals"
       },
       {
         "x": 84,
-        "y": 246.1417536,
+        "y": 402.4792615,
         "series": "Inter-onset intervals"
       },
       {
         "x": 85,
-        "y": 411.4704871,
+        "y": 158.9066092,
         "series": "Inter-onset intervals"
       },
       {
         "x": 86,
-        "y": 141.6803407,
+        "y": 482.3010618,
         "series": "Inter-onset intervals"
       },
       {
         "x": 87,
-        "y": 338.2016577,
+        "y": 102.7403049,
         "series": "Inter-onset intervals"
       },
       {
         "x": 88,
-        "y": 263.3648641,
+        "y": 394.3224818,
         "series": "Inter-onset intervals"
       },
       {
         "x": 89,
-        "y": 229.4705024,
+        "y": 321.1599843,
         "series": "Inter-onset intervals"
       },
       {
         "x": 90,
-        "y": 217.17819,
+        "y": 212.9075056,
         "series": "Inter-onset intervals"
       },
       {
         "x": 91,
-        "y": 315.7837753,
+        "y": 107.5262446,
         "series": "Inter-onset intervals"
       },
       {
         "x": 92,
-        "y": 337.6915179,
+        "y": 369.2661526,
         "series": "Inter-onset intervals"
       },
       {
         "x": 93,
-        "y": 242.8512484,
+        "y": 333.6761935,
         "series": "Inter-onset intervals"
       },
       {
         "x": 94,
-        "y": 323.326221,
+        "y": 345.1813822,
         "series": "Inter-onset intervals"
       },
       {
         "x": 95,
-        "y": 287.1771427,
+        "y": 93.06210048,
         "series": "Inter-onset intervals"
       },
       {
         "x": 96,
-        "y": 122.4799455,
+        "y": 436.6788062,
         "series": "Inter-onset intervals"
       },
       {
         "x": 97,
-        "y": 400.3869102,
+        "y": 78.44889005,
         "series": "Inter-onset intervals"
       },
       {
         "x": 98,
-        "y": 290.7122787,
+        "y": 466.6683455,
         "series": "Inter-onset intervals"
       },
       {
         "x": 99,
-        "y": 124.8284303,
+        "y": 125.0722225,
         "series": "Inter-onset intervals"
       },
       {
         "x": 100,
-        "y": 391.9978014,
+        "y": 231.2010994,
         "series": "Inter-onset intervals"
       },
       {
         "x": 101,
-        "y": 329.5491827,
+        "y": 271.2097696,
         "series": "Inter-onset intervals"
       },
       {
         "x": 102,
-        "y": 162.3668348,
+        "y": 397.8589023,
         "series": "Inter-onset intervals"
       },
       {
         "x": 103,
-        "y": 244.8134591,
+        "y": 239.9019947,
         "series": "Inter-onset intervals"
       },
       {
         "x": 104,
-        "y": 312.0666952,
+        "y": 162.4322793,
         "series": "Inter-onset intervals"
       },
       {
         "x": 105,
-        "y": 364.8861769,
+        "y": 344.3310317,
         "series": "Inter-onset intervals"
       },
       {
         "x": 106,
-        "y": 272.6887693,
+        "y": 367.4478439,
         "series": "Inter-onset intervals"
       },
       {
         "x": 107,
-        "y": 262.8723566,
+        "y": 192.8518743,
         "series": "Inter-onset intervals"
       },
       {
         "x": 108,
-        "y": 278.5192225,
+        "y": 373.0018918,
         "series": "Inter-onset intervals"
       },
       {
         "x": 109,
-        "y": 317.9638261,
+        "y": 244.9104968,
         "series": "Inter-onset intervals"
       },
       {
         "x": 110,
-        "y": 46.68365174,
+        "y": 265.0504669,
         "series": "Inter-onset intervals"
       },
       {
         "x": 111,
-        "y": 454.5072134,
+        "y": 338.8465607,
         "series": "Inter-onset intervals"
       },
       {
         "x": 112,
-        "y": 168.4684969,
+        "y": 102.6690132,
         "series": "Inter-onset intervals"
       },
       {
         "x": 113,
-        "y": 293.8697919,
+        "y": 247.2789552,
         "series": "Inter-onset intervals"
       },
       {
         "x": 114,
-        "y": 364.5145222,
+        "y": 479.6251537,
         "series": "Inter-onset intervals"
       },
       {
         "x": 115,
-        "y": 124.142239,
+        "y": 176.9863695,
         "series": "Inter-onset intervals"
       },
       {
         "x": 116,
-        "y": 369.3901805,
+        "y": 139.3531722,
         "series": "Inter-onset intervals"
       },
       {
         "x": 117,
-        "y": 179.279871,
+        "y": 360.4868168,
         "series": "Inter-onset intervals"
       },
       {
         "x": 118,
-        "y": 416.3651728,
+        "y": 364.4621676,
         "series": "Inter-onset intervals"
       },
       {
         "x": 119,
-        "y": 188.3464183,
+        "y": 189.5160997,
         "series": "Inter-onset intervals"
       },
       {
         "x": 120,
-        "y": 231.0170157,
+        "y": 365.8378512,
         "series": "Inter-onset intervals"
       },
       {
         "x": 121,
-        "y": 427.0869008,
+        "y": 251.931592,
         "series": "Inter-onset intervals"
       },
       {
         "x": 122,
-        "y": 132.6159289,
+        "y": 120.5305415,
         "series": "Inter-onset intervals"
       },
       {
         "x": 123,
-        "y": 238.1186681,
+        "y": 442.6212251,
         "series": "Inter-onset intervals"
       },
       {
         "x": 124,
-        "y": 345.045856,
+        "y": 308.1039017,
         "series": "Inter-onset intervals"
       },
       {
         "x": 125,
-        "y": 282.5921661,
+        "y": 115.4291214,
         "series": "Inter-onset intervals"
       },
       {
         "x": 126,
-        "y": 314.3319302,
+        "y": 393.0443503,
         "series": "Inter-onset intervals"
       },
       {
         "x": 127,
-        "y": 265.2354927,
+        "y": 287.6422754,
         "series": "Inter-onset intervals"
       }
     ],
@@ -15251,23 +15381,23 @@
   },
   "measurement-inference/compare-without-grading/default": {
     "headline": "Descriptive event alignment",
-    "result": "Median +20.1 ms; IQR 14.7 to 32.4 ms",
+    "result": "Median +26.5 ms; IQR 19.0 to 33.2 ms",
     "observables": [
       {
         "id": "median",
         "label": "Median signed difference",
-        "value": 20.06508245,
+        "value": 26.47158671,
         "unit": "ms",
-        "claimId": "measurement.local",
+        "claimId": "model.deterministic",
         "precision": 1,
         "aggregation": "distribution"
       },
       {
         "id": "iqr",
         "label": "Interquartile range",
-        "value": 17.77580697,
+        "value": 14.24013053,
         "unit": "ms",
-        "claimId": "measurement.local",
+        "claimId": "model.deterministic",
         "precision": 1,
         "aggregation": "distribution"
       },
@@ -15276,7 +15406,7 @@
         "label": "Neutral description",
         "value": "later than the reference",
         "unit": null,
-        "claimId": "measurement.local",
+        "claimId": "model.deterministic",
         "precision": 2,
         "aggregation": "instantaneous"
       }
@@ -15284,82 +15414,82 @@
     "trace": [
       {
         "x": 1,
-        "y": 12.95885931,
+        "y": 23.82768655,
         "series": "Signed event differences"
       },
       {
         "x": 2,
-        "y": 13.78448172,
+        "y": 30.62184569,
         "series": "Signed event differences"
       },
       {
         "x": 3,
-        "y": 18.9366429,
+        "y": 26.32299157,
         "series": "Signed event differences"
       },
       {
         "x": 4,
-        "y": 36.01865102,
+        "y": 4.590312152,
         "series": "Signed event differences"
       },
       {
         "x": 5,
-        "y": 17.58869958,
+        "y": 20.07502063,
         "series": "Signed event differences"
       },
       {
         "x": 6,
-        "y": 14.66557964,
+        "y": 33.48124117,
         "series": "Signed event differences"
       },
       {
         "x": 7,
-        "y": 24.44612783,
+        "y": 13.57774459,
         "series": "Signed event differences"
       },
       {
         "x": 8,
-        "y": 35.43100052,
+        "y": 25.31663568,
         "series": "Signed event differences"
       },
       {
         "x": 9,
-        "y": 14.63359018,
+        "y": 32.44144429,
         "series": "Signed event differences"
       },
       {
         "x": 10,
-        "y": 21.193522,
+        "y": 38.65858228,
         "series": "Signed event differences"
       },
       {
         "x": 11,
-        "y": 31.70818799,
+        "y": 15.60751311,
         "series": "Signed event differences"
       },
       {
         "x": 12,
-        "y": 16.10921921,
+        "y": 33.10395199,
         "series": "Signed event differences"
       },
       {
         "x": 13,
-        "y": 34.60899303,
+        "y": 12.16755409,
         "series": "Signed event differences"
       },
       {
         "x": 14,
-        "y": 14.62351301,
+        "y": 33.49794198,
         "series": "Signed event differences"
       },
       {
         "x": 15,
-        "y": 23.49506781,
+        "y": 34.80047441,
         "series": "Signed event differences"
       },
       {
         "x": 16,
-        "y": 36.25215297,
+        "y": 26.62018185,
         "series": "Signed event differences"
       }
     ],
@@ -15383,23 +15513,23 @@
   },
   "measurement-inference/compare-without-grading/variant": {
     "headline": "Descriptive event alignment",
-    "result": "Median +124.5 ms; IQR 87.7 to 181.9 ms",
+    "result": "Median +153.5 ms; IQR 100.4 to 194.5 ms",
     "observables": [
       {
         "id": "median",
         "label": "Median signed difference",
-        "value": 124.4634089,
+        "value": 153.496859,
         "unit": "ms",
-        "claimId": "measurement.local",
+        "claimId": "model.deterministic",
         "precision": 1,
         "aggregation": "distribution"
       },
       {
         "id": "iqr",
         "label": "Interquartile range",
-        "value": 94.2230007,
+        "value": 94.1364329,
         "unit": "ms",
-        "claimId": "measurement.local",
+        "claimId": "model.deterministic",
         "precision": 1,
         "aggregation": "distribution"
       },
@@ -15408,7 +15538,7 @@
         "label": "Neutral description",
         "value": "later than the reference",
         "unit": null,
-        "claimId": "measurement.local",
+        "claimId": "model.deterministic",
         "precision": 2,
         "aggregation": "instantaneous"
       }
@@ -15416,322 +15546,322 @@
     "trace": [
       {
         "x": 1,
-        "y": 72.24093834,
+        "y": 84.12358593,
         "series": "Signed event differences"
       },
       {
         "x": 2,
-        "y": 95.10295507,
+        "y": 227.7846098,
         "series": "Signed event differences"
       },
       {
         "x": 3,
-        "y": 93.50977708,
+        "y": 215.290708,
         "series": "Signed event differences"
       },
       {
         "x": 4,
-        "y": 208.9019263,
+        "y": 148.2376578,
         "series": "Signed event differences"
       },
       {
         "x": 5,
-        "y": 126.0377581,
+        "y": 69.29444075,
         "series": "Signed event differences"
       },
       {
         "x": 6,
-        "y": 246.5534969,
+        "y": 58.91891136,
         "series": "Signed event differences"
       },
       {
         "x": 7,
-        "y": 106.6023361,
+        "y": 96.43341405,
         "series": "Signed event differences"
       },
       {
         "x": 8,
-        "y": 100.7000993,
+        "y": 209.8098239,
         "series": "Signed event differences"
       },
       {
         "x": 9,
-        "y": 80.07942485,
+        "y": 167.4360448,
         "series": "Signed event differences"
       },
       {
         "x": 10,
-        "y": 51.85690974,
+        "y": 157.7825343,
         "series": "Signed event differences"
       },
       {
         "x": 11,
-        "y": 169.8966598,
+        "y": 68.68878365,
         "series": "Signed event differences"
       },
       {
         "x": 12,
-        "y": 84.89019549,
+        "y": 164.0560021,
         "series": "Signed event differences"
       },
       {
         "x": 13,
-        "y": 99.86910662,
+        "y": 50.13078582,
         "series": "Signed event differences"
       },
       {
         "x": 14,
-        "y": 71.90496498,
+        "y": 126.0029197,
         "series": "Signed event differences"
       },
       {
         "x": 15,
-        "y": 59.04339254,
+        "y": 160.5891353,
         "series": "Signed event differences"
       },
       {
         "x": 16,
-        "y": 50.17961408,
+        "y": 228.6041023,
         "series": "Signed event differences"
       },
       {
         "x": 17,
-        "y": 69.34029991,
+        "y": 94.58236787,
         "series": "Signed event differences"
       },
       {
         "x": 18,
-        "y": 109.9180777,
+        "y": 212.4951341,
         "series": "Signed event differences"
       },
       {
         "x": 19,
-        "y": 235.512423,
+        "y": 133.1621802,
         "series": "Signed event differences"
       },
       {
         "x": 20,
-        "y": 163.0353065,
+        "y": 173.8790129,
         "series": "Signed event differences"
       },
       {
         "x": 21,
-        "y": 190.7225522,
+        "y": 157.5619853,
         "series": "Signed event differences"
       },
       {
         "x": 22,
-        "y": 103.4497014,
+        "y": 191.1102933,
         "series": "Signed event differences"
       },
       {
         "x": 23,
-        "y": 61.40001304,
+        "y": 75.16132765,
         "series": "Signed event differences"
       },
       {
         "x": 24,
-        "y": 103.9264518,
+        "y": 119.7253306,
         "series": "Signed event differences"
       },
       {
         "x": 25,
-        "y": 224.4462472,
+        "y": 54.6865047,
         "series": "Signed event differences"
       },
       {
         "x": 26,
-        "y": 236.8985348,
+        "y": 228.1896062,
         "series": "Signed event differences"
       },
       {
         "x": 27,
-        "y": 180.8374895,
+        "y": 229.0659037,
         "series": "Signed event differences"
       },
       {
         "x": 28,
-        "y": 169.3874454,
+        "y": 196.2297738,
         "series": "Signed event differences"
       },
       {
         "x": 29,
-        "y": 84.71145248,
+        "y": 101.6898361,
         "series": "Signed event differences"
       },
       {
         "x": 30,
-        "y": 177.6535416,
+        "y": 146.6646811,
         "series": "Signed event differences"
       },
       {
         "x": 31,
-        "y": 208.6264975,
+        "y": 158.8269412,
         "series": "Signed event differences"
       },
       {
         "x": 32,
-        "y": 68.02619915,
+        "y": 238.7395642,
         "series": "Signed event differences"
       },
       {
         "x": 33,
-        "y": 156.3458295,
+        "y": 68.26024279,
         "series": "Signed event differences"
       },
       {
         "x": 34,
-        "y": 188.9967826,
+        "y": 232.6064842,
         "series": "Signed event differences"
       },
       {
         "x": 35,
-        "y": 116.7258175,
+        "y": 241.8280001,
         "series": "Signed event differences"
       },
       {
         "x": 36,
-        "y": 88.60275536,
+        "y": 231.8876424,
         "series": "Signed event differences"
       },
       {
         "x": 37,
-        "y": 148.5766063,
+        "y": 228.4441847,
         "series": "Signed event differences"
       },
       {
         "x": 38,
-        "y": 122.8890596,
+        "y": 104.7060538,
         "series": "Signed event differences"
       },
       {
         "x": 39,
-        "y": 159.2147436,
+        "y": 132.9317998,
         "series": "Signed event differences"
       },
       {
         "x": 40,
-        "y": 168.3032121,
+        "y": 165.1775139,
         "series": "Signed event differences"
       },
       {
         "x": 41,
-        "y": 151.3416131,
+        "y": 128.8002965,
         "series": "Signed event differences"
       },
       {
         "x": 42,
-        "y": 145.7633734,
+        "y": 83.70226664,
         "series": "Signed event differences"
       },
       {
         "x": 43,
-        "y": 226.3580253,
+        "y": 152.0343424,
         "series": "Signed event differences"
       },
       {
         "x": 44,
-        "y": 239.3339617,
+        "y": 176.861477,
         "series": "Signed event differences"
       },
       {
         "x": 45,
-        "y": 209.7643792,
+        "y": 150.285747,
         "series": "Signed event differences"
       },
       {
         "x": 46,
-        "y": 100.4511925,
+        "y": 236.1010836,
         "series": "Signed event differences"
       },
       {
         "x": 47,
-        "y": 168.3973715,
+        "y": 154.9593756,
         "series": "Signed event differences"
       },
       {
         "x": 48,
-        "y": 81.96124132,
+        "y": 143.1813224,
         "series": "Signed event differences"
       },
       {
         "x": 49,
-        "y": 182.4182936,
+        "y": 109.7935474,
         "series": "Signed event differences"
       },
       {
         "x": 50,
-        "y": 57.36653549,
+        "y": 106.5469821,
         "series": "Signed event differences"
       },
       {
         "x": 51,
-        "y": 79.6945164,
+        "y": 107.7383616,
         "series": "Signed event differences"
       },
       {
         "x": 52,
-        "y": 162.1209966,
+        "y": 156.2992388,
         "series": "Signed event differences"
       },
       {
         "x": 53,
-        "y": 99.00482772,
+        "y": 171.0247652,
         "series": "Signed event differences"
       },
       {
         "x": 54,
-        "y": 58.07286561,
+        "y": 193.9396267,
         "series": "Signed event differences"
       },
       {
         "x": 55,
-        "y": 183.850849,
+        "y": 162.2806156,
         "series": "Signed event differences"
       },
       {
         "x": 56,
-        "y": 181.7240569,
+        "y": 92.40439916,
         "series": "Signed event differences"
       },
       {
         "x": 57,
-        "y": 83.07082029,
+        "y": 144.0989656,
         "series": "Signed event differences"
       },
       {
         "x": 58,
-        "y": 104.3577977,
+        "y": 76.28242429,
         "series": "Signed event differences"
       },
       {
         "x": 59,
-        "y": 210.4286043,
+        "y": 76.7380401,
         "series": "Signed event differences"
       },
       {
         "x": 60,
-        "y": 119.7816243,
+        "y": 206.0392164,
         "series": "Signed event differences"
       },
       {
         "x": 61,
-        "y": 155.3898252,
+        "y": 197.7605154,
         "series": "Signed event differences"
       },
       {
         "x": 62,
-        "y": 95.9406177,
+        "y": 90.55294781,
         "series": "Signed event differences"
       },
       {
         "x": 63,
-        "y": 203.8986169,
+        "y": 157.9251606,
         "series": "Signed event differences"
       },
       {
         "x": 64,
-        "y": 192.4760736,
+        "y": 52.5810685,
         "series": "Signed event differences"
       }
     ],

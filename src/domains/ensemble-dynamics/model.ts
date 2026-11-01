@@ -42,6 +42,8 @@ function initialPhaseFor(index: number, count: number): number {
   return normalizePhase(imperfectCircle);
 }
 
+const FIXED_STEP_EPSILON_SECONDS = 1e-10;
+
 // Exported for model.test.ts.
 export function delayedOscillatorPhase(
   history: readonly EnsembleState[],
@@ -58,7 +60,7 @@ export function delayedOscillatorPhase(
   while (lower < upper) {
     const middle = lower + Math.floor((upper - lower) / 2);
     const entry = history[middle];
-    if (entry && entry.time <= targetTime) {
+    if (entry && entry.time <= targetTime + FIXED_STEP_EPSILON_SECONDS) {
       lower = middle + 1;
     } else {
       upper = middle;
@@ -151,8 +153,6 @@ function assertValidOscillatorIndex(name: string, value: number, oscillatorCount
     throw new RangeError(`${name} must reference an existing oscillator.`);
   }
 }
-
-const FIXED_STEP_EPSILON_SECONDS = 1e-10;
 
 export type EnsembleMetrics = {
   coherence: number;

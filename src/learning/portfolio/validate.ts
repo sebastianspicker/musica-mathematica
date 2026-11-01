@@ -27,25 +27,28 @@ export function normalizePortfolio(
   value: unknown,
   curriculum: CurriculumLessonReader,
 ): LearningPortfolioV2 | undefined {
-  if (!isRecord(value) || value.version !== 2 || !isRecord(value.active)) return undefined;
-  const { labId, lessonId } = value.active;
-  if (typeof lessonId !== "string" || !isKnownLesson(labId, lessonId, curriculum)
+  if (!isRecord(value) || value.version !== 2 || !isRecord(value.active)
     || !isRecord(value.attempts)) return undefined;
+  const { labId, lessonId } = value.active;
+  // An unknown active lesson (for example after a rollback) must not discard every other attempt.
+  const active = typeof lessonId === "string" && isKnownLesson(labId, lessonId, curriculum)
+    ? { labId, lessonId }
+    : { labId: curriculum.defaultLesson.domainId, lessonId: curriculum.defaultLesson.id };
 
   const attempts: Record<string, LessonAttemptV2> = {};
   let sawActiveCandidate = false;
   for (const candidate of Object.values(value.attempts)) {
     const attempt = normalizeAttempt(candidate, curriculum);
-    if (isRecord(candidate) && candidate.labId === labId && candidate.lessonId === lessonId) {
+    if (isRecord(candidate) && candidate.labId === active.labId && candidate.lessonId === active.lessonId) {
       sawActiveCandidate = true;
     }
     if (attempt) attempts[attemptKey(attempt.labId, attempt.lessonId)] = attempt;
   }
-  if (sawActiveCandidate && !attempts[attemptKey(labId, lessonId)]) return undefined;
+  if (sawActiveCandidate && !attempts[attemptKey(active.labId, active.lessonId)]) return undefined;
 
   const normalized: LearningPortfolioV2 = {
     version: 2,
-    active: { labId, lessonId },
+    active,
     attempts,
   };
   return validatesNormalizedPortfolio(normalized, curriculum) ? normalized : undefined;

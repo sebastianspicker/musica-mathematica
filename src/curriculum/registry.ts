@@ -46,12 +46,15 @@ export function createCurriculumRegistry(
   const lessonsByKey = new Map<string, LessonDefinition>();
   const evaluatorsByKey = new Map<string, LessonEvaluator>();
   const protocolIds = new Set<string>();
+  const domainNumbers = new Set<number>();
 
   for (const domain of domains) {
     assertValidDomainModule(domain);
     const { definition, evaluators } = domain;
     if (domainsById.has(definition.id)) throw new RangeError(`Duplicate domain ID: ${definition.id}.`);
+    if (domainNumbers.has(definition.number)) throw new RangeError(`Duplicate domain number: ${definition.number}.`);
     domainsById.set(definition.id, definition);
+    domainNumbers.add(definition.number);
 
     for (const lesson of definition.lessons) {
       const key = lessonKey(definition.id, lesson.id);
@@ -101,6 +104,10 @@ function assertValidDomainModule(domain: DefinedDomain): void {
     if (!lesson.protocol.id) throw new TypeError(`Lesson ${lesson.id} must define a protocol ID.`);
     if (!Number.isFinite(lesson.protocol.durationSeconds) || lesson.protocol.durationSeconds <= 0) {
       throw new RangeError(`Lesson ${lesson.id} must define a finite positive protocol duration.`);
+    }
+    const seedFactorId = lesson.protocol.seed?.startsWith("factor:") ? lesson.protocol.seed.slice("factor:".length) : undefined;
+    if (seedFactorId !== undefined && !lesson.factors.some((factor) => factor.id === seedFactorId)) {
+      throw new RangeError(`Lesson ${lesson.id} protocol seed references unknown factor: ${seedFactorId}.`);
     }
     assertValidFactors(lesson);
     assertValidAudioSettings(lesson);

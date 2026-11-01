@@ -41,7 +41,11 @@ export function evaluateAutocorrelationSpectrumMeter(factors: Factors): Evaluati
   const pattern = safePattern(factors);
   const analysis = analyzeRhythm(pattern);
   const meters = rankMeterCandidates(pattern);
-  const strongestSpectrum = analysis.spectrum.slice(1).sort((a, b) => b.magnitude - a.magnitude)[0];
+  let strongestSpectrum: (typeof analysis.spectrum)[number] | undefined;
+  // Mirror bins k and N-k tie, so only the lower half is searched and the lowest bin wins ties.
+  for (const entry of analysis.spectrum.slice(1, Math.floor(pattern.length / 2) + 1)) {
+    if (!strongestSpectrum || entry.magnitude > strongestSpectrum.magnitude + 1e-9) strongestSpectrum = entry;
+  }
   const topMeter = meters[0];
   const profileTrace = analysis.autocorrelation.map((value, index) => ({
     x: index,
@@ -67,13 +71,14 @@ export function evaluateRecordedOnsetHypotheses(factors: Factors): EvaluationOut
   const tempo = readNumber(factors, "tempoBpm");
   const threshold = readNumber(factors, "threshold");
   const bias = readString(factors, "meterBias");
-  const eventCount = Math.max(2, Math.round(12 * (1.05 - threshold)));
+  const strengths = Array.from({ length: 12 }, (_, index) => ({ x: index * (60 / tempo), y: 0.65 + 0.25 * Math.sin(index * 1.7) }));
+  const kept = strengths.filter((point) => point.y >= threshold);
+  const eventCount = kept.length;
   const candidates = bias === "duple" ? [tempo, tempo / 2, tempo * 2] : bias === "triple" ? [tempo, tempo * 1.5, tempo / 2] : [tempo, tempo / 2, tempo * 1.5];
-  const trace = Array.from({ length: eventCount }, (_, index) => ({
-    x: index * (60 / tempo),
-    y: 0.65 + 0.25 * Math.sin(index * 1.7),
-    series: "Detected onset strength",
-  }));
+  const trace = [
+    ...strengths.map((point) => ({ ...point, series: "Candidate onset strength" })),
+    ...kept.map((point) => ({ ...point, series: "Above threshold" })),
+  ];
   return result({
     headline: "Ranked transcription hypotheses",
     result: `${candidates[0].toFixed(1)} BPM (top candidate)`,

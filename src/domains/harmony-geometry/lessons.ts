@@ -27,7 +27,7 @@ export const harmonyGeometryDefinition: DomainDefinition<ThreeLessons> = {
             { value: "major", label: "Major triad {0,4,7}" },
             { value: "minor", label: "Minor triad {0,3,7}" },
             { value: "quartal", label: "Quartal set {0,5,10}" },
-            { value: "whole-tone", label: "Whole-tone {0,2,4,6}" },
+            { value: "whole-tone", label: "Whole-tone tetrachord {0,2,4,6}" },
           ], "Source pitch-class collection."),
           numberFactor("axis", "T/I index n", 0, 0, 11, 1, "pitch classes", "The n in T_n(x)=x+n and I_n(x)=n-x, both modulo 12."),
           toggleFactor("invert", "Use inversion", false, "Switch between transposition and inversion."),

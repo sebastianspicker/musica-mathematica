@@ -10,6 +10,7 @@ import {
   legacyPortfolioStorageKey,
   maximumRawPortfolioJsonBytes,
   portfolioStorageKey,
+  portfolioBackupStorageKey,
   type StoragePort,
   type LearningPortfolioV2,
 } from "./schema";
@@ -48,6 +49,10 @@ const STORAGE_UNAVAILABLE_NOTICE =
   "Browser storage is unavailable. Export the portfolio before leaving.";
 const RECOVERY_NOTICE =
   "Stored learning data is too large to open safely. Automatic saving is off and the original browser data remains unchanged. Clear local work to recover automatic saving.";
+const UNREADABLE_BLOCKED_NOTICE =
+  "Stored learning data could not be read, and no copy of it could be kept. Automatic saving is off and the original browser data remains unchanged. Clear local work to recover automatic saving.";
+const UNREADABLE_NOTICE =
+  "Saved learning data could not be read, so a new portfolio was started. A copy of the unreadable data was kept in this browser until you clear local work.";
 export const portfolioNormalizationNotice =
   "Portfolio content was trimmed to browser-safe limits before saving.";
 
@@ -65,23 +70,30 @@ export function loadPortfolioDetailed(
   if (storedV2.status === "available") {
     const loaded = loadPreparedV2(storedV2.raw, storage, curriculum);
     if (loaded) return loaded;
+    // The next save replaces the unreadable value, so keep a copy first or do not save at all.
+    if (!backUpStoredPortfolio(storage, storedV2.raw, true)) return blockedLoad(curriculum, UNREADABLE_BLOCKED_NOTICE);
   }
+  const unreadable = storedV2.status === "available";
 
   const storedLegacy = readStoredValue(storage, legacyPortfolioStorageKey);
   if (storedLegacy.status === "failed") return unavailableLoad(curriculum);
   if (storedLegacy.status === "oversized") return blockedLoad(curriculum);
   if (storedLegacy.status === "available") {
     const migrated = migrateLegacyJson(storedLegacy.raw, curriculum, now);
-    if (migrated) return loadMigrated(migrated, storage, curriculum);
+    if (migrated) {
+      const loaded = loadMigrated(migrated, storage, curriculum);
+      return unreadable ? withUnreadableNotice(loaded) : loaded;
+    }
   }
 
-  return {
+  const empty: PortfolioLoadResult = {
     portfolio: createPortfolio(curriculum),
     source: "empty",
-    normalizationStatus: storedV2.status === "available" ? "invalid" : "unchanged",
+    normalizationStatus: unreadable ? "invalid" : "unchanged",
     persistenceStatus: "not-needed",
     automaticPersistenceEnabled: true,
   };
+  return unreadable ? withUnreadableNotice(empty) : empty;
 }
 
 export function savePortfolioDetailed(
@@ -136,6 +148,7 @@ export function clearPortfolio(storage: StoragePort | undefined): boolean {
   try {
     storage.removeItem(portfolioStorageKey);
     storage.removeItem(legacyPortfolioStorageKey);
+    storage.removeItem(portfolioBackupStorageKey);
     return true;
   } catch {
     return false;
@@ -174,6 +187,8 @@ function loadPreparedV2(
   }
 
   const shouldPersist = raw !== prepared.json;
+  // Rewriting drops what this build cannot keep, such as attempts for lessons added later; copy the original first.
+  if (shouldPersist) backUpStoredPortfolio(storage, raw, false);
   const persistenceStatus = shouldPersist
     ? persistPrepared(storage, prepared.json)
     : "not-needed";
@@ -214,6 +229,24 @@ function loadMigrated(
   };
 }
 
+// shortcut: one backup slot; a newer unreadable value replaces an earlier copy, a lossy rewrite never does.
+function backUpStoredPortfolio(storage: StoragePort, raw: string, replaceExisting: boolean): boolean {
+  try {
+    const existing = storage.getItem(portfolioBackupStorageKey);
+    if (existing === raw) return true;
+    if (existing !== null && !replaceExisting) return false;
+    storage.setItem(portfolioBackupStorageKey, raw);
+    // Read back: an adapter may ignore keys it does not own (the Pages demo storage does).
+    return storage.getItem(portfolioBackupStorageKey) === raw;
+  } catch {
+    return false;
+  }
+}
+
+function withUnreadableNotice(loaded: PortfolioLoadResult): PortfolioLoadResult {
+  return { ...loaded, notice: loaded.notice ? `${UNREADABLE_NOTICE} ${loaded.notice}` : UNREADABLE_NOTICE };
+}
+
 function persistPrepared(storage: StoragePort, json: string): PortfolioPersistenceStatus {
   try {
     storage.setItem(portfolioStorageKey, json);
@@ -246,14 +279,14 @@ function unavailableLoad(curriculum: CurriculumLessonReader): PortfolioLoadResul
   };
 }
 
-function blockedLoad(curriculum: CurriculumLessonReader): PortfolioLoadResult {
+function blockedLoad(curriculum: CurriculumLessonReader, notice = RECOVERY_NOTICE): PortfolioLoadResult {
   return {
     portfolio: createPortfolio(curriculum),
     source: "empty",
     normalizationStatus: "blocked",
     persistenceStatus: "disabled",
     automaticPersistenceEnabled: false,
-    notice: RECOVERY_NOTICE,
+    notice,
   };
 }
 

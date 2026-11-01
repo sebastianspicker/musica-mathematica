@@ -133,7 +133,7 @@ describe("microphone analysis pipeline lifecycle", () => {
       type: "analysis-complete",
       result: null,
       temporal: { onsetTimesSeconds: [], tempoHypotheses: [], meterHypotheses: [] },
-      queue: { accepted: true, staleFrames: 0, overflowFrames: 0, sequenceGaps: 0, queuedFrames: 0 },
+      queue: { accepted: true, staleFrames: 0, sequenceGaps: 0 },
     });
 
     await expect(completion).resolves.toMatchObject({ result: null });
@@ -154,11 +154,11 @@ describe("microphone analysis pipeline lifecycle", () => {
     const pipeline = await prepared.connect(stream);
 
     const completion = pipeline.finish();
-    const rejection = expect(completion).rejects.toThrow("within 1 second");
+    const rejection = expect(completion).rejects.toThrow("within 20 ms");
     await vi.advanceTimersByTimeAsync(20);
 
     await rejection;
-    expect(onError).toHaveBeenCalledWith(expect.stringContaining("within 1 second"));
+    expect(onError).toHaveBeenCalledWith(expect.stringContaining("within 20 ms"));
     expect(worker.terminate).toHaveBeenCalledOnce();
   });
 

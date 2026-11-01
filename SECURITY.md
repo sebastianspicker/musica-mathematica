@@ -21,7 +21,9 @@ There is no response-time commitment for alpha releases.
 The portfolio stores written responses, factor values, derived observations,
 and their source information in `localStorage`. Learners can download it as
 JSON. Those exports may contain personal data; clearing the app's storage does
-not delete files that have already been downloaded.
+not delete files that have already been downloaded. A stored record that the
+app cannot read is copied to a backup key before it is replaced; clearing local
+work removes that copy as well.
 
 The Pages demo stores its example and changes under a separate key, and its
 storage adapter cannot access the ordinary or legacy records. Changes to the

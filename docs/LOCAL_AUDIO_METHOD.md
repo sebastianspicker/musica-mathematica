@@ -107,17 +107,16 @@ buffer. It emits a frame every half frame, so adjacent frames overlap by 50%.
 The worklet begins with four worker credits. Without an available credit, it
 counts a dropped frame instead of allocating another pending frame.
 
-The worker has a separate queue with capacity four. It rejects repeated or stale
-sequence numbers, discards the oldest frame when the queue overflows, and counts
-gaps inferred from the sequence. Each accepted frame carries the number of
-worklet drops since the previous accepted frame. This accounting bounds the
-backlog and keeps feature extraction off the UI thread, but an overloaded device
-can still produce gaps.
+The worker analyzes each frame as it arrives and returns one credit per frame.
+It rejects repeated or stale sequence numbers and counts gaps inferred from the
+sequence. Each accepted frame carries the number of worklet drops since the
+previous accepted frame. The credits bound the backlog and keep feature
+extraction off the UI thread, but an overloaded device can still produce gaps.
 
 Spectral flux compares adjacent frames. If a sequence gap breaks that adjacency,
 the streaming calculation resets rather than comparing frames that were not
-neighbors in time. The UI folds worklet drops, stale and overflow frames, and
-inferred sequence gaps into the provenance dropped-frame count.
+neighbors in time. The UI folds worklet drops, stale frames, and inferred
+sequence gaps into the provenance dropped-frame count.
 
 Every accepted streaming frame is analyzed and returns one credit. The worker
 refreshes temporal hypotheses and UI results after the first frame, after each

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { defaultFactorsFor, type EvaluationOutput, type FactorValue, type InputMode, type LessonDefinition } from "../../curriculum/contracts";
 import type { CurriculumRegistry } from "../../curriculum/registry";
-import { advanceAttempt, createAttemptV2, createTrialSnapshot, recordedRunWasTrimmed, recordTrial, runLabel, setAttemptPrediction, setAttemptResponse } from "../../learning/portfolio/aggregate";
+import { advanceAttempt, createAttemptV2, createTrialSnapshot, nextRunIndex, recordedRunWasTrimmed, recordTrial, runLabel, setAttemptPrediction, setAttemptResponse } from "../../learning/portfolio/aggregate";
 import { assessTrialComparison } from "../../learning/inquiry/comparison";
 import { factorsForAttempt, recordingBlocker } from "../../learning/inquiry/recording";
 import { lessonStages, type LessonResponseField } from "../../learning/stages";
@@ -62,7 +62,7 @@ function useLessonControllerState(
   const evaluation = inputMode === "synthetic" ? syntheticEvaluation : audioEvaluation ?? syntheticEvaluation;
   const comparison = useMemo(() => assessTrialComparison(lesson, attempt.trials), [attempt.trials, lesson]);
   const experimentActive = lessonStages.indexOf(attempt.stage) >= lessonStages.indexOf("experiment");
-  const recordLabel = runLabel(attempt.trials.length);
+  const recordLabel = runLabel(nextRunIndex(attempt.trials));
   return useMemo(() => ({ audioEvaluation, comparison, evaluation, experimentActive, factors, inputMode, message, motionEnabled, note, recordLabel, setAudioEvaluation, setFactors, setInputMode, setMessage, setMotionEnabled, setNote }), [audioEvaluation, comparison, evaluation, experimentActive, factors, inputMode, message, motionEnabled, note, recordLabel]);
 }
 
@@ -130,7 +130,7 @@ function recordCurrentRun(context: InquiryActionContext): void {
   }
   const trial = createTrialSnapshot({
     lesson: context.lesson,
-    runIndex: context.attempt.trials.length,
+    runIndex: nextRunIndex(context.attempt.trials),
     factors: context.factors,
     evaluation: context.evaluation,
     note: context.note,

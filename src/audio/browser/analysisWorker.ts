@@ -11,7 +11,7 @@ import {
 import { AUDIO_ANALYSIS_LIMITS } from "../analysis/contracts";
 import { spectralFlux } from "../analysis/features";
 import { analyzeSpectrumWithFftJs } from "../analysis/fftJsAdapter";
-import { BoundedAudioFrameQueue } from "../protocol/frameQueue";
+import { AudioFrameSequenceTracker } from "../protocol/frameQueue";
 import type {
   AnalysisWorkerMessage,
   WorkerAttachMessage,
@@ -68,7 +68,7 @@ function handleSelectionAnalysis(message: WorkerSelectionMessage): void {
 
 type StreamingAnalysisSession = {
   readonly inputPort: MessagePort;
-  readonly queue: BoundedAudioFrameQueue;
+  readonly queue: AudioFrameSequenceTracker;
   readonly fluxHistory: number[];
   readonly onsetSensitivity?: number;
   accepting: boolean;
@@ -90,9 +90,8 @@ const EMPTY_TEMPORAL: TemporalHypotheses = Object.freeze({
 function handleStreamingFrame(session: StreamingAnalysisSession, message: WorkerFrameMessage): void {
   try {
     if (!session.accepting) return;
-    const queueStatus = session.queue.push(message.frame);
-    const nextFrame = session.queue.shift();
-    if (queueStatus.accepted && nextFrame) {
+    if (session.queue.accept(message.frame).accepted) {
+      const nextFrame = message.frame;
       const result = analyzeAudioFrame(nextFrame, analyzeSpectrumWithFftJs);
       const maximumHistoryFrames = Math.ceil(
         AUDIO_ANALYSIS_LIMITS.maximumMicrophoneSeconds * nextFrame.sampleRateHz / (nextFrame.samples.length / 2),
@@ -163,7 +162,7 @@ function completeStreamingAnalysis(session: StreamingAnalysisSession): void {
 function attachStreamingAnalysis(message: WorkerAttachMessage): void {
   const session: StreamingAnalysisSession = {
     inputPort: message.port,
-    queue: new BoundedAudioFrameQueue(message.queueCapacity),
+    queue: new AudioFrameSequenceTracker(),
     fluxHistory: [],
     onsetSensitivity: message.onsetSensitivity,
     accepting: true,

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { defaultFactorsFor, type LessonDefinition } from "../../curriculum/contracts";
 import { createCurriculumRegistry } from "../../curriculum/registry";
 import { phaseProportionDomain } from "./index";
+import { normalizeCircularPhase } from "./model";
 
 const { evaluatorFor } = createCurriculumRegistry([phaseProportionDomain]);
 
@@ -48,5 +49,13 @@ describe("phase-proportion evaluators", () => {
       "Layer A (3 pulses / shared cycle)",
       "Layer B (2 pulses / shared cycle)",
     ]);
+  });
+
+  it("snaps phases that round to a full cycle back to zero", () => {
+    expect(normalizeCircularPhase(1 - 1e-13)).toBe(0);
+    expect(normalizeCircularPhase(-1e-13)).toBe(0);
+    expect(normalizeCircularPhase(0.5)).toBe(0.5);
+    const output = evaluatorFor("phase-proportion", "phase-on-the-circle")({ periodA: 0.2, periodB: 1, elapsed: 0.6, offset: 0 });
+    expect(output.observables.find((observable) => observable.id === "phaseA")?.value).toBe(0);
   });
 });

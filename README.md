@@ -147,7 +147,10 @@ The portfolio saves your predictions, notes, inputs, and results in browser
 storage. It keeps up to 12 trials per lesson and 256 chart points per trial.
 **My learning** offers JSON export and clearing. Export is download-only;
 importing a portfolio is not supported. If saving fails, the app continues in
-memory and displays a notice. Export before leaving to keep that work.
+memory and displays a notice. Export before leaving to keep that work. Open tabs
+stay in sync: when one tab saves, the others reload the record. If saved data
+cannot be read, the app keeps a copy in the browser, says so, and starts a new
+portfolio; clearing local work removes that copy.
 
 Recorded-Onset Hypotheses, Chord Hypotheses, and Time-Varying Timbre accept
 optional microphone or file input. Audio is processed locally. Raw audio, file

@@ -85,7 +85,7 @@ export function microphoneFrameToEvaluation(
       ? [{ x: frame.spectrum.frequenciesHz[index], y: magnitude, series: "Magnitude spectrum" }]
       : [],
   );
-  const droppedFrames = queue.staleFrames + queue.overflowFrames + queue.sequenceGaps;
+  const droppedFrames = queue.staleFrames + queue.sequenceGaps;
   return {
     headline: "Live local observation",
     result: frame.pitch.frequencyHz === null

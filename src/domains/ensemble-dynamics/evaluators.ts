@@ -53,9 +53,9 @@ function evaluateEnsemble(config: EnsembleConfig): EvaluationOutput {
     headline: "Terminal model state",
     result: `r = ${metrics.coherence.toFixed(3)}`,
     observables: [
-      observable({ id: "coherence", label: "Order parameter", value: metrics.coherence, unit: null, claimId: "model.ensemble", precision: 3, aggregation: "terminal-mean" }),
-      observable({ id: "phaseSpread", label: "Circular phase spread", value: metrics.phaseSpread, unit: "rad", claimId: "model.ensemble", precision: 3, aggregation: "terminal-mean" }),
-      observable({ id: "phaseSpreadEquivalent", label: "Period-equivalent spread", value: metrics.phaseSpreadEquivalentMs, unit: "ms", claimId: "model.ensemble", precision: 1, aggregation: "terminal-mean" }),
+      observable({ id: "coherence", label: "Order parameter", value: metrics.coherence, unit: null, claimId: "model.ensemble", precision: 3, aggregation: "instantaneous" }),
+      observable({ id: "phaseSpread", label: "Circular phase spread", value: metrics.phaseSpread, unit: "rad", claimId: "model.ensemble", precision: 3, aggregation: "instantaneous" }),
+      observable({ id: "phaseSpreadEquivalent", label: "Period-equivalent spread", value: metrics.phaseSpreadEquivalentMs, unit: "ms", claimId: "model.ensemble", precision: 1, aggregation: "instantaneous" }),
       observable({ id: "peerShare", label: "Peer-coupling share", value: metrics.peerCouplingShare, unit: null, claimId: "heuristic.transparent", precision: 2 }),
     ],
     trace,

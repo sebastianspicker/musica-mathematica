@@ -391,6 +391,16 @@ describe("ensemble simulation invariants", () => {
     expect(delayedOscillatorPhase(history, fallback, 0, 0.5)).toBe(4);
   });
 
+  it("reads the stored state at a delay that is off by floating-point noise", () => {
+    const history = Array.from({ length: 40 }, (_, index) => ({
+      time: index * 0.01,
+      oscillators: [{ phase: index, omega: 0 }],
+    }));
+    const fallback = { time: 0.4, oscillators: [{ phase: -1, omega: 0 }] };
+
+    expect(delayedOscillatorPhase(history, fallback, 0, 0.29 - 0.1)).toBe(19);
+  });
+
   it("rejects mismatched delayed-coupling history instead of falling back to oscillator zero", () => {
     const config: EnsembleConfig = {
       ...defaultConfig,

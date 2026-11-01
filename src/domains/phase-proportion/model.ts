@@ -33,7 +33,8 @@ export function leastCommonMultiple(left: number, right: number): number {
 export function normalizeCircularPhase(phaseCycles: number): number {
   assertFinite("phaseCycles", phaseCycles);
   const phase = phaseCycles % 1;
-  return Math.abs(phase) < EPSILON ? 0 : phase < 0 ? phase + 1 : phase;
+  const wrapped = phase < 0 ? phase + 1 : phase;
+  return Math.abs(phase) < EPSILON || 1 - wrapped < EPSILON ? 0 : wrapped;
 }
 
 /** Returns the shortest signed movement from `fromCycles` to `toCycles`, in [-0.5, 0.5). */

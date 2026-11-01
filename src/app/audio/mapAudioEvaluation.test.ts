@@ -36,16 +36,14 @@ const temporal: TemporalHypotheses = {
 const queue: QueueStatus = {
   accepted: true,
   staleFrames: 1,
-  overflowFrames: 2,
   sequenceGaps: 4,
-  queuedFrames: 0,
 };
 
 describe("audio-to-evaluation provenance", () => {
   it("uses cumulative queue counters without double-counting frame gaps", () => {
     const evaluation = microphoneFrameToEvaluation(frame, temporal, queue);
 
-    expect(evaluation.provenance.droppedFrames).toBe(7);
+    expect(evaluation.provenance.droppedFrames).toBe(5);
     expect(evaluation.traceAxes).toEqual({
       x: { label: "Frequency", unit: "Hz" },
       y: { label: "Spectrum magnitude", unit: null },

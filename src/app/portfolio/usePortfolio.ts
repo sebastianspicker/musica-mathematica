@@ -11,7 +11,7 @@ import {
   type PortfolioPersistenceStatus,
   type PortfolioSaveResult,
 } from "../../learning/portfolio/repository";
-import type { LearningPortfolioV2, LessonAttemptV2, StoragePort } from "../../learning/portfolio/schema";
+import { legacyPortfolioStorageKey, portfolioBackupStorageKey, type LearningPortfolioV2, type LessonAttemptV2, type StoragePort } from "../../learning/portfolio/schema";
 import { isLessonAttemptV2, normalizeLessonAttempt } from "../../learning/portfolio/validate";
 import { downloadPortfolioJson } from "./download";
 
@@ -47,6 +47,53 @@ export function clearOutcome(cleared: boolean, demoMode: boolean): ClearOutcome 
     message: cleared
       ? demoMode ? "Demo data was reset." : "All local learning records were cleared."
       : "Storage could not be cleared; use the browser's site-data controls.",
+  };
+}
+
+/** Storage keys written by this app; on GitHub Pages other project sites share the origin's storage. */
+export function isPortfolioStorageKey(key: string | null): boolean {
+  return key === null || key === legacyPortfolioStorageKey
+    || key.startsWith("musicaMathematica.") && key !== portfolioBackupStorageKey;
+}
+
+export type PortfolioReload = Readonly<{
+  /** Absent when this tab must keep the work it holds. */
+  portfolio?: LearningPortfolioV2;
+  persistenceStatus: PortfolioPersistenceStatus;
+  automaticPersistenceEnabled: boolean;
+  notice?: string;
+}>;
+
+const OTHER_TAB_UNREADABLE_NOTICE =
+  "Another tab saved learning data this tab cannot read. Automatic saving is off here so that data is not overwritten; reload the page to continue.";
+
+/** Re-reads storage after another tab wrote it, keeping this tab on its own lesson. */
+export function reloadPortfolio(
+  storage: StoragePort | undefined,
+  curriculum: CurriculumRegistry,
+  lesson: LessonDefinition,
+): PortfolioReload {
+  // Only the backup may be written, so tabs running different builds cannot keep rewriting each other's copy.
+  const readOnly = storage && {
+    getItem: (key: string) => storage.getItem(key),
+    setItem: (key: string, value: string) => { if (key === portfolioBackupStorageKey) storage.setItem(key, value); },
+    removeItem: () => undefined,
+  };
+  const loaded = loadPortfolioDetailed(readOnly, curriculum);
+  const cleared = loaded.source === "empty" && loaded.normalizationStatus === "unchanged" && loaded.persistenceStatus === "not-needed";
+  if (loaded.source !== "v2" && !cleared) {
+    // Unreadable or unavailable storage (or a legacy record behind it) must not replace the work this tab holds.
+    return loaded.persistenceStatus === "unavailable"
+      ? { persistenceStatus: loaded.persistenceStatus, automaticPersistenceEnabled: false, notice: loaded.notice }
+      : { persistenceStatus: "disabled", automaticPersistenceEnabled: false, notice: OTHER_TAB_UNREADABLE_NOTICE };
+  }
+  return {
+    portfolio: selectLesson(curriculum, loaded.portfolio, lesson.domainId, lesson.id),
+    // What another tab stored is already saved; only an empty store is local-only.
+    persistenceStatus: loaded.source !== "empty" && loaded.persistenceStatus === "not-needed" ? "saved" : loaded.persistenceStatus,
+    automaticPersistenceEnabled: loaded.automaticPersistenceEnabled,
+    // A trimming notice describes the other tab's save; only a reason saving stopped matters here.
+    notice: loaded.automaticPersistenceEnabled ? undefined : loaded.notice,
   };
 }
 
@@ -105,6 +152,24 @@ export function usePortfolio({ curriculum, storage, demoMode, routedLesson }: Us
       setPortfolio(outcome.replacement);
     }
   }, [automaticPersistenceEnabled, curriculum, portfolio, storage]);
+
+  useEffect(() => {
+    // shortcut: two tabs saving in the same instant can still lose one write; merge per attempt if that is reported.
+    const onStorage = (event: StorageEvent): void => {
+      if (!isPortfolioStorageKey(event.key)) return;
+      const reloaded = reloadPortfolio(storage, curriculum, lesson);
+      if (reloaded.portfolio) {
+        // Without the skip, the reloaded copy (with this tab's active lesson) would be written back and start a loop.
+        skipPersistenceForRef.current = reloaded.portfolio;
+        setPortfolio(reloaded.portfolio);
+      }
+      setPersistenceStatus(reloaded.persistenceStatus);
+      setAutomaticPersistenceEnabled(reloaded.automaticPersistenceEnabled);
+      if (reloaded.notice) setPersistenceMessage(reloaded.notice);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => { window.removeEventListener("storage", onStorage); };
+  }, [curriculum, lesson, storage]);
 
   const selectLessonInPortfolio = useCallback((next: LessonDefinition): void => {
     setLesson(next);

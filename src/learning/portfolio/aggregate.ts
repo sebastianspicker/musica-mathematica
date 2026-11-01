@@ -145,6 +145,12 @@ export function recordedRunWasTrimmed(previous: LessonAttemptV2, submitted: Tria
   );
 }
 
+/** Count of earlier runs; past the trial cap it continues from the latest numbered label. */
+export function nextRunIndex(trials: readonly TrialSnapshotV2[]): number {
+  const latest = /^Run (\d+)$/.exec(trials.at(-1)?.id ?? "");
+  return Math.max(trials.length, latest ? Number(latest[1]) : 0);
+}
+
 export function runLabel(runCount: number): string {
   if (runCount === 0) return "Run A";
   if (runCount === 1) return "Run B";
@@ -160,7 +166,7 @@ export type TrialSnapshotInput = Readonly<{
   recordedAt: string;
 }>;
 
-/** Build the persisted snapshot of one evaluated run; `runIndex` is the count of earlier trials. */
+/** Build the persisted snapshot of one evaluated run; `runIndex` comes from `nextRunIndex`. */
 export function createTrialSnapshot({ lesson, runIndex, factors, evaluation, note, recordedAt }: TrialSnapshotInput): TrialSnapshotV2 {
   const deterministic = (evaluation.provenance.source === "model" || evaluation.provenance.source === "synthetic") && lesson.protocol.deterministic;
   return { id: runLabel(runIndex), labId: lesson.domainId, lessonId: lesson.id, protocolId: lesson.protocol.id, deterministic, ...(deterministic && lesson.protocol.seed ? { seed: seedForTrial(lesson, factors) } : {}), recordedAt, factors: { ...factors }, observables: evaluation.observables.map((item) => ({ ...item })), trace: evaluation.trace.map((point) => ({ ...point })), provenance: { ...evaluation.provenance }, ...(note.trim() ? { note: note.trim() } : {}) };

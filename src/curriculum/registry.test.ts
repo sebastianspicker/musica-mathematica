@@ -48,6 +48,11 @@ function lesson(domainId: CurriculumDomainId, id: string, number: 1 | 2 | 3, pro
   };
 }
 
+const DOMAIN_IDS: readonly CurriculumDomainId[] = [
+  "phase-proportion", "ensemble-dynamics", "rhythm-meter", "pitch-tuning",
+  "harmony-geometry", "timbre-acoustics", "probability-form", "measurement-inference",
+];
+
 function domain(
   id: CurriculumDomainId,
   lessonIds: readonly [string, string, string] = ["one", "two", "three"],
@@ -55,7 +60,7 @@ function domain(
 ): DomainDefinition {
   return {
     id,
-    number: 1,
+    number: DOMAIN_IDS.indexOf(id) + 1,
     title: id,
     shortTitle: id,
     mark: "*",
@@ -236,6 +241,19 @@ describe("curriculum registry", () => {
       ...evaluation,
       observables: [{ ...evaluation.observables[0], precision: 101 }],
     })).toBe(false);
+  });
+
+  it("rejects duplicate domain numbers across domains", () => {
+    const clash = defineDomain({ ...domain("rhythm-meter"), number: 1 }, { one: () => evaluation, two: () => evaluation, three: () => evaluation });
+
+    expect(() => createCurriculumRegistry([module("phase-proportion"), clash])).toThrow("Duplicate domain number: 1.");
+  });
+
+  it("rejects a factor-derived protocol seed that names an unknown factor", () => {
+    const base = domain("timbre-acoustics");
+    const protocol = { ...base.lessons[0].protocol, seed: "factor:missing" };
+
+    expect(() => moduleFrom(replaceFirstLesson(base, { protocol }))).toThrow("protocol seed references unknown factor: missing.");
   });
 });
 

@@ -45,4 +45,30 @@ describe("rhythm-meter evaluators", () => {
     )).toBe(true);
     expect(evaluation.trace.every((point) => Number.isFinite(point.x) && Number.isFinite(point.y))).toBe(true);
   });
+
+  it("reports the same lowest strongest spectral bin for every rotation", () => {
+    const evaluate = evaluatorFor("rhythm-meter", "autocorrelation-spectrum-meter");
+    for (const steps of [12, 16]) {
+      const bins = new Set<unknown>();
+      for (let rotation = -12; rotation <= 12; rotation += 1) {
+        bins.add(evaluate({ steps, pulses: 5, rotation }).observables.find((observable) => observable.id === "spectralBin")?.value);
+      }
+      expect(bins.size).toBe(1);
+      expect([...bins][0]).toBeLessThanOrEqual(steps / 2);
+    }
+  });
+
+  it("derives the recorded-onset count from the plotted strengths and the threshold", () => {
+    const evaluate = evaluatorFor("rhythm-meter", "recorded-onset-hypotheses");
+    let previous = Infinity;
+    for (let threshold = 0.05; threshold <= 0.951; threshold += 0.05) {
+      const output = evaluate({ tempoBpm: 100, threshold, meterBias: "mixed" });
+      const kept = output.trace.filter((point) => point.series === "Above threshold");
+      const count = output.observables.find((observable) => observable.id === "onsetCount")?.value;
+      expect(count).toBe(kept.length);
+      expect(kept.every((point) => point.y >= threshold)).toBe(true);
+      expect(kept.length).toBeLessThanOrEqual(previous);
+      previous = kept.length;
+    }
+  });
 });

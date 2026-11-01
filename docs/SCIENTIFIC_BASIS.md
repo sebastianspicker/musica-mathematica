@@ -49,8 +49,10 @@ hear, intend, and do.
 
 The lesson evaluator simulates eight seconds with a default integration step
 of `0.01 s`. The lower-level simulation function also accepts an explicit
-deterministic step size; the exported fixed-step driver uses `0.01 s`. For
-oscillator `i`, the implemented equation is:
+deterministic step size; the exported fixed-step driver uses `0.01 s`.
+Configured delays are read from the fixed-step history at 10 ms resolution, so a
+delay that is not a multiple of 10 ms uses the next older stored state (a 55 ms
+delay acts like 60 ms). For oscillator `i`, the implemented equation is:
 
 ```text
 d theta_i / dt = omega_i
@@ -155,7 +157,7 @@ Microphone and file inputs are optional and processed in the browser. An
 `AudioWorklet` sends microphone frames to a local Web Worker using a limited
 number of credits to bound the queue. Selected file samples go directly to a
 local worker. Raw PCM stays in memory and is excluded from the portfolio and
-export. The app reports queue overflow, stale frames, and sequence gaps. See
+export. The app reports dropped, stale, and out-of-sequence frames. See
 the [audio guide](LOCAL_AUDIO_METHOD.md) for limits, settings, and data flow.
 
 All audio-derived values are `uncalibrated`:

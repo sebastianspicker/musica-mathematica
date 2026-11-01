@@ -58,6 +58,8 @@ User-visible changes are listed here by release.
 
 - Unused inquiry header, inspector action, lesson crumb, workflow panel, and
   workbench band style rules.
+- The audio worker's never-filling frame queue and its always-zero overflow
+  count, and the unused `workerModuleUrl` worker option.
 
 ### Fixed
 
@@ -67,6 +69,29 @@ User-visible changes are listed here by release.
   completed analysis, so a controlled comparison can analyze the same file for
   Run A and Run B without choosing it again. Switching between microphone and
   file input still clears the selection.
+- Two open tabs no longer overwrite each other's lessons. A tab reloads the
+  portfolio when another tab saves it.
+- Saved learning data that cannot be read is no longer replaced silently. The
+  app keeps a copy in the browser, says so, and starts a new portfolio; if no
+  copy can be kept, automatic saving stays off. An unknown active lesson, for
+  example after a rollback, no longer discards the other lessons.
+- Run labels keep counting after the 12-run limit instead of repeating
+  "Run 13".
+- Autocorrelation, Spectrum, and Meter reports the same strongest spectral bin
+  for every rotation of a rhythm.
+- Phase on the Circle no longer shows a phase of 1.000 cycles.
+- Recorded-Onset Hypotheses counts the plotted candidate onsets at or above the
+  threshold; a high threshold can now leave none.
+- Synthetic results in Measurement & Inference no longer cite the claim for
+  locally measured audio or transcription hypotheses.
+- Measurement & Inference fixtures use the same seeded generator as
+  Probability & Form, so neighbouring seeds give clearly different samples.
+- Entropy, Surprisal, and Form generates its sequence from the recorded seed.
+- The ensemble model reads delayed states at exact 10 ms multiples reliably,
+  and its final-state values are labelled as instantaneous.
+- The pulses help text states that values above the cycle length are capped,
+  and the whole-tone option is labelled as a tetrachord.
+- The audio-analysis timeout message states the configured limit.
 
 ### Limitations
 

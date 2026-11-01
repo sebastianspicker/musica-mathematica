@@ -81,7 +81,7 @@ export function evaluateInformation(factors: Readonly<Record<string, FactorValue
   const distribution = [probability, 1 - probability];
   const information = entropy(distribution);
   const rareProbability = Math.min(...distribution);
-  const sequence = seededBinarySequence(probability, length, seed + length);
+  const sequence = seededBinarySequence(probability, length, seed);
   return result({
     headline: "Information quantities",
     result: `H = ${information.toFixed(3)} bits/event`,
