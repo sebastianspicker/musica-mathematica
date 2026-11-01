@@ -212,11 +212,13 @@ origin-root bundle to `dist/`. `pnpm typecheck` covers the type-checking. `pnpm 
 `/musica-mathematica/`, rewrites the favicon path, makes application, worker,
 worklet, and font assets aware of that base, and enables isolated demo storage.
 
-On pushes and pull requests, CI installs the frozen lockfile with Node 22 and
-runs `pnpm verify`. The GitHub
-Pages workflow is manual. It runs `pnpm typecheck` and `pnpm test:unit`, then
-builds, uploads, and deploys the Pages artifact. Repository settings, the live origin, response
-headers, and cache behavior remain part of the deployment environment.
+On Dependabot-authored pull requests or manual dispatch, CI installs the frozen
+lockfile with Node 22 and runs `pnpm verify`. The GitHub Pages workflow is
+manual and restricted to the default branch. It runs `pnpm typecheck` and
+`pnpm test:unit`, then builds, uploads and deploys the Pages artifact. Only the
+deploy job receives Pages and identity-token write permissions. Repository
+settings, the live origin, response headers and cache behavior remain part of
+the deployment environment.
 `index.html` includes a same-origin meta Content Security Policy, with loopback
 WebSocket access and inline styles for Vite development. Production builds
 remove both (`vite.config.ts`). A deployed host should also send

@@ -59,7 +59,9 @@ production code may not import them.
 | `pnpm verify` | Lint, typecheck, unit tests, then build. |
 
 Run the narrowest relevant command first, then `pnpm verify`. If a check
-cannot run, record the exact command and failure. CI runs `pnpm verify`.
+cannot run, record the exact command and failure. CI runs `pnpm verify` for
+Dependabot-authored pull requests or manual dispatch; ordinary pushes and
+human-authored pull requests do not start that generic build.
 
 Evaluator outputs are pinned by `src/curriculum/__golden__/evaluations.json`,
 which `evaluator-golden.test.ts` compares with a relative tolerance of 1e-6.

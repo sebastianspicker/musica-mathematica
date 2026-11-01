@@ -7,8 +7,10 @@ notebook. Neither needs a server process, database, or runtime credentials.
 ## GitHub Pages demo
 
 The [Pages workflow](../.github/workflows/pages.yml) builds an interactive
-example under `/musica-mathematica/`. It runs only when dispatched manually.
-Ordinary pushes run CI without deploying.
+example under `/musica-mathematica/`. It runs only when dispatched manually
+on the default branch. Generic CI runs for Dependabot-authored pull requests
+or manual dispatch; ordinary pushes and human-authored PRs do not deploy or
+run that build.
 
 Before deployment, run `pnpm verify` and `pnpm build:pages` for the intended
 revision, as described in [Contributing](../CONTRIBUTING.md#tests-and-verification).
@@ -21,7 +23,8 @@ The Pages workflow itself runs `pnpm typecheck` and `pnpm test:unit` before buil
 2. In **Settings → Pages → Build and deployment**, select **GitHub Actions**
    as the source.
 3. In **Actions → Deploy GitHub Pages**, choose **Run workflow** and select
-   the branch to deploy. Repository write access is required; environment
+   the default branch. Other refs are rejected by the job guards. Repository
+   write access is required; environment
    rules may require a separate approval.
 4. Wait for both build and deploy jobs, then open the URL shown by the
    deployment. Check the demo comparison, lesson navigation, and browser

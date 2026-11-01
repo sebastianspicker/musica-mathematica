@@ -133,3 +133,9 @@ Thumbs.db
 /DESIGN_BRIEF.md
 /RELEASE_STATUS.md
 /e2e/
+
+# Private local alpha review and root task-ledger files
+/ALPHA_AUDIT_REPORT.md
+/ALPHA_KNOWN_ISSUES.md
+/*_LEDGER.md
+/*-LEDGER.md

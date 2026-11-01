@@ -4,6 +4,24 @@ Explore the mathematics of music through 24 interactive lessons. Change a tempo,
 compare tuning systems, build a rhythm, or test how a model ensemble responds
 to delay. Make a prediction, change one factor, and compare what happens.
 
+<details>
+<summary>Status and limitations</summary>
+
+Musica Mathematica is an exploratory research project for investigating the
+mathematics of music through interactive lessons and bounded audio analysis.
+Developed independently alongside my main professional work. This alpha
+teaching tool is a work in progress, intended for exploration and
+adaptation; classroom effectiveness has not been established. Review the
+scientific basis and test any changes before using it in teaching.
+
+**Disclaimer.** Mathematical model outputs and uncalibrated audio
+observations are not student assessments or measures of performer quality.
+They do not establish learning outcomes or musical ability. You are
+responsible for interpretation, lesson suitability and permission to use
+recordings.
+
+</details>
+
 Musica Mathematica is designed for music students and teachers, with synthetic
 examples in every lesson and optional microphone or audio-file analysis in
 three lessons. It runs in your browser, without an account or backend. Your
@@ -14,6 +32,14 @@ uncalibrated audio observations; they do not grade musical performance.
 
 [Run locally](#run-locally) · [Screenshot tour](#screenshot-tour) ·
 [Pages demo](#github-pages-demo) · [Contribute](CONTRIBUTING.md)
+
+```mermaid
+flowchart LR
+  Question[Choose a musical question] --> Prediction[Write a prediction]
+  Prediction --> Model[Change one model factor]
+  Model --> Compare[Compare results and reflect]
+  Compare --> Portfolio[Keep or export a browser-local record]
+```
 
 ## Screenshot tour
 
