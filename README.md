@@ -4,6 +4,8 @@ Explore the mathematics of music through 24 interactive lessons. Change a tempo,
 compare tuning systems, build a rhythm, or test how a model ensemble responds
 to delay. Make a prediction, change one factor, and compare what happens.
 
+> _Claude was used to polish and proof-read the code and documentation of this repository._
+
 <details>
 <summary>Status and limitations</summary>
 
@@ -182,8 +184,9 @@ and how to interpret their results.
 browser and screenshot workflow. `pnpm verify` is the check to run before a
 change.
 
-- [Architecture](docs/ARCHITECTURE.md): module layout, runtime flows, storage,
-  and browser audio.
+- [Architecture](docs/ARCHITECTURE.md): module layout, what happens when a
+  learner records a run, the stored data model, browser audio, and the build
+  and deploy pipeline, with diagrams.
 - [Product guide](PRODUCT.md): audience, lesson workflow, and design choices.
 - [Performance checks](docs/PERFORMANCE.md): workloads and benchmark commands.
 - [Security policy](SECURITY.md): data handling and vulnerability reporting.

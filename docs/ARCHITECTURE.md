@@ -59,16 +59,16 @@ curriculum registry and does not import `domains`. `src/ui/` does not import
 
 | Area | Responsibility |
 | --- | --- |
-| `src/shared/numeric/` | Browser-independent numeric validation. |
-| `src/curriculum/` | `contracts.ts` (lesson, factor and evaluation contracts, audio-analysis policy helpers, `seedForTrial`), `registry.ts` (validation and `defineDomain`), `catalog.ts` (composition root), `evidence.ts` (claims and research sources), and `__golden__/evaluations.json`. |
+| [`src/shared/numeric/`](../src/shared/numeric/) | Browser-independent numeric validation. |
+| [`src/curriculum/`](../src/curriculum/) | `contracts.ts` (lesson, factor and evaluation contracts, audio-analysis policy helpers, `seedForTrial`), `registry.ts` (validation and `defineDomain`), `catalog.ts` (composition root), `evidence.ts` (claims and research sources), and `__golden__/evaluations.json`. |
 | `src/domains/<id>/` | Eight deterministic domains, each with `lessons.ts`, `evaluators.ts`, `model.ts`, and `index.ts`. `ensemble-dynamics` also has `config.ts` and a test-only `model.reference.test-helper.ts`. |
-| `src/domains/support/` | `construction.ts` (definition builders) and `evaluation.ts` (`observable`, `result`, and `readNumber`, `readString`, `readBoolean`). |
-| `src/learning/` | `stages.ts` (ordered stages); `inquiry/comparison.ts` (controlled A/B rule) and `inquiry/recording.ts` (recording blockers, factors for an attempt); `portfolio/` with `schema.ts` (persisted version 2 types, `StoragePort`, keys, limits), `aggregate.ts`, `validate.ts`, `compact.ts`, `repository.ts`; and `portfolio/legacy/` (version 1 schema, validation, migration). |
-| `src/audio/analysis/` | Portable windowing, FFT-backed analysis, features, and ranked hypotheses. |
-| `src/audio/protocol/` | Worker and AudioWorklet messages and frame-sequence accounting. |
-| `src/audio/browser/` | Media capture, file decoding, workers, AudioWorklet integration, and resource cleanup. |
-| `src/ui/` | Presentational React components driven by supplied state and callbacks. `format.ts` holds shared formatters and `workbench/types.ts` the runtime view contract. `audio/` holds the audio input controls. |
-| `src/app/` | `App.tsx` (routing, focus, dialogs, layout); `portfolio/` (`usePortfolio.ts`, `browserStorage.ts`, `download.ts`); `routing/hashRoute.ts`; `workbench/` (lesson and playback controllers and `playbackStore.ts`); `audio/` (audio controllers and mapping of results to evaluations); and `demo/` (Pages-only seed and isolated storage). |
+| [`src/domains/support/`](../src/domains/support/) | `construction.ts` (definition builders) and `evaluation.ts` (`observable`, `result`, and `readNumber`, `readString`, `readBoolean`). |
+| [`src/learning/`](../src/learning/) | `stages.ts` (ordered stages); `inquiry/comparison.ts` (controlled A/B rule) and `inquiry/recording.ts` (recording blockers, factors for an attempt); `portfolio/` with `schema.ts` (persisted version 2 types, `StoragePort`, keys, limits), `aggregate.ts`, `validate.ts`, `compact.ts`, `repository.ts`; and `portfolio/legacy/` (version 1 schema, validation, migration). |
+| [`src/audio/analysis/`](../src/audio/analysis/) | Portable windowing, FFT-backed analysis, features, and ranked hypotheses. |
+| [`src/audio/protocol/`](../src/audio/protocol/) | Worker and AudioWorklet messages and frame-sequence accounting. |
+| [`src/audio/browser/`](../src/audio/browser/) | Media capture, file decoding, workers, AudioWorklet integration, and resource cleanup. |
+| [`src/ui/`](../src/ui/) | Presentational React components driven by supplied state and callbacks. `format.ts` holds shared formatters and `workbench/types.ts` the runtime view contract. `audio/` holds the audio input controls. |
+| [`src/app/`](../src/app/) | `App.tsx` (routing, focus, dialogs, layout); `portfolio/` (`usePortfolio.ts`, `browserStorage.ts`, `download.ts`); `routing/hashRoute.ts`; `workbench/` (lesson and playback controllers and `playbackStore.ts`); `audio/` (audio controllers and mapping of results to evaluations); and `demo/` (Pages-only seed and isolated storage). |
 
 Domain logic, learning rules, and portable audio analysis do not use React, the
 DOM, storage, Worker, AudioWorklet, or media APIs. Lint rejects a denylist of
@@ -127,6 +127,52 @@ learner must commit a prediction before experimenting, and comparison requires
 two compatible trials. The ordered sequence of eight stages comes from
 `src/learning/stages.ts`.
 
+### What happens when a learner changes a factor and records a run
+
+This is the central interaction. It shows which layer each click reaches.
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor L as Learner
+  participant ui as LessonWorkbench
+  participant ctrl as useLessonController
+  participant dom as Domain evaluator
+  participant learn as learning/
+  participant port as usePortfolio
+  participant ls as localStorage
+  L->>ui: Change a factor
+  ui->>ctrl: updateFactor(id, value)
+  ctrl->>dom: re-render: evaluatorFor(...)(factors)
+  dom-->>ctrl: EvaluationOutput
+  ctrl-->>ui: Unrecorded preview
+  L->>ui: Click "Record Run B"
+  ui->>ctrl: recordCurrentRun()
+  ctrl->>learn: recordingBlocker, createTrialSnapshot, recordTrial
+  learn-->>ctrl: Next LessonAttemptV2
+  ctrl->>port: onAttemptChange = replaceAttempt
+  port->>learn: savePortfolioDetailed (validate, compact)
+  learn->>ls: setItem musicaMathematica.learning.v2
+  ls--)port: storage event in other open tabs
+```
+
+Steps 2–5 run on every factor change: the new factors trigger a re-render, and
+a `useMemo` calls the domain evaluator. That evaluator is a pure function looked
+up through the registry, so the preview never touches storage.
+At step 8, `recordingBlocker` refuses a run outside the experiment stage, or
+an audio run without a fresh analysis. `recordTrial` then enforces the
+12-trial cap. Saving (steps 11–12) is a React effect in `usePortfolio` that
+runs whenever the portfolio object changes, not a call from the controller.
+Step 13 is how a second tab learns about the write and reloads the record.
+
+Where in the code:
+
+- [src/ui/workbench/LessonWorkbench.tsx](../src/ui/workbench/LessonWorkbench.tsx): renders the controls and the preview.
+- [src/app/workbench/useLessonController.ts](../src/app/workbench/useLessonController.ts): `updateFactor`, `recordCurrentRun`, and the other stage actions.
+- [src/curriculum/registry.ts](../src/curriculum/registry.ts): `evaluatorFor`; evaluators live in `src/domains/<id>/evaluators.ts`.
+- [src/learning/inquiry/recording.ts](../src/learning/inquiry/recording.ts) and [src/learning/portfolio/aggregate.ts](../src/learning/portfolio/aggregate.ts): recording rules and immutable attempt updates.
+- [src/app/portfolio/usePortfolio.ts](../src/app/portfolio/usePortfolio.ts) and [src/learning/portfolio/repository.ts](../src/learning/portfolio/repository.ts): autosave, cross-tab reload, load, save, and export.
+
 Playback advances with animation frames. Only the transport subscribes to
 playhead updates, which are published at 10 Hz, with immediate notifications
 when playback starts or stops. Stable memoized inputs keep playback from
@@ -145,6 +191,53 @@ domain maps its own lesson identifiers to evaluators.
 `src/learning/portfolio/` defines the version 2 records and the code that
 validates, sanitizes, aggregates, and stores them through `StoragePort`. The
 production browser implementation is `src/app/portfolio/browserStorage.ts`.
+
+The stored record is one JSON document per browser profile, with this shape:
+
+```mermaid
+erDiagram
+  LearningPortfolioV2 ||--o{ LessonAttemptV2 : "attempts by domain:lesson"
+  LessonAttemptV2 ||--o{ TrialSnapshotV2 : "trials, newest 12"
+  TrialSnapshotV2 ||--o{ ObservableRecord : "observables, max 24"
+  TrialSnapshotV2 ||--o{ TracePoint : "trace, max 256"
+  LearningPortfolioV2 {
+    int version "always 2"
+    object active "labId and lessonId"
+  }
+  LessonAttemptV2 {
+    string labId "domain id"
+    string lessonId
+    string stage "one of eight stages"
+    string prediction "and three more responses"
+    string updatedAt
+  }
+  TrialSnapshotV2 {
+    string id "Run A, Run B, Run 3"
+    string protocolId
+    string seed "optional"
+    object factors "factor id to value"
+    object provenance "source, method"
+    string note "optional"
+  }
+  ObservableRecord {
+    string id
+    string label
+    string value "number or text"
+  }
+  TracePoint {
+    float x
+    float y
+    string series
+  }
+```
+
+Attempts are keyed by `attemptKey(labId, lessonId)`, so each lesson has at
+most one attempt; restarting a lesson replaces it. `labId` is the historical
+name for the domain identifier and stays for compatibility. A trial copies its
+observables, trace and provenance from the `EvaluationOutput` it was recorded
+from (`createTrialSnapshot`). The types are in
+[src/learning/portfolio/schema.ts](../src/learning/portfolio/schema.ts) and
+[src/curriculum/contracts.ts](../src/curriculum/contracts.ts).
 
 The normal portfolio key is `musicaMathematica.learning.v2`. When no valid
 version 2 record exists, the repository can copy one valid
@@ -219,6 +312,19 @@ additional observation; their controlled portfolio trials remain synthetic.
 The [audio guide](LOCAL_AUDIO_METHOD.md) describes the algorithms, cleanup,
 privacy rules, and limits on interpretation.
 
+The mapped result reaches the lesson through `setAudioEvaluation` in
+`useLessonController`. While the input mode is microphone or file, it replaces
+the synthetic evaluation, and recording then follows the sequence above.
+
+Where in the code:
+
+- [src/app/audio/AudioInputController.tsx](../src/app/audio/AudioInputController.tsx) and [src/app/audio/audioInputAnalysis.ts](../src/app/audio/audioInputAnalysis.ts): `startMicrophoneAnalysis` and `analyzeFileSelection`, request gating, and cleanup.
+- [src/audio/browser/fileInput.ts](../src/audio/browser/fileInput.ts): file checks and `decodeAudioSelection`.
+- [src/audio/browser/worklets/captureProcessor.ts](../src/audio/browser/worklets/captureProcessor.ts): the AudioWorklet ring buffer.
+- [src/audio/browser/workerClient.ts](../src/audio/browser/workerClient.ts) and [src/audio/browser/analysisWorker.ts](../src/audio/browser/analysisWorker.ts): both sides of the Web Worker connection.
+- [src/audio/analysis/analysis.ts](../src/audio/analysis/analysis.ts): portable signal analysis and hypotheses.
+- [src/app/audio/mapAudioEvaluation.ts](../src/app/audio/mapAudioEvaluation.ts): `selectionToEvaluation` and `microphoneFrameToEvaluation`.
+
 ## Builds and deployment
 
 `pnpm build` runs `vite build` without a separate type-check, and writes an
@@ -226,10 +332,34 @@ origin-root bundle to `dist/`. `pnpm typecheck` covers the type-checking. `pnpm 
 `/musica-mathematica/`, rewrites the favicon path, makes application, worker,
 worklet, and font assets aware of that base, and enables isolated demo storage.
 
+```mermaid
+flowchart LR
+  src[Repository]
+  subgraph local [Developer machine]
+    verify["pnpm verify"]
+    dist["dist/ (origin root)"]
+  end
+  subgraph ci [ci.yml]
+    civerify["pnpm verify on Node 22"]
+  end
+  subgraph pages [pages.yml, manual]
+    checks["lint, typecheck, test:unit"]
+    pbuild["pnpm build:pages"]
+    deploy[deploy job]
+  end
+  site[GitHub Pages site]
+  host[Any HTTPS static host]
+  src --> verify -->|pnpm build| dist -->|copy files| host
+  src -.->|Dependabot PR or dispatch| civerify
+  src -.->|workflow_dispatch| checks --> pbuild -->|Pages artifact| deploy --> site
+```
+
 On Dependabot-authored pull requests or manual dispatch, CI installs the frozen
 lockfile with Node 22 and runs `pnpm verify`. The GitHub Pages workflow is
-manual and restricted to the default branch. It runs `pnpm typecheck` and
-`pnpm test:unit`, then builds, uploads and deploys the Pages artifact. Only the
+manual and restricted to the default branch. It runs `pnpm lint`,
+`pnpm typecheck` and `pnpm test:unit`, then builds, uploads and deploys the
+Pages artifact. Neither workflow runs on ordinary pushes, so `pnpm verify`
+before a change is the main gate. Only the
 deploy job receives Pages and identity-token write permissions. Repository
 settings, the live origin, response headers and cache behavior remain part of
 the deployment environment.
@@ -237,6 +367,13 @@ the deployment environment.
 WebSocket access and inline styles for Vite development. Production builds
 remove both (`vite.config.ts`). A deployed host should also send
 appropriate security headers.
+
+Where in the code: [vite.config.ts](../vite.config.ts) (both build modes),
+[.github/workflows/ci.yml](../.github/workflows/ci.yml),
+[.github/workflows/pages.yml](../.github/workflows/pages.yml), and
+[src/main.tsx](../src/main.tsx), which switches to demo storage when
+`vite.config.ts` defines `VITE_DEMO_MODE` as `true` for the Pages build.
+[DEPLOYMENT.md](DEPLOYMENT.md) covers running the Pages workflow and forks.
 
 ## Stable contracts and extension points
 
