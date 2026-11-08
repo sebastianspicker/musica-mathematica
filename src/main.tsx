@@ -1,6 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./app/App";
+import { RootErrorBoundary } from "./app/RootErrorBoundary";
+import { browserStorage } from "./app/portfolio/browserStorage";
 import { createDemoStorage } from "./app/demo/demoStorage";
 import { curriculumRegistry } from "./curriculum/catalog";
 import "./styles/index.css";
@@ -15,10 +17,12 @@ const demoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App
-      curriculum={curriculumRegistry}
-      demoMode={demoMode}
-      storageFactory={demoMode ? () => createDemoStorage(curriculumRegistry) : undefined}
-    />
+    <RootErrorBoundary storage={demoMode ? undefined : browserStorage()}>
+      <App
+        curriculum={curriculumRegistry}
+        demoMode={demoMode}
+        storageFactory={demoMode ? () => createDemoStorage(curriculumRegistry) : undefined}
+      />
+    </RootErrorBoundary>
   </StrictMode>,
 );

@@ -37,8 +37,8 @@ describe("rhythm-meter evaluators", () => {
     expect(evaluation.headline).toBe("Ranked periodicity");
     expect(evaluation.observables).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "topMeter", label: "Top equal-subdivision candidate", value: "none" }),
-      expect.objectContaining({ id: "meterScore", label: "Onset-alignment score", value: 0 }),
-      expect.objectContaining({ id: "spectralBin", label: "Strongest non-DC bin", value: expect.any(Number) }),
+      expect.objectContaining({ id: "meterScore", label: "Chance-corrected alignment score", value: 0 }),
+      expect.objectContaining({ id: "spectralBin", label: "Strongest non-DC bin (0 = none)", value: expect.any(Number) }),
     ]));
     expect(evaluation.observables.every((observable) =>
       typeof observable.value !== "number" || Number.isFinite(observable.value),

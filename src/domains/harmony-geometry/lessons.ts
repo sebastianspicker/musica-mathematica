@@ -67,7 +67,7 @@ export const harmonyGeometryDefinition: DomainDefinition<ThreeLessons> = {
         question: "How should a chroma template's top three chord labels be checked?",
         objective: "Interpret ranked major, minor, and no-chord hypotheses rather than a single asserted label.",
         equation: "score(c)=cosine(chroma, template_c)",
-        equationCaption: "Template similarity ranks hypotheses; it does not recover voicing, function, or complete score.",
+        equationCaption: "Illustrative scores rank the labels; they do not recover voicing, function, or complete score.",
         predictionPrompt: "Predict how spectral ambiguity changes the gap between the first and second hypotheses.",
         experimentPrompt: "Compare a clean synthetic chord with added ambiguity or local browser audio.",
         interpretationPrompt: "Use confidence separation and musical context to accept, revise, or reject the ranking.",

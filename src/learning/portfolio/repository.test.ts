@@ -162,6 +162,30 @@ describe("portfolio repository", () => {
     expect(loaded.notice).toContain("no copy of it could be kept");
   });
 
+  it("keeps the other lessons when the active attempt cannot be read, with a copy of the original", () => {
+    const storage = new MemoryStorage();
+    const portfolio = updateAttempt(testCurriculum, createPortfolio(testCurriculum), {
+      ...createAttemptV2(testCurriculum, "ensemble-dynamics", "lock-in-and-order", "2026-08-28T10:00:00.000Z"),
+      stage: "predict",
+      prediction: "Stronger coupling raises coherence.",
+    });
+    const broken = { ...createAttemptV2(testCurriculum, "phase-proportion", "from-bpm-to-period", "2026-08-28T10:00:00.000Z"), stage: "compare" };
+    const raw = JSON.stringify({
+      ...portfolio,
+      active: { labId: "phase-proportion", lessonId: "from-bpm-to-period" },
+      attempts: { ...portfolio.attempts, "phase-proportion:from-bpm-to-period": broken },
+    });
+    storage.values.set(portfolioStorageKey, raw);
+
+    const loaded = loadPortfolioDetailed(storage, testCurriculum);
+
+    expect(loaded.source).toBe("v2");
+    expect(loaded.portfolio.attempts["ensemble-dynamics:lock-in-and-order"]?.prediction).toBe("Stronger coupling raises coherence.");
+    expect(loaded.portfolio.attempts["phase-proportion:from-bpm-to-period"]).toBeUndefined();
+    expect(storage.values.get(portfolioBackupStorageKey)).toBe(raw);
+    expect(loaded.notice).toContain("copy");
+  });
+
   it("does not drop attempts on load when the backup slot already holds other data", () => {
     const storage = new MemoryStorage();
     const portfolio = createPortfolio(testCurriculum);

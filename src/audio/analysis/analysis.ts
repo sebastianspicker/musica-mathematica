@@ -76,6 +76,7 @@ export type AudioSelectionFeatureMeans = Readonly<{
   spectralFlatness: number | null;
   spectralRolloffHz: number | null;
   spectralHarmonicity: number | null;
+  /** Lower median of per-frame pitch, so the value occurred in the audio (a mean of two notes would not). */
   pitchHz: number | null;
 }>;
 
@@ -186,7 +187,7 @@ export function summarizeAudioSelection(analysis: AudioSelectionAnalysis): Audio
       spectralFlatness: meanFinite(analysis.frames.map((frame) => frame.spectral.flatness)),
       spectralRolloffHz: meanFinite(analysis.frames.map((frame) => frame.spectral.rolloffHz)),
       spectralHarmonicity: meanFinite(analysis.frames.map((frame) => frame.spectral.harmonicity)),
-      pitchHz: meanFinite(pitchedFrames.flatMap((frame) => (
+      pitchHz: lowerMedianFinite(pitchedFrames.flatMap((frame) => (
         frame.pitch.frequencyHz === null ? [] : [frame.pitch.frequencyHz]
       ))),
     }),
@@ -221,6 +222,11 @@ function timedFluxSample(
       value: flux[frameIndex],
     });
   });
+}
+
+function lowerMedianFinite(values: readonly number[]): number | null {
+  const sorted = values.filter(Number.isFinite).sort((left, right) => left - right);
+  return sorted.length === 0 ? null : sorted[Math.floor((sorted.length - 1) / 2)];
 }
 
 function meanFinite(values: readonly number[]): number | null {

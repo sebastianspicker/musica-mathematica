@@ -255,6 +255,17 @@ describe("microphone analysis orchestration", () => {
 });
 
 describe("file analysis orchestration", () => {
+  const offlineContexts: unknown[][] = [];
+  beforeEach(() => {
+    offlineContexts.length = 0;
+    vi.stubGlobal("window", {
+      AudioContext: AudioContextHarness,
+      OfflineAudioContext: class {
+        constructor(...args: unknown[]) { offlineContexts.push(args); }
+      },
+    });
+  });
+
   function fileRequest(fileRef: { current: File | null }, state = stateHarness()) {
     return {
       request: {
@@ -288,6 +299,8 @@ describe("file analysis orchestration", () => {
     await analyzeFileSelection(second.request);
     expect(fileInput.decodeAudioSelection).toHaveBeenCalledTimes(2);
     expect(second.state.setStatus).toHaveBeenLastCalledWith(expect.stringContaining("Local analysis complete"));
-    expect(AudioContextHarness.instances.every((context) => context.close.mock.calls.length === 1)).toBe(true);
+    // Decoding at a fixed rate keeps file analysis independent of the output device.
+    expect(AudioContextHarness.instances).toHaveLength(0);
+    expect(offlineContexts).toEqual([[1, 1, 44_100], [1, 1, 44_100]]);
   });
 });

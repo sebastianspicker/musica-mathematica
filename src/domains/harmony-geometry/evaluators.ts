@@ -29,9 +29,7 @@ export function evaluatePitchClass(factors: Readonly<Record<string, FactorValue>
   const axis = Math.round(readNumber(factors, "axis"));
   const inverted = readBoolean(factors, "invert");
   const transformed = inverted ? invertPitchClasses(source, axis) : transposePitchClasses(source, axis);
-  const sourceVector = intervalClassVector(source);
   const transformedVector = intervalClassVector(transformed);
-  const invariant = sourceVector.every((value, index) => value === transformedVector[index]);
   return result({
     headline: "Pitch-class transformation",
     result: `{${transformed.join(", ")}}`,
@@ -39,7 +37,6 @@ export function evaluatePitchClass(factors: Readonly<Record<string, FactorValue>
       observable({ id: "source", label: "Source set", value: `{${source.join(", ")}}`, unit: null, claimId: "math.identity" }),
       observable({ id: "transformed", label: "Transformed set", value: `{${transformed.join(", ")}}`, unit: null, claimId: "math.identity" }),
       observable({ id: "icv", label: "Interval-class vector", value: `<${transformedVector.join(",")}>`, unit: null, claimId: "math.identity" }),
-      observable({ id: "invariant", label: "Vector invariant", value: invariant ? "yes" : "no", unit: null, claimId: "math.identity" }),
     ],
     trace: transformed.map((pitchClass) => ({ x: pitchClass, y: 1, series: inverted ? "Inverted set" : "Transposed set" })),
     visualKind: "phase",
@@ -160,19 +157,19 @@ export function evaluateChordHypotheses(factors: Readonly<Record<string, FactorV
   const ambiguity = readNumber(factors, "ambiguity");
   const ranked = chordScores(root, quality, ambiguity);
   return result({
-    headline: "Ranked chord hypotheses",
+    headline: "Ranked chord hypotheses (illustrative scores)",
     result: `${ranked[0].label} (${ranked[0].score.toFixed(2)})`,
     observables: ranked.map((candidate, index) => observable({
       id: `chord${index + 1}`,
       label: `Hypothesis ${index + 1}`,
       value: `${candidate.label} · ${candidate.score.toFixed(2)}`,
       unit: null,
-      claimId: "hypothesis.transcription",
+      claimId: "heuristic.transparent",
     })),
     trace: ranked.map((candidate, index) => ({ x: index + 1, y: candidate.score, series: candidate.label })),
     visualKind: "spectrum",
-    annotation: "The top three are template-similarity hypotheses. They do not encode inversion, function, voicing, or a full score.",
-    traceAxes: axes("Hypothesis rank", null, "Template similarity", null),
+    annotation: "The scores are an illustrative teaching fixture driven by the ambiguity factor, not computed from audio templates; they rank three labels only. They do not encode inversion, function, voicing, or a full score.",
+    traceAxes: axes("Hypothesis rank", null, "Illustrative score", null),
     provenance: SYNTHETIC_PROVENANCE,
   });
 }

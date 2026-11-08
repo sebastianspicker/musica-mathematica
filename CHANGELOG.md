@@ -105,6 +105,28 @@ User-visible changes are listed here by release.
   result heading.
 - Portfolio export keeps the download link valid until the browser has started
   the download.
+- An unreadable lesson attempt no longer hides the other saved lessons; it is
+  left out on its own and a copy of the original is kept.
+- If the app cannot start, it shows a recovery screen to download the saved
+  data or, after confirmation, clear local work.
+- A recorded selection with two notes reports a pitch that was played, not the
+  average of both.
+- Audio files are decoded at a fixed 44.1 kHz, so results no longer depend on
+  the output device.
+- Meter candidates need at least two steps per beat, and their score is
+  corrected for chance alignment. A flat spectrum reports "no" strongest bin.
+- Chord scores are labelled as an illustrative teaching fixture, not template
+  similarity, and cite the transparent-heuristic claim.
+- Recorded-onset tempo candidates are described as constructed with the input
+  tempo first, not as a ranking.
+- The Markov lesson notes that a symmetric chain is stationary at 50/50, and
+  the stationary-distribution precondition is documented.
+- The scientific basis documents the delay hold, jitter clipping and start-up
+  behaviour of the ensemble model.
+- The ensemble simulation samples the initial state at t = 0.
+- The Hann window is drawn on a normalized, periodic frame axis.
+- The timbre trajectory uses enough points to avoid aliasing fast modulation.
+- Removed the constant "Vector invariant" and "Exact realignment" observables.
 
 ### Limitations
 

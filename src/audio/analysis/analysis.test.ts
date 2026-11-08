@@ -75,6 +75,16 @@ describe("bounded selection analysis", () => {
     expect(summary.spectralFlux).toHaveLength(analysis.spectralFlux.length);
   });
 
+  it("reports a pitch that was played, not the average of two notes", () => {
+    const sampleRateHz = 8_192;
+    const tone = (hz: number) => Array.from({ length: sampleRateHz }, (_, index) => 0.5 * Math.sin(2 * Math.PI * hz * index / sampleRateHz));
+    const twoNotes = Float32Array.from([...tone(261.63), ...tone(392)]);
+
+    const { pitchHz } = summarizeAudioSelection(analyzeAudioSelection(twoNotes, sampleRateHz, analyzeSpectrumWithFftJs)).means;
+
+    expect([261.63, 392].some((hz) => Math.abs((pitchHz ?? 0) / hz - 1) < 0.02)).toBe(true);
+  });
+
   it("represents silence and pitched signals without inventing a pitch for silence", () => {
     const sampleRateHz = 8_192;
     const silence = new Float32Array(sampleRateHz);

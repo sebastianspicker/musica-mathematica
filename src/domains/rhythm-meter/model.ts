@@ -76,7 +76,7 @@ export function analyzeRhythm(pattern: readonly number[]): RhythmAnalysis {
   };
 }
 
-/** Scores candidate equal subdivisions only from onset alignment; it does not infer a performed meter. */
+/** Scores candidate equal subdivisions only from chance-corrected onset alignment; it does not infer a performed meter. */
 export function rankMeterCandidates(
   pattern: readonly number[],
   allowedBeats: readonly number[] = [2, 3, 4, 5, 6, 7],
@@ -91,8 +91,16 @@ export function rankMeterCandidates(
       return [];
     }
     const subdivisionsPerBeat = pattern.length / beats;
+    // One step per beat aligns every onset trivially, so it is not a meter candidate.
+    if (subdivisionsPerBeat < 2) {
+      return [];
+    }
     const alignedOnsets = pattern.reduce((sum, value, index) => sum + (index % subdivisionsPerBeat === 0 ? value : 0), 0);
-    return [{ beats, subdivisionsPerBeat, score: alignedOnsets / Math.max(1, pattern.reduce((sum, value) => sum + value, 0)) }];
+    const aligned = alignedOnsets / Math.max(1, pattern.reduce((sum, value) => sum + value, 0));
+    // Chance-correct: a random onset lands on a beat with probability 1/subdivisionsPerBeat.
+    const chance = 1 / subdivisionsPerBeat;
+    // Rounded so float noise cannot break ties.
+    return [{ beats, subdivisionsPerBeat, score: Number(Math.max(0, (aligned - chance) / (1 - chance)).toFixed(12)) }];
   });
   return candidates.sort((left, right) => right.score - left.score || left.beats - right.beats);
 }

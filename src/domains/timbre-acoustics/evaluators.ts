@@ -42,10 +42,12 @@ export function evaluateAliasing(factors: Readonly<Record<string, FactorValue>>)
   const frameSize = Number(readString(factors, "frameSize"));
   const resolution = fourierResolution(sampleRate, frameSize);
   const alias = aliasFrequencyHz(frequency, sampleRate);
-  const hann = Array.from({ length: 48 }, (_, index) => ({
-    x: index,
-    y: 0.5 * (1 - Math.cos((2 * Math.PI * index) / 47)),
-    series: "Hann window",
+  const windowPoints = 48;
+  // Periodic Hann shape over the normalized frame, independent of the frame-size factor.
+  const hann = Array.from({ length: windowPoints }, (_, index) => ({
+    x: index / windowPoints,
+    y: 0.5 * (1 - Math.cos((2 * Math.PI * index) / windowPoints)),
+    series: "Hann window (normalized frame)",
   }));
   return result({
     headline: "Sampled-frame limits",
@@ -59,7 +61,7 @@ export function evaluateAliasing(factors: Readonly<Record<string, FactorValue>>)
     trace: hann,
     visualKind: "spectrum",
     annotation: "Hann windowing reduces edge discontinuity but trades peak width; bins are not infinitely precise frequencies.",
-    traceAxes: axes("Sample index", "samples", "Window amplitude", null),
+    traceAxes: axes("Position in frame", null, "Window amplitude", null),
   });
 }
 
@@ -73,7 +75,8 @@ export function evaluateTimeVaryingTimbre(factors: Readonly<Record<string, Facto
     fundamentalHz: 150,
     partialCount: 12,
     durationSeconds: duration,
-    pointCount: 96,
+    // At least 8 points per modulation cycle so fast modulation does not alias.
+    pointCount: Math.min(600, Math.max(96, Math.ceil(duration * modulation * 8))),
     attackSeconds: attack,
     decaySeconds: decay,
     brightnessModulationHz: modulation,

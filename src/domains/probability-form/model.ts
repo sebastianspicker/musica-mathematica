@@ -67,7 +67,7 @@ export function generateMarkovSequence(
   return sequence;
 }
 
-/** Approximates the stationary distribution by repeated row-vector multiplication. */
+/** Approximates the stationary distribution by repeated row-vector multiplication. Precondition: irreducible, aperiodic chain; otherwise it may throw or depend on the start. */
 export function stationaryDistribution(
   matrix: readonly (readonly number[])[],
   tolerance: number = 1e-10,

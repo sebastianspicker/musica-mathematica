@@ -83,7 +83,9 @@ The selected file must:
 - have a positive size no greater than 25 MiB;
 - expose a finite duration no greater than 90 seconds through the browser's
   metadata reader before full decoding begins;
-- decode through the browser's `decodeAudioData` implementation;
+- decode through the browser's `decodeAudioData` implementation, using an
+  `OfflineAudioContext` at 44.1 kHz so the analysis rate does not depend on the
+  output device;
 - decode to a positive duration no greater than 90 seconds; and
 - provide a positive selected range within the decoded audio, no longer than
   30 seconds.

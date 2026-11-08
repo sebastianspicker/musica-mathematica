@@ -35,16 +35,12 @@ export function normalizePortfolio(
     ? { labId, lessonId }
     : { labId: curriculum.defaultLesson.domainId, lessonId: curriculum.defaultLesson.id };
 
+  // An unreadable attempt, active or not, is dropped alone; loading keeps a copy of the original first.
   const attempts: Record<string, LessonAttemptV2> = {};
-  let sawActiveCandidate = false;
   for (const candidate of Object.values(value.attempts)) {
     const attempt = normalizeAttempt(candidate, curriculum);
-    if (isRecord(candidate) && candidate.labId === active.labId && candidate.lessonId === active.lessonId) {
-      sawActiveCandidate = true;
-    }
     if (attempt) attempts[attemptKey(attempt.labId, attempt.lessonId)] = attempt;
   }
-  if (sawActiveCandidate && !attempts[attemptKey(active.labId, active.lessonId)]) return undefined;
 
   const normalized: LearningPortfolioV2 = {
     version: 2,
@@ -59,7 +55,12 @@ export function sanitizePortfolio(
   curriculum: CurriculumLessonReader,
 ): LearningPortfolioV2 {
   const normalized = normalizePortfolio(portfolio, curriculum);
-  if (!normalized) throw new RangeError("Portfolio cannot be normalized to the version 2 schema.");
+  const { labId, lessonId } = portfolio.active;
+  const hadActive = Object.values(portfolio.attempts).some((attempt) => attempt.labId === labId && attempt.lessonId === lessonId);
+  // In a session, losing the active attempt would silently discard the learner's current work.
+  if (!normalized || (hadActive && !normalized.attempts[attemptKey(labId, lessonId)])) {
+    throw new RangeError("Portfolio cannot be normalized to the version 2 schema.");
+  }
   return normalized;
 }
 

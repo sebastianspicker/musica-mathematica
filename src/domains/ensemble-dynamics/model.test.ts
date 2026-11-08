@@ -443,5 +443,6 @@ describe("ensemble simulation invariants", () => {
     expect(eightSeconds.finalState.time).toBe(8);
     expect(eightSeconds.samples.every((sample) => sample.state.time <= 8)).toBe(true);
     expect(partialStep.finalState.time).toBe(0.025);
+    expect(eightSeconds.samples[0].state.time).toBe(0);
   });
 });

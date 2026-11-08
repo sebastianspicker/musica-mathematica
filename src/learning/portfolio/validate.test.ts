@@ -13,6 +13,7 @@ import {
   maximumLongValueCodePoints,
   maximumObservablesPerTrial,
   maximumResponseCodePoints,
+  type LearningPortfolioV2,
 } from "./schema";
 import { testCurriculum } from "./curriculumFixture.test-helper";
 
@@ -213,7 +214,7 @@ describe("portfolio validation", () => {
     expect(isTrialSnapshotV2(reordered, testCurriculum)).toBe(true);
   });
 
-  it("refuses normalization that would silently discard the active attempt", () => {
+  it("drops only an unreadable active attempt when normalizing, but refuses it when sanitizing", () => {
     const attempt = { ...validAttempt(), stage: "compare" as const };
     const portfolio = {
       version: 2,
@@ -221,7 +222,8 @@ describe("portfolio validation", () => {
       attempts: { active: attempt },
     };
 
-    expect(normalizePortfolio(portfolio, testCurriculum)).toBeUndefined();
+    expect(normalizePortfolio(portfolio, testCurriculum)?.attempts).toEqual({});
+    expect(() => sanitizePortfolio(portfolio as LearningPortfolioV2, testCurriculum)).toThrow(RangeError);
   });
 
   it("keeps the newest twelve trials in chronological order", () => {

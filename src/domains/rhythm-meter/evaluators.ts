@@ -47,6 +47,8 @@ export function evaluateAutocorrelationSpectrumMeter(factors: Factors): Evaluati
     if (!strongestSpectrum || entry.magnitude > strongestSpectrum.magnitude + 1e-9) strongestSpectrum = entry;
   }
   const topMeter = meters[0];
+  // A flat spectrum (e.g. all-ones) has no non-DC peak; report bin 0 for "none".
+  const spectralBin = strongestSpectrum && strongestSpectrum.magnitude >= 1e-9 ? strongestSpectrum.bin : 0;
   const profileTrace = analysis.autocorrelation.map((value, index) => ({
     x: index,
     y: value,
@@ -54,11 +56,11 @@ export function evaluateAutocorrelationSpectrumMeter(factors: Factors): Evaluati
   }));
   return result({
     headline: "Ranked periodicity",
-    result: topMeter ? `${topMeter.beats} beats × ${topMeter.subdivisionsPerBeat} subdivisions` : "No equal-subdivision candidate",
+    result: topMeter ? `${topMeter.beats} beats × ${topMeter.subdivisionsPerBeat} subdivisions` : "No meter candidate (needs 2+ steps per beat)",
     observables: [
       observable({ id: "topMeter", label: "Top equal-subdivision candidate", value: topMeter ? `${topMeter.beats} × ${topMeter.subdivisionsPerBeat}` : "none", unit: null, claimId: "heuristic.transparent" }),
-      observable({ id: "meterScore", label: "Onset-alignment score", value: topMeter?.score ?? 0, unit: null, claimId: "heuristic.transparent", precision: 3 }),
-      observable({ id: "spectralBin", label: "Strongest non-DC bin", value: strongestSpectrum?.bin ?? 0, unit: null, claimId: "model.deterministic", precision: 0 }),
+      observable({ id: "meterScore", label: "Chance-corrected alignment score", value: topMeter?.score ?? 0, unit: null, claimId: "heuristic.transparent", precision: 3 }),
+      observable({ id: "spectralBin", label: "Strongest non-DC bin (0 = none)", value: spectralBin, unit: null, claimId: "model.deterministic", precision: 0 }),
     ],
     trace: profileTrace,
     visualKind: "spectrum",
@@ -80,8 +82,8 @@ export function evaluateRecordedOnsetHypotheses(factors: Factors): EvaluationOut
     ...kept.map((point) => ({ ...point, series: "Above threshold" })),
   ];
   return result({
-    headline: "Ranked transcription hypotheses",
-    result: `${candidates[0].toFixed(1)} BPM (top candidate)`,
+    headline: "Synthetic tempo candidates (order set by construction)",
+    result: `${candidates[0].toFixed(1)} BPM (input tempo)`,
     observables: [
       observable({ id: "onsetCount", label: "Events above threshold", value: eventCount, unit: null, claimId: "hypothesis.transcription", precision: 0 }),
       observable({ id: "tempo1", label: "Tempo candidate 1", value: candidates[0], unit: "BPM", claimId: "hypothesis.transcription", precision: 1 }),
@@ -90,7 +92,7 @@ export function evaluateRecordedOnsetHypotheses(factors: Factors): EvaluationOut
     ],
     trace,
     visualKind: "spectrum",
-    annotation: "Synthetic fixture shown. Microphone and file modes must retain the same hypothesis wording and local-only boundary.",
+    annotation: "Synthetic fixture shown; candidates are listed with the input tempo first, so the order is not a ranking. Microphone and file modes must retain the same hypothesis wording and local-only boundary.",
     traceAxes: axes("Time", "s", "Onset strength", null),
     provenance: SYNTHETIC_PROVENANCE,
   });

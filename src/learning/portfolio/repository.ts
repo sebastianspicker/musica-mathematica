@@ -55,6 +55,8 @@ const UNREADABLE_NOTICE =
   "Saved learning data could not be read, so a new portfolio was started. A copy of the unreadable data was kept in this browser until you clear local work.";
 const LOSSY_BLOCKED_NOTICE =
   "Some saved learning data cannot be opened by this version, and no copy of it could be kept. Automatic saving is off and the original browser data remains unchanged. Export your work, then clear local work to recover automatic saving.";
+const DROPPED_WITH_COPY_NOTICE =
+  "Some saved lessons could not be opened by this version and were left out. A copy of the original data was kept in this browser until you clear local work.";
 // Autosave writes only the v2 key, so the older record stays until local work is cleared.
 const LEGACY_UNCONVERTIBLE_NOTICE =
   "Learning data saved by an older version could not be converted, so a new portfolio was started. The older data was left unchanged in this browser until you clear local work.";
@@ -196,7 +198,8 @@ function loadPreparedV2(
 
   const shouldPersist = raw !== prepared.json;
   // Rewriting drops what this build cannot keep, such as attempts for lessons added later; copy the original first.
-  if (shouldPersist && !backUpStoredPortfolio(storage, raw, false) && dropsAttempts(parsed, prepared.portfolio)) {
+  const dropped = shouldPersist && dropsAttempts(parsed, prepared.portfolio);
+  if (shouldPersist && !backUpStoredPortfolio(storage, raw, false) && dropped) {
     return {
       portfolio: prepared.portfolio,
       source: "v2",
@@ -215,7 +218,9 @@ function loadPreparedV2(
     normalizationStatus: prepared.normalizationStatus,
     persistenceStatus,
     automaticPersistenceEnabled: true,
-    ...noticeFor(prepared.normalizationStatus, persistenceStatus),
+    ...(dropped && persistenceStatus !== "failed"
+      ? { notice: DROPPED_WITH_COPY_NOTICE }
+      : noticeFor(prepared.normalizationStatus, persistenceStatus)),
   };
 }
 

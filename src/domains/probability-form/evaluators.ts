@@ -70,7 +70,7 @@ export function evaluateMarkov(factors: Readonly<Record<string, FactorValue>>): 
     ],
     trace: sequence.map((value, index) => ({ x: index, y: value, series: "Markov state" })),
     visualKind: "distribution",
-    annotation: "First-order state memory creates local dependence but does not plan long-range musical form.",
+    annotation: "First-order state memory creates local dependence but does not plan long-range musical form. A symmetric chain is stationary at 50/50 for every stay probability.",
     traceAxes: axes("Event index", "events", "Markov state", null),
     provenance: SYNTHETIC_PROVENANCE,
   });

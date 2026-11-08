@@ -55,7 +55,6 @@ export function evaluatePolyrhythmReturnTimes(factors: Factors): EvaluationOutpu
     observables: [
       observable({ id: "gcd", label: "Common pulse-count divisor", value: gcd, unit: null, claimId: "math.identity", precision: 0 }),
       observable({ id: "lcm", label: "Onset-lattice resolution", value: lcm, unit: "subdivisions / shared cycle", claimId: "math.identity", precision: 0 }),
-      observable({ id: "realignment", label: "Exact realignment", value: 1, unit: "shared cycle", claimId: "math.identity", precision: 0 }),
       observable({ id: "returnSeconds", label: "Shared-cycle duration at reference tempo", value: sharedCycleSeconds, unit: "s", claimId: "math.identity", precision: 3 }),
     ],
     trace,

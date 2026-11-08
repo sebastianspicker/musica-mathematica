@@ -486,11 +486,12 @@ export function simulateEnsemble(
   const edges = createCouplingEdges(config);
   const incomingEdges = prepareIncomingEdges(edges, config.musicianCount);
   const sampleInterval = 0.1;
+  const initialState = createInitialState(config);
   let progress: SimulationProgress = {
-    state: createInitialState(config),
+    state: initialState,
     history: [],
-    samples: [],
-    nextSampleTime: 0,
+    samples: [{ state: initialState, metrics: metricsFor(initialState, config) }],
+    nextSampleTime: sampleInterval,
   };
   const fullStepCount = Math.floor(
     (durationSeconds + FIXED_STEP_EPSILON_SECONDS) / dtSeconds,

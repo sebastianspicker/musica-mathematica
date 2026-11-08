@@ -52,7 +52,10 @@ of `0.01 s`. The lower-level simulation function also accepts an explicit
 deterministic step size; the exported fixed-step driver uses `0.01 s`.
 Configured delays are read from the fixed-step history at 10 ms resolution, so a
 delay that is not a multiple of 10 ms uses the next older stored state (a 55 ms
-delay acts like 60 ms). For oscillator `i`, the implemented equation is:
+delay acts like 60 ms). Delays are read with a zero-order hold on the 10 ms grid;
+jitter is clipped at zero delay, which raises the mean delay when jitter exceeds
+latency (latency 0, jitter 80 ms gives a mean of about 17 ms). Before the first
+delay has elapsed a musician hears the source's current phase. For oscillator `i`, the implemented equation is:
 
 ```text
 d theta_i / dt = omega_i

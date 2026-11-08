@@ -118,6 +118,8 @@ function beginAnalysis(state: AnalysisStateSetters, status: string): void {
   state.onAnalysis(null);
 }
 
+const FILE_DECODE_SAMPLE_RATE_HZ = 44_100;
+
 function createAudioContext(): AudioContext | null {
   const AudioContextCtor = window.AudioContext;
   return AudioContextCtor ? new AudioContextCtor() : null;
@@ -240,19 +242,19 @@ export async function analyzeFileSelection(request: FileAnalysisRequest): Promis
     setStatus("Choose a browser-decodable audio/* file first.");
     return;
   }
-  const context = createAudioContext();
-  if (!context) {
+  const decoder = createFileDecoder();
+  if (!decoder) {
     setStatus("File analysis is unavailable because Web Audio is not supported.");
     return;
   }
   beginAnalysis(state, "Decoding the bounded selection locally…");
   const controller = new AbortController();
-  const cleanup = createFileCleanup(context, controller);
+  const cleanup = () => controller.abort();
   gate.registerCleanup(cleanup);
   try {
     const decoded = await decodeAudioSelection(
       file,
-      context,
+      decoder,
       { startSeconds: selectionStart, endSeconds: selectionStart + selectionDuration },
       { signal: controller.signal },
     );
@@ -271,12 +273,10 @@ export async function analyzeFileSelection(request: FileAnalysisRequest): Promis
   }
 }
 
-function createFileCleanup(context: AudioContext, controller: AbortController): () => void {
-  const closeContext = createContextCloser(context);
-  return () => {
-    controller.abort();
-    closeContext();
-  };
+// An offline context needs no audio device and decodes at a fixed rate, whatever the output device uses.
+function createFileDecoder(): OfflineAudioContext | null {
+  const OfflineAudioContextCtor = window.OfflineAudioContext;
+  return OfflineAudioContextCtor ? new OfflineAudioContextCtor(1, 1, FILE_DECODE_SAMPLE_RATE_HZ) : null;
 }
 
 function isCurrentFileAnalysis(gate: AnalysisRequestGate, controller: AbortController): boolean {

@@ -286,15 +286,6 @@
         "aggregation": "instantaneous"
       },
       {
-        "id": "realignment",
-        "label": "Exact realignment",
-        "value": 1,
-        "unit": "shared cycle",
-        "claimId": "math.identity",
-        "precision": 0,
-        "aggregation": "instantaneous"
-      },
-      {
         "id": "returnSeconds",
         "label": "Shared-cycle duration at reference tempo",
         "value": 0.6666666667,
@@ -377,15 +368,6 @@
         "label": "Onset-lattice resolution",
         "value": 12,
         "unit": "subdivisions / shared cycle",
-        "claimId": "math.identity",
-        "precision": 0,
-        "aggregation": "instantaneous"
-      },
-      {
-        "id": "realignment",
-        "label": "Exact realignment",
-        "value": 1,
-        "unit": "shared cycle",
         "claimId": "math.identity",
         "precision": 0,
         "aggregation": "instantaneous"
@@ -717,13 +699,13 @@
     ],
     "trace": [
       {
-        "x": 0.01,
-        "y": 0.04715819236,
+        "x": 0,
+        "y": 0.04763456455,
         "series": "Coherence"
       },
       {
-        "x": 0.01,
-        "y": 0.5602626977,
+        "x": 0,
+        "y": 0.5616313244,
         "series": "Phase spread / pi"
       },
       {
@@ -1588,13 +1570,13 @@
     ],
     "trace": [
       {
-        "x": 0.01,
-        "y": 0.01433040126,
+        "x": 0,
+        "y": 0.007603008766,
         "series": "Coherence"
       },
       {
-        "x": 0.01,
-        "y": 0.5685068713,
+        "x": 0,
+        "y": 0.5748693603,
         "series": "Phase spread / pi"
       },
       {
@@ -2459,13 +2441,13 @@
     ],
     "trace": [
       {
-        "x": 0.01,
-        "y": 0.04774135536,
+        "x": 0,
+        "y": 0.04763456455,
         "series": "Coherence"
       },
       {
-        "x": 0.01,
-        "y": 0.5600943859,
+        "x": 0,
+        "y": 0.5616313244,
         "series": "Phase spread / pi"
       },
       {
@@ -3330,13 +3312,13 @@
     ],
     "trace": [
       {
-        "x": 0.01,
-        "y": 0.0475237052,
+        "x": 0,
+        "y": 0.04763456455,
         "series": "Coherence"
       },
       {
-        "x": 0.01,
-        "y": 0.5602169982,
+        "x": 0,
+        "y": 0.5616313244,
         "series": "Phase spread / pi"
       },
       {
@@ -4201,13 +4183,13 @@
     ],
     "trace": [
       {
-        "x": 0.01,
-        "y": 0.04768005558,
+        "x": 0,
+        "y": 0.04763456455,
         "series": "Coherence"
       },
       {
-        "x": 0.01,
-        "y": 0.5618003426,
+        "x": 0,
+        "y": 0.5616313244,
         "series": "Phase spread / pi"
       },
       {
@@ -5072,13 +5054,13 @@
     ],
     "trace": [
       {
-        "x": 0.01,
-        "y": 0.0531923103,
+        "x": 0,
+        "y": 0.04763456455,
         "series": "Coherence"
       },
       {
-        "x": 0.01,
-        "y": 0.5721678068,
+        "x": 0,
+        "y": 0.5616313244,
         "series": "Phase spread / pi"
       },
       {
@@ -6246,12 +6228,12 @@
   },
   "rhythm-meter/autocorrelation-spectrum-meter/default": {
     "headline": "Ranked periodicity",
-    "result": "6 beats × 2 subdivisions",
+    "result": "3 beats × 4 subdivisions",
     "observables": [
       {
         "id": "topMeter",
         "label": "Top equal-subdivision candidate",
-        "value": "6 × 2",
+        "value": "3 × 4",
         "unit": null,
         "claimId": "heuristic.transparent",
         "precision": 2,
@@ -6259,8 +6241,8 @@
       },
       {
         "id": "meterScore",
-        "label": "Onset-alignment score",
-        "value": 0.6,
+        "label": "Chance-corrected alignment score",
+        "value": 0.2,
         "unit": null,
         "claimId": "heuristic.transparent",
         "precision": 3,
@@ -6268,7 +6250,7 @@
       },
       {
         "id": "spectralBin",
-        "label": "Strongest non-DC bin",
+        "label": "Strongest non-DC bin (0 = none)",
         "value": 5,
         "unit": null,
         "claimId": "model.deterministic",
@@ -6371,7 +6353,7 @@
       },
       {
         "id": "meterScore",
-        "label": "Onset-alignment score",
+        "label": "Chance-corrected alignment score",
         "value": 0,
         "unit": null,
         "claimId": "heuristic.transparent",
@@ -6380,7 +6362,7 @@
       },
       {
         "id": "spectralBin",
-        "label": "Strongest non-DC bin",
+        "label": "Strongest non-DC bin (0 = none)",
         "value": 12,
         "unit": null,
         "claimId": "model.deterministic",
@@ -6569,8 +6551,8 @@
     }
   },
   "rhythm-meter/recorded-onset-hypotheses/default": {
-    "headline": "Ranked transcription hypotheses",
-    "result": "108.0 BPM (top candidate)",
+    "headline": "Synthetic tempo candidates (order set by construction)",
+    "result": "108.0 BPM (input tempo)",
     "observables": [
       {
         "id": "onsetCount",
@@ -6742,7 +6724,7 @@
       }
     },
     "visualKind": "spectrum",
-    "annotation": "Synthetic fixture shown. Microphone and file modes must retain the same hypothesis wording and local-only boundary.",
+    "annotation": "Synthetic fixture shown; candidates are listed with the input tempo first, so the order is not a ranking. Microphone and file modes must retain the same hypothesis wording and local-only boundary.",
     "provenance": {
       "source": "synthetic",
       "calibration": "uncalibrated",
@@ -6750,8 +6732,8 @@
     }
   },
   "rhythm-meter/recorded-onset-hypotheses/variant": {
-    "headline": "Ranked transcription hypotheses",
-    "result": "220.0 BPM (top candidate)",
+    "headline": "Synthetic tempo candidates (order set by construction)",
+    "result": "220.0 BPM (input tempo)",
     "observables": [
       {
         "id": "onsetCount",
@@ -6863,7 +6845,7 @@
       }
     },
     "visualKind": "spectrum",
-    "annotation": "Synthetic fixture shown. Microphone and file modes must retain the same hypothesis wording and local-only boundary.",
+    "annotation": "Synthetic fixture shown; candidates are listed with the input tempo first, so the order is not a ranking. Microphone and file modes must retain the same hypothesis wording and local-only boundary.",
     "provenance": {
       "source": "synthetic",
       "calibration": "uncalibrated",
@@ -8023,15 +8005,6 @@
         "claimId": "math.identity",
         "precision": 2,
         "aggregation": "instantaneous"
-      },
-      {
-        "id": "invariant",
-        "label": "Vector invariant",
-        "value": "yes",
-        "unit": null,
-        "claimId": "math.identity",
-        "precision": 2,
-        "aggregation": "instantaneous"
       }
     ],
     "trace": [
@@ -8095,15 +8068,6 @@
         "id": "icv",
         "label": "Interval-class vector",
         "value": "<0,3,0,2,0,1>",
-        "unit": null,
-        "claimId": "math.identity",
-        "precision": 2,
-        "aggregation": "instantaneous"
-      },
-      {
-        "id": "invariant",
-        "label": "Vector invariant",
-        "value": "yes",
         "unit": null,
         "claimId": "math.identity",
         "precision": 2,
@@ -8366,7 +8330,7 @@
     }
   },
   "harmony-geometry/chord-hypotheses/default": {
-    "headline": "Ranked chord hypotheses",
+    "headline": "Ranked chord hypotheses (illustrative scores)",
     "result": "C major (0.92)",
     "observables": [
       {
@@ -8374,7 +8338,7 @@
         "label": "Hypothesis 1",
         "value": "C major · 0.92",
         "unit": null,
-        "claimId": "hypothesis.transcription",
+        "claimId": "heuristic.transparent",
         "precision": 2,
         "aggregation": "instantaneous"
       },
@@ -8383,7 +8347,7 @@
         "label": "Hypothesis 2",
         "value": "A minor · 0.29",
         "unit": null,
-        "claimId": "hypothesis.transcription",
+        "claimId": "heuristic.transparent",
         "precision": 2,
         "aggregation": "instantaneous"
       },
@@ -8392,7 +8356,7 @@
         "label": "Hypothesis 3",
         "value": "G major · 0.17",
         "unit": null,
-        "claimId": "hypothesis.transcription",
+        "claimId": "heuristic.transparent",
         "precision": 2,
         "aggregation": "instantaneous"
       }
@@ -8420,12 +8384,12 @@
         "unit": null
       },
       "y": {
-        "label": "Template similarity",
+        "label": "Illustrative score",
         "unit": null
       }
     },
     "visualKind": "spectrum",
-    "annotation": "The top three are template-similarity hypotheses. They do not encode inversion, function, voicing, or a full score.",
+    "annotation": "The scores are an illustrative teaching fixture driven by the ambiguity factor, not computed from audio templates; they rank three labels only. They do not encode inversion, function, voicing, or a full score.",
     "provenance": {
       "source": "synthetic",
       "calibration": "uncalibrated",
@@ -8433,7 +8397,7 @@
     }
   },
   "harmony-geometry/chord-hypotheses/variant": {
-    "headline": "Ranked chord hypotheses",
+    "headline": "Ranked chord hypotheses (illustrative scores)",
     "result": "D major (0.67)",
     "observables": [
       {
@@ -8441,7 +8405,7 @@
         "label": "Hypothesis 1",
         "value": "D major · 0.67",
         "unit": null,
-        "claimId": "hypothesis.transcription",
+        "claimId": "heuristic.transparent",
         "precision": 2,
         "aggregation": "instantaneous"
       },
@@ -8450,7 +8414,7 @@
         "label": "Hypothesis 2",
         "value": "no chord · 0.47",
         "unit": null,
-        "claimId": "hypothesis.transcription",
+        "claimId": "heuristic.transparent",
         "precision": 2,
         "aggregation": "instantaneous"
       },
@@ -8459,7 +8423,7 @@
         "label": "Hypothesis 3",
         "value": "B minor · 0.45",
         "unit": null,
-        "claimId": "hypothesis.transcription",
+        "claimId": "heuristic.transparent",
         "precision": 2,
         "aggregation": "instantaneous"
       }
@@ -8487,12 +8451,12 @@
         "unit": null
       },
       "y": {
-        "label": "Template similarity",
+        "label": "Illustrative score",
         "unit": null
       }
     },
     "visualKind": "spectrum",
-    "annotation": "The top three are template-similarity hypotheses. They do not encode inversion, function, voicing, or a full score.",
+    "annotation": "The scores are an illustrative teaching fixture driven by the ambiguity factor, not computed from audio templates; they rank three labels only. They do not encode inversion, function, voicing, or a full score.",
     "provenance": {
       "source": "synthetic",
       "calibration": "uncalibrated",
@@ -8808,248 +8772,248 @@
       {
         "x": 0,
         "y": 0,
-        "series": "Hann window"
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 1,
-        "y": 0.004461255923,
-        "series": "Hann window"
+        "x": 0.02083333333,
+        "y": 0.004277569313,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 2,
-        "y": 0.01776541247,
-        "series": "Hann window"
+        "x": 0.04166666667,
+        "y": 0.01703708686,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 3,
-        "y": 0.03967505666,
-        "series": "Hann window"
+        "x": 0.0625,
+        "y": 0.03806023374,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 4,
-        "y": 0.06979921037,
-        "series": "Hann window"
+        "x": 0.08333333333,
+        "y": 0.06698729811,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 5,
-        "y": 0.1076003074,
-        "series": "Hann window"
+        "x": 0.1041666667,
+        "y": 0.1033233299,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 6,
-        "y": 0.1524037862,
-        "series": "Hann window"
+        "x": 0.125,
+        "y": 0.1464466094,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 7,
-        "y": 0.2034101276,
-        "series": "Hann window"
+        "x": 0.1458333333,
+        "y": 0.1956192855,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 8,
-        "y": 0.2597091224,
-        "series": "Hann window"
+        "x": 0.1666666667,
+        "y": 0.25,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 9,
-        "y": 0.3202961136,
-        "series": "Hann window"
+        "x": 0.1875,
+        "y": 0.3086582838,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 10,
-        "y": 0.3840899249,
-        "series": "Hann window"
+        "x": 0.2083333333,
+        "y": 0.3705904774,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 11,
-        "y": 0.4499521542,
-        "series": "Hann window"
+        "x": 0.2291666667,
+        "y": 0.4347369039,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 12,
-        "y": 0.5167074885,
-        "series": "Hann window"
+        "x": 0.25,
+        "y": 0.5,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 13,
-        "y": 0.5831646773,
-        "series": "Hann window"
+        "x": 0.2708333333,
+        "y": 0.5652630961,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 14,
-        "y": 0.6481377904,
-        "series": "Hann window"
+        "x": 0.2916666667,
+        "y": 0.6294095226,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 15,
-        "y": 0.7104673812,
-        "series": "Hann window"
+        "x": 0.3125,
+        "y": 0.6913417162,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 16,
-        "y": 0.7690411766,
-        "series": "Hann window"
+        "x": 0.3333333333,
+        "y": 0.75,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 17,
-        "y": 0.8228139258,
-        "series": "Hann window"
+        "x": 0.3541666667,
+        "y": 0.8043807145,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 18,
-        "y": 0.8708260528,
-        "series": "Hann window"
+        "x": 0.375,
+        "y": 0.8535533906,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 19,
-        "y": 0.9122207802,
-        "series": "Hann window"
+        "x": 0.3958333333,
+        "y": 0.8966766701,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 20,
-        "y": 0.9462594179,
-        "series": "Hann window"
+        "x": 0.4166666667,
+        "y": 0.9330127019,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 21,
-        "y": 0.9723345458,
-        "series": "Hann window"
+        "x": 0.4375,
+        "y": 0.9619397663,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 22,
-        "y": 0.9899808525,
-        "series": "Hann window"
+        "x": 0.4583333333,
+        "y": 0.9829629131,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 23,
-        "y": 0.9988834393,
-        "series": "Hann window"
+        "x": 0.4791666667,
+        "y": 0.9957224307,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 24,
-        "y": 0.9988834393,
-        "series": "Hann window"
+        "x": 0.5,
+        "y": 1,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 25,
-        "y": 0.9899808525,
-        "series": "Hann window"
+        "x": 0.5208333333,
+        "y": 0.9957224307,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 26,
-        "y": 0.9723345458,
-        "series": "Hann window"
+        "x": 0.5416666667,
+        "y": 0.9829629131,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 27,
-        "y": 0.9462594179,
-        "series": "Hann window"
+        "x": 0.5625,
+        "y": 0.9619397663,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 28,
-        "y": 0.9122207802,
-        "series": "Hann window"
+        "x": 0.5833333333,
+        "y": 0.9330127019,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 29,
-        "y": 0.8708260528,
-        "series": "Hann window"
+        "x": 0.6041666667,
+        "y": 0.8966766701,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 30,
-        "y": 0.8228139258,
-        "series": "Hann window"
+        "x": 0.625,
+        "y": 0.8535533906,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 31,
-        "y": 0.7690411766,
-        "series": "Hann window"
+        "x": 0.6458333333,
+        "y": 0.8043807145,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 32,
-        "y": 0.7104673812,
-        "series": "Hann window"
+        "x": 0.6666666667,
+        "y": 0.75,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 33,
-        "y": 0.6481377904,
-        "series": "Hann window"
+        "x": 0.6875,
+        "y": 0.6913417162,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 34,
-        "y": 0.5831646773,
-        "series": "Hann window"
+        "x": 0.7083333333,
+        "y": 0.6294095226,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 35,
-        "y": 0.5167074885,
-        "series": "Hann window"
+        "x": 0.7291666667,
+        "y": 0.5652630961,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 36,
-        "y": 0.4499521542,
-        "series": "Hann window"
+        "x": 0.75,
+        "y": 0.5,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 37,
-        "y": 0.3840899249,
-        "series": "Hann window"
+        "x": 0.7708333333,
+        "y": 0.4347369039,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 38,
-        "y": 0.3202961136,
-        "series": "Hann window"
+        "x": 0.7916666667,
+        "y": 0.3705904774,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 39,
-        "y": 0.2597091224,
-        "series": "Hann window"
+        "x": 0.8125,
+        "y": 0.3086582838,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 40,
-        "y": 0.2034101276,
-        "series": "Hann window"
+        "x": 0.8333333333,
+        "y": 0.25,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 41,
-        "y": 0.1524037862,
-        "series": "Hann window"
+        "x": 0.8541666667,
+        "y": 0.1956192855,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 42,
-        "y": 0.1076003074,
-        "series": "Hann window"
+        "x": 0.875,
+        "y": 0.1464466094,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 43,
-        "y": 0.06979921037,
-        "series": "Hann window"
+        "x": 0.8958333333,
+        "y": 0.1033233299,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 44,
-        "y": 0.03967505666,
-        "series": "Hann window"
+        "x": 0.9166666667,
+        "y": 0.06698729811,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 45,
-        "y": 0.01776541247,
-        "series": "Hann window"
+        "x": 0.9375,
+        "y": 0.03806023374,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 46,
-        "y": 0.004461255923,
-        "series": "Hann window"
+        "x": 0.9583333333,
+        "y": 0.01703708686,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 47,
-        "y": 0,
-        "series": "Hann window"
+        "x": 0.9791666667,
+        "y": 0.004277569313,
+        "series": "Hann window (normalized frame)"
       }
     ],
     "traceAxes": {
       "x": {
-        "label": "Sample index",
-        "unit": "samples"
+        "label": "Position in frame",
+        "unit": null
       },
       "y": {
         "label": "Window amplitude",
@@ -9109,248 +9073,248 @@
       {
         "x": 0,
         "y": 0,
-        "series": "Hann window"
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 1,
-        "y": 0.004461255923,
-        "series": "Hann window"
+        "x": 0.02083333333,
+        "y": 0.004277569313,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 2,
-        "y": 0.01776541247,
-        "series": "Hann window"
+        "x": 0.04166666667,
+        "y": 0.01703708686,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 3,
-        "y": 0.03967505666,
-        "series": "Hann window"
+        "x": 0.0625,
+        "y": 0.03806023374,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 4,
-        "y": 0.06979921037,
-        "series": "Hann window"
+        "x": 0.08333333333,
+        "y": 0.06698729811,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 5,
-        "y": 0.1076003074,
-        "series": "Hann window"
+        "x": 0.1041666667,
+        "y": 0.1033233299,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 6,
-        "y": 0.1524037862,
-        "series": "Hann window"
+        "x": 0.125,
+        "y": 0.1464466094,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 7,
-        "y": 0.2034101276,
-        "series": "Hann window"
+        "x": 0.1458333333,
+        "y": 0.1956192855,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 8,
-        "y": 0.2597091224,
-        "series": "Hann window"
+        "x": 0.1666666667,
+        "y": 0.25,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 9,
-        "y": 0.3202961136,
-        "series": "Hann window"
+        "x": 0.1875,
+        "y": 0.3086582838,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 10,
-        "y": 0.3840899249,
-        "series": "Hann window"
+        "x": 0.2083333333,
+        "y": 0.3705904774,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 11,
-        "y": 0.4499521542,
-        "series": "Hann window"
+        "x": 0.2291666667,
+        "y": 0.4347369039,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 12,
-        "y": 0.5167074885,
-        "series": "Hann window"
+        "x": 0.25,
+        "y": 0.5,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 13,
-        "y": 0.5831646773,
-        "series": "Hann window"
+        "x": 0.2708333333,
+        "y": 0.5652630961,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 14,
-        "y": 0.6481377904,
-        "series": "Hann window"
+        "x": 0.2916666667,
+        "y": 0.6294095226,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 15,
-        "y": 0.7104673812,
-        "series": "Hann window"
+        "x": 0.3125,
+        "y": 0.6913417162,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 16,
-        "y": 0.7690411766,
-        "series": "Hann window"
+        "x": 0.3333333333,
+        "y": 0.75,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 17,
-        "y": 0.8228139258,
-        "series": "Hann window"
+        "x": 0.3541666667,
+        "y": 0.8043807145,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 18,
-        "y": 0.8708260528,
-        "series": "Hann window"
+        "x": 0.375,
+        "y": 0.8535533906,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 19,
-        "y": 0.9122207802,
-        "series": "Hann window"
+        "x": 0.3958333333,
+        "y": 0.8966766701,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 20,
-        "y": 0.9462594179,
-        "series": "Hann window"
+        "x": 0.4166666667,
+        "y": 0.9330127019,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 21,
-        "y": 0.9723345458,
-        "series": "Hann window"
+        "x": 0.4375,
+        "y": 0.9619397663,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 22,
-        "y": 0.9899808525,
-        "series": "Hann window"
+        "x": 0.4583333333,
+        "y": 0.9829629131,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 23,
-        "y": 0.9988834393,
-        "series": "Hann window"
+        "x": 0.4791666667,
+        "y": 0.9957224307,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 24,
-        "y": 0.9988834393,
-        "series": "Hann window"
+        "x": 0.5,
+        "y": 1,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 25,
-        "y": 0.9899808525,
-        "series": "Hann window"
+        "x": 0.5208333333,
+        "y": 0.9957224307,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 26,
-        "y": 0.9723345458,
-        "series": "Hann window"
+        "x": 0.5416666667,
+        "y": 0.9829629131,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 27,
-        "y": 0.9462594179,
-        "series": "Hann window"
+        "x": 0.5625,
+        "y": 0.9619397663,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 28,
-        "y": 0.9122207802,
-        "series": "Hann window"
+        "x": 0.5833333333,
+        "y": 0.9330127019,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 29,
-        "y": 0.8708260528,
-        "series": "Hann window"
+        "x": 0.6041666667,
+        "y": 0.8966766701,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 30,
-        "y": 0.8228139258,
-        "series": "Hann window"
+        "x": 0.625,
+        "y": 0.8535533906,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 31,
-        "y": 0.7690411766,
-        "series": "Hann window"
+        "x": 0.6458333333,
+        "y": 0.8043807145,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 32,
-        "y": 0.7104673812,
-        "series": "Hann window"
+        "x": 0.6666666667,
+        "y": 0.75,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 33,
-        "y": 0.6481377904,
-        "series": "Hann window"
+        "x": 0.6875,
+        "y": 0.6913417162,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 34,
-        "y": 0.5831646773,
-        "series": "Hann window"
+        "x": 0.7083333333,
+        "y": 0.6294095226,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 35,
-        "y": 0.5167074885,
-        "series": "Hann window"
+        "x": 0.7291666667,
+        "y": 0.5652630961,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 36,
-        "y": 0.4499521542,
-        "series": "Hann window"
+        "x": 0.75,
+        "y": 0.5,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 37,
-        "y": 0.3840899249,
-        "series": "Hann window"
+        "x": 0.7708333333,
+        "y": 0.4347369039,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 38,
-        "y": 0.3202961136,
-        "series": "Hann window"
+        "x": 0.7916666667,
+        "y": 0.3705904774,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 39,
-        "y": 0.2597091224,
-        "series": "Hann window"
+        "x": 0.8125,
+        "y": 0.3086582838,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 40,
-        "y": 0.2034101276,
-        "series": "Hann window"
+        "x": 0.8333333333,
+        "y": 0.25,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 41,
-        "y": 0.1524037862,
-        "series": "Hann window"
+        "x": 0.8541666667,
+        "y": 0.1956192855,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 42,
-        "y": 0.1076003074,
-        "series": "Hann window"
+        "x": 0.875,
+        "y": 0.1464466094,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 43,
-        "y": 0.06979921037,
-        "series": "Hann window"
+        "x": 0.8958333333,
+        "y": 0.1033233299,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 44,
-        "y": 0.03967505666,
-        "series": "Hann window"
+        "x": 0.9166666667,
+        "y": 0.06698729811,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 45,
-        "y": 0.01776541247,
-        "series": "Hann window"
+        "x": 0.9375,
+        "y": 0.03806023374,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 46,
-        "y": 0.004461255923,
-        "series": "Hann window"
+        "x": 0.9583333333,
+        "y": 0.01703708686,
+        "series": "Hann window (normalized frame)"
       },
       {
-        "x": 47,
-        "y": 0,
-        "series": "Hann window"
+        "x": 0.9791666667,
+        "y": 0.004277569313,
+        "series": "Hann window (normalized frame)"
       }
     ],
     "traceAxes": {
       "x": {
-        "label": "Sample index",
-        "unit": "samples"
+        "label": "Position in frame",
+        "unit": null
       },
       "y": {
         "label": "Window amplitude",
@@ -9899,12 +9863,12 @@
   },
   "timbre-acoustics/time-varying-timbre/variant": {
     "headline": "Time-indexed timbre proxy",
-    "result": "232–957 Hz",
+    "result": "231–957 Hz",
     "observables": [
       {
         "id": "centroidRange",
         "label": "Centroid-proxy range",
-        "value": "232–957",
+        "value": "231–957",
         "unit": "Hz",
         "claimId": "heuristic.transparent",
         "precision": 2,
@@ -9936,473 +9900,2393 @@
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.05263157895,
-        "y": 270.5583729,
+        "x": 0.01043841336,
+        "y": 836.6611176,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.1052631579,
+        "x": 0.02087682672,
         "y": 957.0837182,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.1578947368,
-        "y": 294.3727278,
+        "x": 0.03131524008,
+        "y": 834.3375082,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.2105263158,
-        "y": 424.0205643,
+        "x": 0.04175365344,
+        "y": 486.551614,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.2631578947,
-        "y": 899.8276264,
+        "x": 0.05219206681,
+        "y": 274.7223993,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.3157894737,
-        "y": 235.2263532,
+        "x": 0.06263048017,
+        "y": 231.471741,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.3684210526,
-        "y": 718.2683794,
+        "x": 0.07306889353,
+        "y": 277.331628,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.4210526316,
-        "y": 641.3081293,
+        "x": 0.08350730689,
+        "y": 494.9237841,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.4736842105,
-        "y": 242.2615942,
+        "x": 0.09394572025,
+        "y": 841.2541233,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.5263157895,
-        "y": 936.8436235,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 0.5789473684,
-        "y": 369.7327864,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 0.6315789474,
-        "y": 326.8650764,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 0.6842105263,
+        "x": 0.1043841336,
         "y": 957.0837182,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.7368421053,
-        "y": 253.6777205,
+        "x": 0.114822547,
+        "y": 829.6365806,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.7894736842,
-        "y": 563.2160053,
+        "x": 0.1252609603,
+        "y": 481.039734,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.8421052632,
-        "y": 789.1443099,
+        "x": 0.1356993737,
+        "y": 273.0400969,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.8947368421,
-        "y": 231.8768638,
+        "x": 0.1461377871,
+        "y": 231.4975541,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 0.9473684211,
-        "y": 850.3366871,
+        "x": 0.1565762004,
+        "y": 279.1295555,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1,
-        "y": 489.3286431,
+        "x": 0.1670146138,
+        "y": 500.5721813,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.052631579,
-        "y": 270.5583729,
+        "x": 0.1774530271,
+        "y": 845.7742131,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.105263158,
+        "x": 0.1878914405,
         "y": 957.0837182,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.157894737,
-        "y": 294.3727278,
+        "x": 0.1983298539,
+        "y": 824.8647545,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.210526316,
-        "y": 424.0205643,
+        "x": 0.2087682672,
+        "y": 475.5854905,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.263157895,
-        "y": 899.8276264,
+        "x": 0.2192066806,
+        "y": 271.4025485,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.315789474,
-        "y": 235.2263532,
+        "x": 0.2296450939,
+        "y": 231.5440348,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.368421053,
-        "y": 718.2683794,
+        "x": 0.2400835073,
+        "y": 280.9752559,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.421052632,
-        "y": 641.3081293,
+        "x": 0.2505219207,
+        "y": 506.2719386,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.473684211,
-        "y": 242.2615942,
+        "x": 0.260960334,
+        "y": 850.2206753,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.526315789,
-        "y": 936.8436235,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 1.578947368,
-        "y": 369.7327864,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 1.631578947,
-        "y": 326.8650764,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 1.684210526,
+        "x": 0.2713987474,
         "y": 957.0837182,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.736842105,
-        "y": 253.6777205,
+        "x": 0.2818371608,
+        "y": 820.0229365,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.789473684,
-        "y": 563.2160053,
+        "x": 0.2922755741,
+        "y": 470.190487,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.842105263,
-        "y": 789.1443099,
+        "x": 0.3027139875,
+        "y": 269.8089159,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.894736842,
-        "y": 231.8768638,
+        "x": 0.3131524008,
+        "y": 231.6112124,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 1.947368421,
-        "y": 850.3366871,
+        "x": 0.3235908142,
+        "y": 282.8696127,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2,
-        "y": 489.3286431,
+        "x": 0.3340292276,
+        "y": 512.0210812,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.052631579,
-        "y": 270.5583729,
+        "x": 0.3444676409,
+        "y": 854.5928508,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.105263158,
+        "x": 0.3549060543,
         "y": 957.0837182,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.157894737,
-        "y": 294.3727278,
+        "x": 0.3653444676,
+        "y": 815.1120927,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.210526316,
-        "y": 424.0205643,
+        "x": 0.375782881,
+        "y": 464.8562402,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.263157895,
-        "y": 899.8276264,
+        "x": 0.3862212944,
+        "y": 268.258373,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.315789474,
-        "y": 235.2263532,
+        "x": 0.3966597077,
+        "y": 231.6991292,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.368421053,
-        "y": 718.2683794,
+        "x": 0.4070981211,
+        "y": 284.8135177,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.421052632,
-        "y": 641.3081293,
+        "x": 0.4175365344,
+        "y": 517.8175578,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.473684211,
-        "y": 242.2615942,
+        "x": 0.4279749478,
+        "y": 858.8901304,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.526315789,
-        "y": 936.8436235,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 2.578947368,
-        "y": 369.7327864,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 2.631578947,
-        "y": 326.8650764,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 2.684210526,
+        "x": 0.4384133612,
         "y": 957.0837182,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.736842105,
-        "y": 253.6777205,
+        "x": 0.4488517745,
+        "y": 810.1332493,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.789473684,
-        "y": 563.2160053,
+        "x": 0.4592901879,
+        "y": 459.5841787,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.842105263,
-        "y": 789.1443099,
+        "x": 0.4697286013,
+        "y": 266.750106,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.894736842,
-        "y": 231.8768638,
+        "x": 0.4801670146,
+        "y": 231.8078407,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 2.947368421,
-        "y": 850.3366871,
+        "x": 0.490605428,
+        "y": 286.8078693,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3,
-        "y": 489.3286431,
+        "x": 0.5010438413,
+        "y": 523.6592436,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.052631579,
-        "y": 270.5583729,
+        "x": 0.5114822547,
+        "y": 863.1119538,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.105263158,
+        "x": 0.5219206681,
         "y": 957.0837182,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.157894737,
-        "y": 294.3727278,
+        "x": 0.5323590814,
+        "y": 805.0874945,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.210526316,
-        "y": 424.0205643,
+        "x": 0.5427974948,
+        "y": 454.3756419,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.263157895,
-        "y": 899.8276264,
+        "x": 0.5532359081,
+        "y": 265.2833143,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.315789474,
-        "y": 235.2263532,
+        "x": 0.5636743215,
+        "y": 231.9374153,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.368421053,
-        "y": 718.2683794,
+        "x": 0.5741127349,
+        "y": 288.8535719,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.421052632,
-        "y": 641.3081293,
+        "x": 0.5845511482,
+        "y": 529.543943,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.473684211,
-        "y": 242.2615942,
+        "x": 0.5949895616,
+        "y": 867.2578075,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.526315789,
-        "y": 936.8436235,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 3.578947368,
-        "y": 369.7327864,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 3.631578947,
-        "y": 326.8650764,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 3.684210526,
+        "x": 0.6054279749,
         "y": 957.0837182,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.736842105,
-        "y": 253.6777205,
+        "x": 0.6158663883,
+        "y": 799.9759797,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.789473684,
-        "y": 563.2160053,
+        "x": 0.6263048017,
+        "y": 449.2318804,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.842105263,
-        "y": 789.1443099,
+        "x": 0.636743215,
+        "y": 263.8572111,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.894736842,
-        "y": 231.8768638,
+        "x": 0.6471816284,
+        "y": 232.0879348,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 3.947368421,
-        "y": 850.3366871,
+        "x": 0.6576200418,
+        "y": 290.9515347,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4,
-        "y": 489.3286431,
+        "x": 0.6680584551,
+        "y": 535.4693931,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.052631579,
-        "y": 270.5583729,
+        "x": 0.6784968685,
+        "y": 871.3272231,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.105263158,
+        "x": 0.6889352818,
         "y": 957.0837182,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.157894737,
-        "y": 294.3727278,
+        "x": 0.6993736952,
+        "y": 794.7999201,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.210526316,
-        "y": 424.0205643,
+        "x": 0.7098121086,
+        "y": 444.1540546,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.263157895,
-        "y": 899.8276264,
+        "x": 0.7202505219,
+        "y": 262.471023,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.315789474,
-        "y": 235.2263532,
+        "x": 0.7306889353,
+        "y": 232.259494,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.368421053,
-        "y": 718.2683794,
+        "x": 0.7411273486,
+        "y": 293.1026705,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.421052632,
-        "y": 641.3081293,
+        "x": 0.751565762,
+        "y": 541.4332673,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.473684211,
-        "y": 242.2615942,
+        "x": 0.7620041754,
+        "y": 875.3197752,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.526315789,
-        "y": 936.8436235,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 4.578947368,
-        "y": 369.7327864,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 4.631578947,
-        "y": 326.8650764,
-        "series": "Spectral-centroid proxy"
-      },
-      {
-        "x": 4.684210526,
+        "x": 0.7724425887,
         "y": 957.0837182,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.736842105,
-        "y": 253.6777205,
+        "x": 0.7828810021,
+        "y": 789.5605959,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.789473684,
-        "y": 563.2160053,
+        "x": 0.7933194154,
+        "y": 439.1432356,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.842105263,
-        "y": 789.1443099,
+        "x": 0.8037578288,
+        "y": 261.1239914,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.894736842,
-        "y": 231.8768638,
+        "x": 0.8141962422,
+        "y": 232.4522009,
         "series": "Spectral-centroid proxy"
       },
       {
-        "x": 4.947368421,
-        "y": 850.3366871,
+        "x": 0.8246346555,
+        "y": 295.3078943,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.8350730689,
+        "y": 547.4331786,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.8455114823,
+        "y": 879.23508,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.8559498956,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.866388309,
+        "y": 784.2593534,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.8768267223,
+        "y": 434.2004051,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.8872651357,
+        "y": 259.8153721,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.8977035491,
+        "y": 232.6661768,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.9081419624,
+        "y": 297.5681222,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.9185803758,
+        "y": 553.4666839,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.9290187891,
+        "y": 883.0727932,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.9394572025,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.9498956159,
+        "y": 778.8976051,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.9603340292,
+        "y": 429.3264558,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.9707724426,
+        "y": 258.5444358,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.9812108559,
+        "y": 232.9015564,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 0.9916492693,
+        "y": 299.88427,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.002087683,
+        "y": 559.5312875,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.012526096,
+        "y": 886.8326082,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.022964509,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.033402923,
+        "y": 773.4768306,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.043841336,
+        "y": 424.5221924,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.054279749,
+        "y": 257.3104683,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.064718163,
+        "y": 233.1584877,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.075156576,
+        "y": 302.2572513,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.08559499,
+        "y": 565.6244462,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.096033403,
+        "y": 890.5142543,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.106471816,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.11691023,
+        "y": 767.9985771,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.127348643,
+        "y": 419.7883323,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.137787056,
+        "y": 256.1127711,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.14822547,
+        "y": 233.4371324,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.158663883,
+        "y": 304.6879764,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.169102296,
+        "y": 571.7435727,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.17954071,
+        "y": 894.117495,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.189979123,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.200417537,
+        "y": 762.464459,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.21085595,
+        "y": 415.1255069,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.221294363,
+        "y": 254.9506608,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.231732777,
+        "y": 233.7376655,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.24217119,
+        "y": 307.1773506,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.252609603,
+        "y": 577.8860408,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.263048017,
+        "y": 897.6421259,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.27348643,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.283924843,
+        "y": 756.8761585,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.294363257,
+        "y": 410.5342629,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.30480167,
+        "y": 253.8234701,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.315240084,
+        "y": 234.0602757,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.325678497,
+        "y": 309.7262719,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.33611691,
+        "y": 584.0491895,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.346555324,
+        "y": 901.0879734,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.356993737,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.36743215,
+        "y": 751.2354252,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.377870564,
+        "y": 406.0150638,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.388308977,
+        "y": 252.7305474,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.39874739,
+        "y": 234.4051656,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.409185804,
+        "y": 312.33563,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.419624217,
+        "y": 590.2303282,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.43006263,
+        "y": 904.4548925,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.440501044,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.450939457,
+        "y": 745.5440757,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.461377871,
+        "y": 401.5682918,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.471816284,
+        "y": 251.6712568,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.482254697,
+        "y": 234.7725514,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.492693111,
+        "y": 315.0063037,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.503131524,
+        "y": 596.4267411,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.513569937,
+        "y": 907.7427653,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.524008351,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.534446764,
+        "y": 739.8039932,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.544885177,
+        "y": 397.1942497,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.555323591,
+        "y": 250.6449787,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.565762004,
+        "y": 235.1626633,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.576200418,
+        "y": 317.7391592,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.586638831,
+        "y": 602.6356918,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.597077244,
+        "y": 910.9514993,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.607515658,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.617954071,
+        "y": 734.0171263,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.628392484,
+        "y": 392.8931626,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.638830898,
+        "y": 249.6511094,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.649269311,
+        "y": 235.5757456,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.659707724,
+        "y": 320.535048,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.670146138,
+        "y": 608.8544289,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.680584551,
+        "y": 914.0810258,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.691022965,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.701461378,
+        "y": 728.1854887,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.711899791,
+        "y": 388.6651805,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.722338205,
+        "y": 248.6890613,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.732776618,
+        "y": 236.0120565,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.743215031,
+        "y": 323.3948048,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.753653445,
+        "y": 615.08019,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.764091858,
+        "y": 917.1312982,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.774530271,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.784968685,
+        "y": 722.3111575,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.795407098,
+        "y": 384.5103801,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.805845511,
+        "y": 247.7582627,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.816283925,
+        "y": 236.4718688,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.826722338,
+        "y": 326.3192451,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.837160752,
+        "y": 621.310207,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.847599165,
+        "y": 920.1022903,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.858037578,
+        "y": 956.0468233,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.868475992,
+        "y": 716.3962718,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.878914405,
+        "y": 380.4287679,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.889352818,
+        "y": 246.8581583,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.899791232,
+        "y": 236.9554692,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.910229645,
+        "y": 329.3091631,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.920668058,
+        "y": 627.5417107,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.931106472,
+        "y": 922.9939951,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.941544885,
+        "y": 954.2975609,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.951983299,
+        "y": 710.4430312,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.962421712,
+        "y": 376.420282,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.972860125,
+        "y": 245.9882085,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.983298539,
+        "y": 237.4631593,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 1.993736952,
+        "y": 332.3653291,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.004175365,
+        "y": 633.7719357,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.014613779,
+        "y": 925.8064229,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.025052192,
+        "y": 952.4702113,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.035490605,
+        "y": 704.4536941,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.045929019,
+        "y": 372.484795,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.056367432,
+        "y": 245.1478899,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.066805846,
+        "y": 237.995255,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.077244259,
+        "y": 335.4884872,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.087682672,
+        "y": 639.9981248,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.098121086,
+        "y": 928.5396004,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.108559499,
+        "y": 950.5646515,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.118997912,
+        "y": 698.4305752,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.129436326,
+        "y": 368.6221167,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.139874739,
+        "y": 244.3366949,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.150313152,
+        "y": 238.5520869,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.160751566,
+        "y": 338.6793526,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.171189979,
+        "y": 646.2175339,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.181628392,
+        "y": 931.1935686,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.192066806,
+        "y": 948.5807605,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.202505219,
+        "y": 692.3760433,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.212943633,
+        "y": 364.8319967,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.223382046,
+        "y": 243.554132,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.233820459,
+        "y": 239.1340004,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.244258873,
+        "y": 341.9386095,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.254697286,
+        "y": 652.4274361,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.265135699,
+        "y": 933.7683818,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.275574113,
+        "y": 946.5184199,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.286012526,
+        "y": 686.292519,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.296450939,
+        "y": 361.1141271,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.306889353,
+        "y": 242.7997252,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.317327766,
+        "y": 239.7413561,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.32776618,
+        "y": 345.2669077,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.338204593,
+        "y": 658.6251263,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.348643006,
+        "y": 936.2641065,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.35908142,
+        "y": 944.3775147,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.369519833,
+        "y": 680.1824716,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.379958246,
+        "y": 357.4681454,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.39039666,
+        "y": 242.0730145,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.400835073,
+        "y": 240.3745292,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.411273486,
+        "y": 348.6648607,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.4217119,
+        "y": 664.8079252,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.432150313,
+        "y": 938.6808197,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.442588727,
+        "y": 942.1579343,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.45302714,
+        "y": 674.0484164,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.463465553,
+        "y": 353.8936371,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.473903967,
+        "y": 241.3735554,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.48434238,
+        "y": 241.0339105,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.494780793,
+        "y": 352.1330425,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.505219207,
+        "y": 670.9731836,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.51565762,
+        "y": 941.0186078,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.526096033,
+        "y": 939.8595736,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.536534447,
+        "y": 667.8929113,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.54697286,
+        "y": 350.3901387,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.557411273,
+        "y": 240.7009188,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.567849687,
+        "y": 241.7199057,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.5782881,
+        "y": 355.6719849,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.588726514,
+        "y": 677.1182861,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.599164927,
+        "y": 943.2775656,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.60960334,
+        "y": 937.4823343,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.620041754,
+        "y": 661.7185535,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.630480167,
+        "y": 346.9571405,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.64091858,
+        "y": 240.0546914,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.651356994,
+        "y": 242.432936,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.661795407,
+        "y": 359.282175,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.67223382,
+        "y": 683.2406545,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.682672234,
+        "y": 945.4577949,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.693110647,
+        "y": 935.0261257,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.703549061,
+        "y": 655.5279758,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.713987474,
+        "y": 343.5940892,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.724425887,
+        "y": 239.4344749,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.734864301,
+        "y": 243.1734382,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.745302714,
+        "y": 362.964052,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.755741127,
+        "y": 689.3377519,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.766179541,
+        "y": 947.5594037,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.776617954,
+        "y": 932.4908657,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.787056367,
+        "y": 649.323843,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.797494781,
+        "y": 340.3003907,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.807933194,
+        "y": 238.8398863,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.818371608,
+        "y": 243.9418645,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.828810021,
+        "y": 366.7180048,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.839248434,
+        "y": 695.4070857,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.849686848,
+        "y": 949.5825049,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.860125261,
+        "y": 929.8764826,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.870563674,
+        "y": 643.1088478,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.881002088,
+        "y": 337.075413,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.891440501,
+        "y": 238.2705576,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.901878914,
+        "y": 244.738683,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.912317328,
+        "y": 370.544369,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.922755741,
+        "y": 701.4462106,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.933194154,
+        "y": 951.5272152,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.943632568,
+        "y": 927.1829157,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.954070981,
+        "y": 636.8857066,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.964509395,
+        "y": 333.9184887,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.974947808,
+        "y": 237.7261361,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.985386221,
+        "y": 245.5643774,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 2.995824635,
+        "y": 374.4434241,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.006263048,
+        "y": 707.4527314,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.016701461,
+        "y": 953.3936547,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.027139875,
+        "y": 924.4101173,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.037578288,
+        "y": 630.6571556,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.048016701,
+        "y": 330.8289179,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.058455115,
+        "y": 237.2062837,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.068893528,
+        "y": 246.4194471,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.079331942,
+        "y": 378.4153906,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.089770355,
+        "y": 713.4243061,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.100208768,
+        "y": 955.1819453,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.110647182,
+        "y": 921.5580533,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.121085595,
+        "y": 624.425946,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.131524008,
+        "y": 327.8059707,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.141962422,
+        "y": 236.710677,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.152400835,
+        "y": 247.3044078,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.162839248,
+        "y": 382.4604278,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.173277662,
+        "y": 719.3586478,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.183716075,
+        "y": 956.8922103,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.194154489,
+        "y": 918.6267051,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.204592902,
+        "y": 618.1948396,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.215031315,
+        "y": 324.8488893,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.225469729,
+        "y": 236.2390074,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.235908142,
+        "y": 248.2197909,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.246346555,
+        "y": 386.5786306,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.256784969,
+        "y": 725.2535275,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.267223382,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.277661795,
+        "y": 915.6160709,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.288100209,
+        "y": 611.9666044,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.298538622,
+        "y": 321.9568914,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.308977035,
+        "y": 235.7909807,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.319415449,
+        "y": 249.1661438,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.329853862,
+        "y": 390.770027,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.340292276,
+        "y": 731.1067755,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.350730689,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.361169102,
+        "y": 912.5261669,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.371607516,
+        "y": 605.7440095,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.382045929,
+        "y": 319.1291718,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.392484342,
+        "y": 235.3663173,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.402922756,
+        "y": 250.1440301,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.413361169,
+        "y": 395.0345757,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.423799582,
+        "y": 736.9162834,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.434237996,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.444676409,
+        "y": 909.3570295,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.455114823,
+        "y": 599.5298209,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.465553236,
+        "y": 316.3649051,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.475991649,
+        "y": 234.9647516,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.486430063,
+        "y": 251.1540293,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.496868476,
+        "y": 399.3721637,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.507306889,
+        "y": 742.6800058,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.517745303,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.528183716,
+        "y": 906.108716,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.538622129,
+        "y": 593.326796,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.549060543,
+        "y": 313.6632479,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.559498956,
+        "y": 234.5860325,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.56993737,
+        "y": 252.1967372,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.580375783,
+        "y": 403.7826037,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.590814196,
+        "y": 748.3959614,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.60125261,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.611691023,
+        "y": 902.781307,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.622129436,
+        "y": 587.1376793,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.63256785,
+        "y": 311.0233412,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.643006263,
+        "y": 234.2299225,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.653444676,
+        "y": 253.2727654,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.66388309,
+        "y": 408.2656319,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.674321503,
+        "y": 754.062234,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.684759916,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.69519833,
+        "y": 899.3749073,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.705636743,
+        "y": 580.9651976,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.716075157,
+        "y": 308.444312,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.72651357,
+        "y": 233.8961987,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.736951983,
+        "y": 254.3827416,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.747390397,
+        "y": 412.8209063,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.75782881,
+        "y": 759.6769738,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.768267223,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.778705637,
+        "y": 895.8896482,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.78914405,
+        "y": 574.8120546,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.799582463,
+        "y": 305.9252761,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.810020877,
+        "y": 233.5846514,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.82045929,
+        "y": 255.5273097,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.830897704,
+        "y": 417.4480042,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.841336117,
+        "y": 765.2383976,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.85177453,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.862212944,
+        "y": 892.3256888,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.872651357,
+        "y": 568.6809268,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.88308977,
+        "y": 303.4653392,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.893528184,
+        "y": 233.2950853,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.903966597,
+        "y": 256.707129,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.91440501,
+        "y": 422.1464205,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.924843424,
+        "y": 770.7447894,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.935281837,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.945720251,
+        "y": 888.6832179,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.956158664,
+        "y": 562.5744582,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.966597077,
+        "y": 301.0635994,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.977035491,
+        "y": 233.0273183,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.987473904,
+        "y": 257.922875,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 3.997912317,
+        "y": 426.9155665,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.008350731,
+        "y": 776.194501,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.018789144,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.029227557,
+        "y": 884.9624557,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.039665971,
+        "y": 556.4952563,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.050104384,
+        "y": 298.7191489,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.060542797,
+        "y": 232.7811822,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.070981211,
+        "y": 259.1752385,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.081419624,
+        "y": 431.754768,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.091858038,
+        "y": 781.5859515,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.102296451,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.112734864,
+        "y": 881.1636555,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.123173278,
+        "y": 550.4458868,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.133611691,
+        "y": 296.4310755,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.144050104,
+        "y": 232.5565221,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.154488518,
+        "y": 260.4649262,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.164926931,
+        "y": 436.6632639,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.175365344,
+        "y": 786.9176277,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.185803758,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.196242171,
+        "y": 877.2871059,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.206680585,
+        "y": 544.4288698,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.217118998,
+        "y": 294.1984641,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.227557411,
+        "y": 232.3531967,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.237995825,
+        "y": 261.7926595,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.248434238,
+        "y": 441.6402058,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.258872651,
+        "y": 792.1880835,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.269311065,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.279749478,
+        "y": 873.333132,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.290187891,
+        "y": 538.446675,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.300626305,
+        "y": 292.0203988,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.311064718,
+        "y": 232.171078,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.321503132,
+        "y": 263.1591754,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.331941545,
+        "y": 446.6846565,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.342379958,
+        "y": 797.3959395,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.352818372,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.363256785,
+        "y": 869.3020976,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.373695198,
+        "y": 532.5017182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.384133612,
+        "y": 289.8959638,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.394572025,
+        "y": 232.0100514,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.405010438,
+        "y": 264.5652253,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.415448852,
+        "y": 451.7955896,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.425887265,
+        "y": 802.5398827,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.436325678,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.446764092,
+        "y": 865.1944072,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.457202505,
+        "y": 526.5963565,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.467640919,
+        "y": 287.824245,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.478079332,
+        "y": 231.8700153,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.488517745,
+        "y": 266.0115752,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.498956159,
+        "y": 456.9718895,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.509394572,
+        "y": 807.6186654,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.519832985,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.530271399,
+        "y": 861.0105073,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.540709812,
+        "y": 520.7328852,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.551148225,
+        "y": 285.8043313,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.561586639,
+        "y": 231.7508816,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.572025052,
+        "y": 267.4990053,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.582463466,
+        "y": 462.2123505,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.592901879,
+        "y": 812.6311044,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.603340292,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.613778706,
+        "y": 856.7508887,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.624217119,
+        "y": 514.9135339,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.634655532,
+        "y": 283.8353157,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.645093946,
+        "y": 231.6525752,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.655532359,
+        "y": 269.0283094,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.665970772,
+        "y": 467.5156777,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.676409186,
+        "y": 817.5760801,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.686847599,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.697286013,
+        "y": 852.4160881,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.707724426,
+        "y": 509.1404632,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.718162839,
+        "y": 281.9162967,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.728601253,
+        "y": 231.5750341,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.739039666,
+        "y": 270.6002947,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.749478079,
+        "y": 472.8804869,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.759916493,
+        "y": 822.4525355,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.770354906,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.780793319,
+        "y": 848.00669,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.791231733,
+        "y": 503.4157615,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.801670146,
+        "y": 280.0463791,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.812108559,
+        "y": 231.5182094,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.822546973,
+        "y": 272.2157811,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.832985386,
+        "y": 478.3053054,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.8434238,
+        "y": 827.2594745,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.853862213,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.864300626,
+        "y": 843.5233284,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.87473904,
+        "y": 497.7414423,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.885177453,
+        "y": 278.2246751,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.895615866,
+        "y": 231.4820654,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.90605428,
+        "y": 273.875601,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.916492693,
+        "y": 483.7885731,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.926931106,
+        "y": 831.9959611,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.93736952,
+        "y": 957.0837182,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.947807933,
+        "y": 838.9666884,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.958246347,
+        "y": 492.1194413,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.96868476,
+        "y": 276.4503052,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.979123173,
+        "y": 231.4665792,
+        "series": "Spectral-centroid proxy"
+      },
+      {
+        "x": 4.989561587,
+        "y": 275.5805983,
         "series": "Spectral-centroid proxy"
       },
       {
@@ -11458,7 +13342,7 @@
       }
     },
     "visualKind": "distribution",
-    "annotation": "First-order state memory creates local dependence but does not plan long-range musical form.",
+    "annotation": "First-order state memory creates local dependence but does not plan long-range musical form. A symmetric chain is stationary at 50/50 for every stay probability.",
     "provenance": {
       "source": "synthetic",
       "calibration": "uncalibrated",
@@ -12150,7 +14034,7 @@
       }
     },
     "visualKind": "distribution",
-    "annotation": "First-order state memory creates local dependence but does not plan long-range musical form.",
+    "annotation": "First-order state memory creates local dependence but does not plan long-range musical form. A symmetric chain is stationary at 50/50 for every stay probability.",
     "provenance": {
       "source": "synthetic",
       "calibration": "uncalibrated",

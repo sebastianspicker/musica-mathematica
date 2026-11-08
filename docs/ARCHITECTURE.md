@@ -270,7 +270,8 @@ that copy cannot be kept and the rewrite would drop attempts, the original stays
 untouched and automatic saving is turned off. An older version 1 record that
 cannot be migrated is left in place and reported. An
 unknown active lesson falls back to the default lesson instead of discarding
-the other attempts. Clearing local work also removes the copy.
+the other attempts, and an unreadable attempt, active or not, is left out on its
+own while the copy keeps the original. Clearing local work also removes the copy.
 
 Each tab holds the portfolio in memory and saves the whole record. A tab
 reloads the record when another tab writes one of the app's keys (the browser

@@ -70,7 +70,8 @@ export function simulateEnsembleReference(config: EnsembleConfig, duration: numb
   const history: EnsembleState[] = [];
   const samples: SimulationResult["samples"] = [];
   let state = createInitialState(config);
-  let nextSampleTime = 0;
+  samples.push({ state, metrics: metricsFor(state, config) });
+  let nextSampleTime = 0.1;
 
   function advance(step: number, time: number): void {
     history.push(state);
