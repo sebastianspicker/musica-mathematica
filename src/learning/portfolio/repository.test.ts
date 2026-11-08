@@ -90,6 +90,17 @@ describe("portfolio repository", () => {
     expect(storage.getItem(legacyPortfolioStorageKey)).not.toBeNull();
   });
 
+  it("says so when an older saved record cannot be converted, and leaves it in place", () => {
+    const storage = new MemoryStorage();
+    storage.setItem(legacyPortfolioStorageKey, "{");
+
+    const loaded = loadPortfolioDetailed(storage, testCurriculum);
+
+    expect(loaded.source).toBe("empty");
+    expect(loaded.notice).toContain("could not be converted");
+    expect(storage.getItem(legacyPortfolioStorageKey)).toBe("{");
+  });
+
   it("exports sanitized compact JSON and clears both schema keys", () => {
     const storage = new MemoryStorage();
     const portfolio = createPortfolio(testCurriculum);
@@ -149,6 +160,21 @@ describe("portfolio repository", () => {
 
     expect(loaded).toMatchObject({ normalizationStatus: "blocked", automaticPersistenceEnabled: false });
     expect(loaded.notice).toContain("no copy of it could be kept");
+  });
+
+  it("does not drop attempts on load when the backup slot already holds other data", () => {
+    const storage = new MemoryStorage();
+    const portfolio = createPortfolio(testCurriculum);
+    const later = { ...createAttemptV2(testCurriculum, "phase-proportion", "from-bpm-to-period", "2026-08-28T10:00:00.000Z"), lessonId: "added-later" };
+    const raw = JSON.stringify({ ...portfolio, attempts: { "phase-proportion:added-later": later } });
+    storage.values.set(portfolioStorageKey, raw);
+    storage.values.set(portfolioBackupStorageKey, "earlier unreadable data");
+
+    const loaded = loadPortfolioDetailed(storage, testCurriculum);
+
+    expect(loaded).toMatchObject({ persistenceStatus: "disabled", automaticPersistenceEnabled: false });
+    expect(storage.values.get(portfolioStorageKey)).toBe(raw);
+    expect(storage.values.get(portfolioBackupStorageKey)).toBe("earlier unreadable data");
   });
 
   it("keeps the original before a load rewrites it without attempts for lessons this build lacks", () => {

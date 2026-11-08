@@ -33,7 +33,6 @@ export type AudioProvenance = Readonly<{
   decodedDurationSeconds: number;
   analyzedRange: AnalysisRange;
   calibration: "uncalibrated";
-  mediaSettings?: SafeMediaSettings;
 }>;
 
 export type AudioFrame = Readonly<{

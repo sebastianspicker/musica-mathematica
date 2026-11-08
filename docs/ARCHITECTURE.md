@@ -265,7 +265,10 @@ version 2 record cannot be read, the repository first copies it to
 `musicaMathematica.learning.v2.backup` and shows a notice before starting a
 new portfolio; when that copy cannot be written and read back, it behaves as
 for oversized data. The same one-slot copy is made before a load rewrites a
-record, for example to drop attempts for lessons this build does not know. An
+record, for example to drop attempts for lessons this build does not know; if
+that copy cannot be kept and the rewrite would drop attempts, the original stays
+untouched and automatic saving is turned off. An older version 1 record that
+cannot be migrated is left in place and reported. An
 unknown active lesson falls back to the default lesson instead of discarding
 the other attempts. Clearing local work also removes the copy.
 

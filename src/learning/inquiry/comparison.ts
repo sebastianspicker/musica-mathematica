@@ -14,7 +14,7 @@ export function assessTrialComparison(lesson: ComparisonLesson, trials: readonly
   if (left.provenance.source !== right.provenance.source) return failure("Both runs must use the same analysis source.");
   if (!settingsEqual(left, right)) return failure("Hold sample rate, frame size, and hop size constant before comparing audio runs.");
   const changedIds = changedFactorIds(lesson.factors.map((factor) => factor.id), left.factors, right.factors);
-  if (changedIds.length === 0) return { valid: false, changedFactorIds: changedIds, reason: "Change one experimental factor before recording Run B." };
+  if (changedIds.length === 0) return { valid: false, changedFactorIds: changedIds, reason: "Change one experimental factor before recording the next run." };
   if (changedIds.length > 1) {
     const labels = changedIds.map((id) => lesson.factors.find((factor) => factor.id === id)?.label ?? id);
     return { valid: false, changedFactorIds: changedIds, reason: `For a controlled comparison, change one factor only. Changed: ${labels.join(", ")}.` };

@@ -60,7 +60,12 @@ export async function decodeAudioSelection(
     validateDecodedDuration(decoded.duration);
     const validatedRange = validateAnalysisRange(range, decoded.duration);
     const startFrame = Math.floor(validatedRange.startSeconds * decoded.sampleRate);
-    const endFrame = Math.min(decoded.length, Math.ceil(validatedRange.endSeconds * decoded.sampleRate));
+    // Rounding start and end separately can add one frame beyond the selection limit.
+    const endFrame = Math.min(
+      decoded.length,
+      Math.ceil(validatedRange.endSeconds * decoded.sampleRate),
+      startFrame + Math.floor(AUDIO_ANALYSIS_LIMITS.maximumSelectionSeconds * decoded.sampleRate),
+    );
     const samples = new Float32Array(endFrame - startFrame);
     for (let channel = 0; channel < decoded.numberOfChannels; channel += 1) {
       const channelSamples = decoded.getChannelData(channel);
@@ -138,10 +143,6 @@ export function probeAudioDuration(
     signal?.addEventListener("abort", onAbort, { once: true });
     audio.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
     audio.addEventListener("error", onError, { once: true });
-    if (signal?.aborted) {
-      onAbort();
-      return;
-    }
     audio.preload = "metadata";
     audio.src = objectUrl;
     audio.load();

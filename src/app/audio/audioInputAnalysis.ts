@@ -162,7 +162,7 @@ function createContextCloser(context: AudioContext): () => void {
   return () => {
     if (contextClosed) return;
     contextClosed = true;
-    void context.close();
+    void context.close().catch(() => undefined); // The browser may already have closed it.
   };
 }
 
@@ -203,11 +203,13 @@ async function finishAtSessionEnd(request: Readonly<{
 }>): Promise<void> {
   const { cleanup, gate, pipeline, session, setBusy, setStatus } = request;
   const reason = await session.ended;
-  if (reason !== "deadline" || !gate.isCurrent()) return;
+  if (reason === "stopped" || !gate.isCurrent()) return;
   try {
     await pipeline.finish();
     if (gate.isCurrent()) {
-      setStatus("Microphone segment complete. Only the displayed derived features can be recorded.");
+      setStatus(reason === "disconnected"
+        ? "The microphone disconnected, so the segment ended early. Only the displayed derived features can be recorded."
+        : "Microphone segment complete. Only the displayed derived features can be recorded.");
     }
   } catch (error) {
     if (gate.isCurrent()) {

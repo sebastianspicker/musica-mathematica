@@ -42,6 +42,11 @@ describe("assessTrialComparison audio policy", () => {
     });
   });
 
+  it("does not name a fixed run label when no factor changed", () => {
+    const result = assessTrialComparison(onset, [fileTrial(onset.id, {}), fileTrial(onset.id, {})]);
+    expect(result.reason).toBe("Change one experimental factor before recording the next run.");
+  });
+
   it("rejects a file comparison that changes only another factor", () => {
     expect(assessTrialComparison(onset, [
       fileTrial(onset.id, {}),

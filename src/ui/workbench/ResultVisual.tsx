@@ -204,7 +204,9 @@ function formatSource(source: EvaluationOutput["provenance"]["source"]): string 
 }
 
 function numericLeadingResult(result: string): Readonly<{ value: string; rest: string }> | null {
-  const match = /^(?<value>[+-]?(?:\d+(?:\.\d+)?|\.\d+))\s+(?<rest>.+)$/.exec(result);
+  // The unit must start with a non-digit: onset patterns ("1 0 0 1") are not value + unit, and
+  // disjoint classes keep the match linear.
+  const match = /^(?<value>[+-]?(?:\d+(?:\.\d+)?|\.\d+))\s+(?<rest>[^\s\d].*)$/.exec(result);
   if (!match?.groups) return null;
   return { value: match.groups.value, rest: match.groups.rest };
 }

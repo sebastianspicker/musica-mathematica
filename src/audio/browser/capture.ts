@@ -13,12 +13,13 @@ type BrowserNavigator = Readonly<{
   mediaDevices?: Partial<MediaDevicesLike>;
 }>;
 
+export type MicrophoneEndReason = "deadline" | "stopped" | "disconnected";
+
 export type MicrophoneSession = Readonly<{
   stream: MediaStream;
   settings: SafeMediaSettings;
-  requestedDurationSeconds: number;
   calibration: "uncalibrated";
-  ended: Promise<"deadline" | "stopped">;
+  ended: Promise<MicrophoneEndReason>;
   stop(): void;
 }>;
 
@@ -93,11 +94,11 @@ function createMicrophoneSession(stream: MediaStream, audioTrack: MediaStreamTra
   const cancelScheduledStop = request.cancelScheduledStop ?? globalThis.clearTimeout.bind(globalThis);
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  let resolveEnded: (reason: "deadline" | "stopped") => void = () => undefined;
-  const ended = new Promise<"deadline" | "stopped">((resolve) => {
+  let resolveEnded: (reason: MicrophoneEndReason) => void = () => undefined;
+  const ended = new Promise<MicrophoneEndReason>((resolve) => {
     resolveEnded = resolve;
   });
-  const finish = (reason: "deadline" | "stopped") => {
+  const finish = (reason: MicrophoneEndReason) => {
     if (stopped) return;
     stopped = true;
     if (timer !== undefined) cancelScheduledStop(timer);
@@ -106,6 +107,10 @@ function createMicrophoneSession(stream: MediaStream, audioTrack: MediaStreamTra
   };
   const stop = () => {
     finish("stopped");
+  };
+  // Unplugging the device or revoking permission ends the track before the deadline.
+  audioTrack.onended = () => {
+    finish("disconnected");
   };
   timer = scheduleStop(
     () => {
@@ -116,7 +121,6 @@ function createMicrophoneSession(stream: MediaStream, audioTrack: MediaStreamTra
   return Object.freeze({
     stream,
     settings: sanitizeMediaTrackSettings(audioTrack.getSettings()),
-    requestedDurationSeconds: request.durationSeconds,
     calibration: "uncalibrated" as const,
     ended,
     stop,

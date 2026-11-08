@@ -50,6 +50,16 @@ describe("audio-to-evaluation provenance", () => {
     });
   });
 
+  it("does not print -Infinity for a digitally silent frame", () => {
+    const silent = {
+      ...frame,
+      level: { ...frame.level, rms: 0, dbfs: -Infinity, peak: 0, silent: true },
+      pitch: { frequencyHz: null, confidence: 0, periodSamples: null },
+    } as FrameAnalysis;
+
+    expect(microphoneFrameToEvaluation(silent, temporal, queue).result).not.toContain("Infinity");
+  });
+
   it("applies and records the lesson's onset and candidate-family settings", () => {
     const evaluation = microphoneFrameToEvaluation(frame, temporal, queue, {
       onsetSensitivity: 0.35,

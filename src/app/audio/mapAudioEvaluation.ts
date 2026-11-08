@@ -89,7 +89,7 @@ export function microphoneFrameToEvaluation(
   return {
     headline: "Live local observation",
     result: frame.pitch.frequencyHz === null
-      ? `${frame.level.dbfs.toFixed(1)} dBFS · no stable pitch candidate`
+      ? `${Number.isFinite(frame.level.dbfs) ? `${frame.level.dbfs.toFixed(1)} dBFS` : "Silent frame"} · no stable pitch candidate`
       : `${frame.pitch.frequencyHz.toFixed(1)} Hz · confidence ${frame.pitch.confidence.toFixed(2)}`,
     observables: [
       observed("dbfs", "Frame level", finiteLabel(frame.level.dbfs, 1), "dBFS"),

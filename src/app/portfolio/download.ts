@@ -6,6 +6,9 @@ export function downloadPortfolioJson(json: string): void {
   const link = document.createElement("a");
   link.href = url;
   link.download = portfolioDownloadFilename;
+  document.body.append(link);
   link.click();
-  URL.revokeObjectURL(url);
+  link.remove();
+  // Revoking in the same task can cancel the download in some browsers.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }

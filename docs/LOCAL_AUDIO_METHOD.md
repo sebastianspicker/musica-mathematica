@@ -61,7 +61,9 @@ stream. A single capture deadline begins when the stream is acquired. At the
 deadline, the app immediately stops the tracks, tells the worklet to stop
 accepting input, and sends an end marker over the same port that carried the
 frames. The worker then produces its final result. If finalization takes longer
-than one second, the app aborts the remaining resources.
+than one second, the app aborts the remaining resources. If the track ends
+before the deadline, for example because the device was unplugged, the app
+finalizes the same way and reports that the segment ended early.
 
 Changing input mode, unmounting the component, stopping the analysis pipeline,
 encountering an error, or abandoning a request cancels capture immediately. If

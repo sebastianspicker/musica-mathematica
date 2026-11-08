@@ -243,6 +243,14 @@ describe("curriculum registry", () => {
     })).toBe(false);
   });
 
+  it("rejects non-finite numbers formatted into result or observable text", () => {
+    expect(isEvaluationOutput({ ...evaluation, result: "NaN BPM" })).toBe(false);
+    expect(isEvaluationOutput({
+      ...evaluation,
+      observables: [{ ...evaluation.observables[0], value: "NaN–Infinity" }],
+    })).toBe(false);
+  });
+
   it("rejects duplicate domain numbers across domains", () => {
     const clash = defineDomain({ ...domain("rhythm-meter"), number: 1 }, { one: () => evaluation, two: () => evaluation, three: () => evaluation });
 

@@ -7,7 +7,7 @@ import type {
   ObservableRecord,
   TracePoint,
 } from "../../curriculum/contracts";
-import { isLessonStage, lessonStages } from "../stages";
+import { isLessonStage, lessonStages, minimumComparisonTrials } from "../stages";
 import {
   attemptKey,
   maximumExtensionFactorCodePoints,
@@ -303,7 +303,7 @@ function validatesNormalizedPortfolio(
 function hasStageContent(attempt: LessonAttemptV2): boolean {
   const index = lessonStages.indexOf(attempt.stage);
   return (index < lessonStages.indexOf("experiment") || text(attempt.prediction))
-    && (index < lessonStages.indexOf("compare") || attempt.trials.length >= 2)
+    && (index < lessonStages.indexOf("compare") || attempt.trials.length >= minimumComparisonTrials)
     && (index < lessonStages.indexOf("perform") || text(attempt.explanation))
     && (index < lessonStages.indexOf("transfer") || text(attempt.performanceReflection))
     && (index < lessonStages.indexOf("debrief") || text(attempt.transferResponse));
@@ -342,7 +342,8 @@ function optionalFiniteNumber<Key extends string>(
 function boundedText(value: string, maximum: number, allowEmpty = false): string | undefined {
   const trimmed = value.trim();
   if (!allowEmpty && trimmed.length === 0) return undefined;
-  return Array.from(trimmed).slice(0, maximum).join("");
+  // trimEnd after the cut keeps normalisation idempotent when the cut lands on whitespace.
+  return Array.from(trimmed).slice(0, maximum).join("").trimEnd();
 }
 
 function codePointLength(value: string): number {

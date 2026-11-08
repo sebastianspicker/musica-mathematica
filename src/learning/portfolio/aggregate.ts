@@ -6,7 +6,7 @@ import {
   type FactorValue,
   type LessonDefinition,
 } from "../../curriculum/contracts";
-import { lessonStages, type LessonResponseField, type LessonStage } from "../stages";
+import { lessonStages, minimumComparisonTrials, type LessonResponseField, type LessonStage } from "../stages";
 import {
   attemptKey,
   maximumTrialsPerLesson,
@@ -186,7 +186,7 @@ function meetsStageRequirement(attempt: LessonAttemptV2, stage: LessonStage): bo
   switch (stage) {
     case "experiment": return Boolean(attempt.prediction);
     case "compare":
-    case "explain": return attempt.trials.length >= 2;
+    case "explain": return attempt.trials.length >= minimumComparisonTrials;
     case "perform": return Boolean(attempt.explanation);
     case "transfer": return Boolean(attempt.performanceReflection);
     case "debrief": return Boolean(attempt.transferResponse);

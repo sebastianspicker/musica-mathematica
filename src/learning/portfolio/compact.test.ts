@@ -14,6 +14,26 @@ import {
 } from "./schema";
 
 describe("portfolio byte compaction", () => {
+  it("does not throw when a response is cut at whitespace", () => {
+    const curriculum = curriculumWithLessons(1);
+    const attempt = attemptFor("lesson-0", "predict", 0, false, 0);
+    const portfolio: LearningPortfolioV2 = {
+      version: 2,
+      active: { labId: "phase-proportion", lessonId: "lesson-0" },
+      attempts: {
+        [attemptKey("phase-proportion", "lesson-0")]: {
+          ...attempt,
+          prediction: `${"a".repeat(16_383)} b`,
+        },
+      },
+    };
+
+    const prepared = preparePortfolio(portfolio, curriculum);
+
+    expect(prepared.portfolio?.attempts["phase-proportion:lesson-0"]?.prediction)
+      .toBe("a".repeat(16_383));
+  });
+
   it("reduces traces and oldest excess trials while preserving comparison trials", () => {
     const curriculum = curriculumWithLessons(8);
     const attempts = Object.fromEntries(Array.from({ length: 8 }, (_, index) => {

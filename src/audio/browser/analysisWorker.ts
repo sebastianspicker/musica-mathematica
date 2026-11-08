@@ -74,7 +74,6 @@ type StreamingAnalysisSession = {
   accepting: boolean;
   previousMagnitudes: Float64Array | null;
   latestResult: FrameAnalysis | null;
-  latestTemporal: TemporalHypotheses;
   lastPublishedStartSeconds: number | null;
   sampleRateHz: number | null;
   hopSize: number | null;
@@ -125,13 +124,12 @@ function shouldPublishTemporal(session: StreamingAnalysisSession, startSeconds: 
 
 function updateTemporal(session: StreamingAnalysisSession): TemporalHypotheses {
   if (session.sampleRateHz === null || session.hopSize === null) return EMPTY_TEMPORAL;
-  session.latestTemporal = analyzeFluxHistory(
+  return analyzeFluxHistory(
     session.fluxHistory,
     session.sampleRateHz,
     session.hopSize,
     session.onsetSensitivity,
   );
-  return session.latestTemporal;
 }
 
 function publishStreamingResult(session: StreamingAnalysisSession): void {
@@ -168,7 +166,6 @@ function attachStreamingAnalysis(message: WorkerAttachMessage): void {
     accepting: true,
     previousMagnitudes: null,
     latestResult: null,
-    latestTemporal: EMPTY_TEMPORAL,
     lastPublishedStartSeconds: null,
     sampleRateHz: null,
     hopSize: null,

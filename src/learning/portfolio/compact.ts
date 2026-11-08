@@ -1,5 +1,5 @@
 import type { CurriculumLessonReader } from "../../curriculum/contracts";
-import { lessonStages } from "../stages";
+import { lessonStages, minimumComparisonTrials } from "../stages";
 import {
   attemptKey,
   maximumPortfolioJsonBytes,
@@ -162,5 +162,5 @@ function replaceAttempt(
 }
 
 function requiredTrialCount(attempt: LessonAttemptV2): number {
-  return lessonStages.indexOf(attempt.stage) >= lessonStages.indexOf("compare") ? 2 : 0;
+  return lessonStages.indexOf(attempt.stage) >= lessonStages.indexOf("compare") ? minimumComparisonTrials : 0;
 }

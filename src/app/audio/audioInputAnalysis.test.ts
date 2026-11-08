@@ -66,7 +66,7 @@ function microphoneStream() {
     getAudioTracks: () => [track],
     getTracks: () => [track],
   } as unknown as MediaStream;
-  return { stream, stop };
+  return { stream, stop, track };
 }
 
 function stateHarness() {
@@ -209,6 +209,28 @@ describe("microphone analysis orchestration", () => {
     expect(pipeline.finish).toHaveBeenCalledOnce();
     expect(state.setBusy).toHaveBeenLastCalledWith(false);
     expect(state.setStatus).toHaveBeenLastCalledWith(expect.stringContaining("segment complete"));
+  });
+
+  it("ends the segment and says so when the microphone disconnects", async () => {
+    const { stream, track } = microphoneStream();
+    vi.stubGlobal("navigator", { mediaDevices: { getUserMedia: vi.fn(() => Promise.resolve(stream)) } });
+    const pipeline = {
+      finish: vi.fn(() => Promise.resolve({
+        result: null,
+        temporal: { onsetTimesSeconds: [], tempoHypotheses: [], meterHypotheses: [] },
+        queue: { accepted: true, staleFrames: 0, sequenceGaps: 0 },
+      })),
+      stop: vi.fn(),
+    };
+    workerClient.prepareMicrophoneAnalysisPipeline.mockReturnValue({ connect: vi.fn(() => Promise.resolve(pipeline)), stop: vi.fn() });
+    const { request, state } = startRequest(gateHarness().gate);
+
+    await startMicrophoneAnalysis(request);
+    track.onended?.call(track, new Event("ended"));
+    await vi.waitFor(() => expect(state.setBusy).toHaveBeenLastCalledWith(false));
+
+    expect(pipeline.finish).toHaveBeenCalledOnce();
+    expect(state.setStatus).toHaveBeenLastCalledWith(expect.stringContaining("disconnected"));
   });
 
   it("tears down prepared resources and acquired tracks when pipeline connection fails", async () => {

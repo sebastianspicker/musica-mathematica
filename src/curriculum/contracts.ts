@@ -194,7 +194,7 @@ export function seedForTrial(lesson: LessonDefinition, factors: Readonly<Record<
 export function isEvaluationOutput(value: unknown): value is EvaluationOutput {
   if (!isRecord(value)
     || typeof value.headline !== "string"
-    || typeof value.result !== "string"
+    || !isFiniteText(value.result)
     || !Array.isArray(value.observables)
     || !Array.isArray(value.trace)
     || !isTraceAxes(value.traceAxes)
@@ -215,12 +215,17 @@ function isObservableRecord(value: unknown): value is ObservableRecord {
   return isRecord(value)
     && typeof value.id === "string"
     && typeof value.label === "string"
-    && (typeof value.value === "string" || (typeof value.value === "number" && Number.isFinite(value.value)))
+    && (isFiniteText(value.value) || (typeof value.value === "number" && Number.isFinite(value.value)))
     && (typeof value.unit === "string" || value.unit === null)
     && isAggregation(value.aggregation)
     && typeof value.claimId === "string"
     && (value.precision === undefined || (typeof value.precision === "number"
       && Number.isInteger(value.precision) && value.precision >= 0 && value.precision <= 100));
+}
+
+// Evaluators build text with template strings, so a non-finite number can hide inside it.
+function isFiniteText(value: unknown): value is string {
+  return typeof value === "string" && !/\b(?:NaN|Infinity)\b/.test(value);
 }
 
 function isAggregation(value: unknown): value is ObservableRecord["aggregation"] {

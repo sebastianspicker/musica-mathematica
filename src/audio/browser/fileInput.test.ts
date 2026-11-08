@@ -63,6 +63,17 @@ describe("decodeAudioSelection", () => {
     expect(decoded.samples).toHaveLength(1000);
   });
 
+  it("keeps a maximum-length selection with a fractional start within the limit", async () => {
+    const decoded = await decodeAudioSelection(
+      file,
+      decoderFor(40, 44_100),
+      { startSeconds: 0.7, endSeconds: 30.7 },
+      metadataAt(40),
+    );
+
+    expect(decoded.samples.length).toBeLessThanOrEqual(30 * 44_100);
+  });
+
   it("does not read or decode after cancellation during metadata probing", async () => {
     const controller = new AbortController();
     const arrayBuffer = vi.fn(file.arrayBuffer);

@@ -1,0 +1,9 @@
+---
+# Tests, fixtures and benchmark harnesses: CI already lints and runs them.
+exclude_paths:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.test-helper.ts"
+  - "**/*.bench.ts"
+  - "e2e/**"
+  - "benchmarks/**"

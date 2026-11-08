@@ -53,6 +53,11 @@ const UNREADABLE_BLOCKED_NOTICE =
   "Stored learning data could not be read, and no copy of it could be kept. Automatic saving is off and the original browser data remains unchanged. Clear local work to recover automatic saving.";
 const UNREADABLE_NOTICE =
   "Saved learning data could not be read, so a new portfolio was started. A copy of the unreadable data was kept in this browser until you clear local work.";
+const LOSSY_BLOCKED_NOTICE =
+  "Some saved learning data cannot be opened by this version, and no copy of it could be kept. Automatic saving is off and the original browser data remains unchanged. Export your work, then clear local work to recover automatic saving.";
+// Autosave writes only the v2 key, so the older record stays until local work is cleared.
+const LEGACY_UNCONVERTIBLE_NOTICE =
+  "Learning data saved by an older version could not be converted, so a new portfolio was started. The older data was left unchanged in this browser until you clear local work.";
 export const portfolioNormalizationNotice =
   "Portfolio content was trimmed to browser-safe limits before saving.";
 
@@ -78,12 +83,14 @@ export function loadPortfolioDetailed(
   const storedLegacy = readStoredValue(storage, legacyPortfolioStorageKey);
   if (storedLegacy.status === "failed") return unavailableLoad(curriculum);
   if (storedLegacy.status === "oversized") return blockedLoad(curriculum);
+  let legacyUnconvertible = false;
   if (storedLegacy.status === "available") {
     const migrated = migrateLegacyJson(storedLegacy.raw, curriculum, now);
     if (migrated) {
       const loaded = loadMigrated(migrated, storage, curriculum);
       return unreadable ? withUnreadableNotice(loaded) : loaded;
     }
+    legacyUnconvertible = true;
   }
 
   const empty: PortfolioLoadResult = {
@@ -92,6 +99,7 @@ export function loadPortfolioDetailed(
     normalizationStatus: unreadable ? "invalid" : "unchanged",
     persistenceStatus: "not-needed",
     automaticPersistenceEnabled: true,
+    ...(legacyUnconvertible ? { notice: LEGACY_UNCONVERTIBLE_NOTICE } : {}),
   };
   return unreadable ? withUnreadableNotice(empty) : empty;
 }
@@ -188,7 +196,16 @@ function loadPreparedV2(
 
   const shouldPersist = raw !== prepared.json;
   // Rewriting drops what this build cannot keep, such as attempts for lessons added later; copy the original first.
-  if (shouldPersist) backUpStoredPortfolio(storage, raw, false);
+  if (shouldPersist && !backUpStoredPortfolio(storage, raw, false) && dropsAttempts(parsed, prepared.portfolio)) {
+    return {
+      portfolio: prepared.portfolio,
+      source: "v2",
+      normalizationStatus: prepared.normalizationStatus,
+      persistenceStatus: "disabled",
+      automaticPersistenceEnabled: false,
+      notice: LOSSY_BLOCKED_NOTICE,
+    };
+  }
   const persistenceStatus = shouldPersist
     ? persistPrepared(storage, prepared.json)
     : "not-needed";
@@ -241,6 +258,13 @@ function backUpStoredPortfolio(storage: StoragePort, raw: string, replaceExistin
   } catch {
     return false;
   }
+}
+
+// shortcut: compares attempt counts only; dropped trials inside an attempt still rewrite without a copy.
+function dropsAttempts(parsed: unknown, prepared: LearningPortfolioV2): boolean {
+  const attempts = typeof parsed === "object" && parsed !== null ? (parsed as { attempts?: unknown }).attempts : undefined;
+  return typeof attempts === "object" && attempts !== null
+    && Object.keys(attempts).length > Object.keys(prepared.attempts).length;
 }
 
 function withUnreadableNotice(loaded: PortfolioLoadResult): PortfolioLoadResult {

@@ -4,6 +4,7 @@ import { downloadPortfolioJson, portfolioDownloadFilename, portfolioDownloadMime
 describe("portfolio download", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   it("pins the filename and MIME type", () => {
@@ -11,9 +12,14 @@ describe("portfolio download", () => {
     expect(portfolioDownloadMimeType).toBe("application/json");
   });
 
-  it("clicks a download anchor for the blob URL and revokes it", () => {
+  it("clicks an attached download anchor and revokes the blob URL afterwards", () => {
     const events: string[] = [];
-    const link = { href: "", download: "", click: vi.fn(() => { events.push(`click:${link.href}`); }) };
+    const link = {
+      href: "",
+      download: "",
+      click: vi.fn(() => { events.push(`click:${link.href}`); }),
+      remove: vi.fn(() => { events.push("remove"); }),
+    };
     const blobs: { parts: unknown[]; options: unknown }[] = [];
     class FakeBlob {
       constructor(parts: unknown[], options: unknown) { blobs.push({ parts, options }); }
@@ -21,7 +27,9 @@ describe("portfolio download", () => {
     const createObjectURL = vi.fn(() => "blob:portfolio");
     const revokeObjectURL = vi.fn((url: string) => { events.push(`revoke:${url}`); });
     const createElement = vi.fn(() => link);
-    vi.stubGlobal("document", { createElement });
+    const append = vi.fn(() => { events.push("append"); });
+    vi.stubGlobal("document", { createElement, body: { append } });
+    vi.useFakeTimers();
     vi.stubGlobal("URL", { createObjectURL, revokeObjectURL });
     vi.stubGlobal("Blob", FakeBlob);
 
@@ -31,6 +39,9 @@ describe("portfolio download", () => {
     expect(createElement).toHaveBeenCalledWith("a");
     expect(link.download).toBe("musica-mathematica-portfolio.json");
     expect(link.href).toBe("blob:portfolio");
-    expect(events).toEqual(["click:blob:portfolio", "revoke:blob:portfolio"]);
+    // Revoking in the same task can cancel the download in some browsers.
+    expect(events).toEqual(["append", "click:blob:portfolio", "remove"]);
+    vi.runAllTimers();
+    expect(events).toEqual(["append", "click:blob:portfolio", "remove", "revoke:blob:portfolio"]);
   });
 });

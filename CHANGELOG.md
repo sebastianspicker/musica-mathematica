@@ -92,6 +92,19 @@ User-visible changes are listed here by release.
 - The pulses help text states that values above the cycle length are capped,
   and the whole-tone option is labelled as a tetrachord.
 - The audio-analysis timeout message states the configured limit.
+- A 30-second audio-file selection is no longer rejected as too long when its
+  start time is fractional.
+- Saved text cut at the length limit on a space no longer stops the app from
+  opening.
+- When a load would drop saved lessons and no copy can be kept, the original
+  stays untouched and automatic saving stays off. Older saved data that cannot
+  be converted is reported instead of being ignored silently.
+- A microphone that disconnects during capture ends the segment with a notice.
+  A silent frame reads "Silent frame" instead of "-Infinity dBFS".
+- Euclidean onset patterns are no longer split into a value and a unit in the
+  result heading.
+- Portfolio export keeps the download link valid until the browser has started
+  the download.
 
 ### Limitations
 
