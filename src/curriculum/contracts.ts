@@ -228,7 +228,7 @@ function isFiniteText(value: unknown): value is string {
   return typeof value === "string" && !/\b(?:NaN|Infinity)\b/.test(value);
 }
 
-function isAggregation(value: unknown): value is ObservableRecord["aggregation"] {
+export function isAggregation(value: unknown): value is ObservableRecord["aggregation"] {
   return value === "instantaneous" || value === "terminal-mean" || value === "range" || value === "distribution";
 }
 
@@ -252,9 +252,13 @@ function isVisualKind(value: unknown): value is EvaluationOutput["visualKind"] {
     || value === "network" || value === "distribution" || value === "measurement";
 }
 
+export function isProvenanceSource(value: unknown): value is EvaluationProvenance["source"] {
+  return value === "model" || value === "synthetic" || value === "microphone" || value === "file";
+}
+
 function isProvenance(value: unknown): value is EvaluationProvenance {
   return isRecord(value)
-    && (value.source === "model" || value.source === "synthetic" || value.source === "microphone" || value.source === "file")
+    && isProvenanceSource(value.source)
     && value.calibration === "uncalibrated"
     && typeof value.method === "string"
     && optionalFiniteNumber(value.sampleRateHz)

@@ -1,11 +1,13 @@
-import type {
-  CurriculumDomainId,
-  CurriculumLessonReader,
-  FactorDefinition,
-  FactorValue,
-  LessonDefinition,
-  ObservableRecord,
-  TracePoint,
+import {
+  isAggregation,
+  isProvenanceSource,
+  type CurriculumDomainId,
+  type CurriculumLessonReader,
+  type FactorDefinition,
+  type FactorValue,
+  type LessonDefinition,
+  type ObservableRecord,
+  type TracePoint,
 } from "../../curriculum/contracts";
 import { isLessonStage, lessonStages, minimumComparisonTrials } from "../stages";
 import {
@@ -238,7 +240,7 @@ function normalizeObservable(
 ): ObservableRecord | undefined {
   if (!isRecord(value) || !text(value.id) || typeof value.label !== "string"
     || !observableValue(value.value) || !(value.unit === null || typeof value.unit === "string")
-    || !text(value.claimId) || !aggregation(value.aggregation)) return undefined;
+    || !text(value.claimId) || !isAggregation(value.aggregation)) return undefined;
   const canonicalClaim = lesson.claimIds.includes(value.claimId);
   if (value.id !== value.id.trim() || value.claimId !== value.claimId.trim()
     || codePointLength(value.id) > maximumExtensionFactorCodePoints
@@ -273,7 +275,7 @@ function normalizeTracePoint(value: unknown): TracePoint | undefined {
 function normalizeProvenance(
   value: Record<string, unknown>,
 ): TrialSnapshotV2["provenance"] | undefined {
-  if (!provenanceSource(value.source) || typeof value.method !== "string") return undefined;
+  if (!isProvenanceSource(value.source) || typeof value.method !== "string") return undefined;
   const method = boundedText(value.method, maximumLongValueCodePoints, true);
   if (method === undefined) return undefined;
   return {
@@ -367,15 +369,6 @@ function observableValue(value: unknown): value is string | number {
 
 function validPrecision(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 100;
-}
-
-function aggregation(value: unknown): value is ObservableRecord["aggregation"] {
-  return value === "instantaneous" || value === "terminal-mean"
-    || value === "range" || value === "distribution";
-}
-
-function provenanceSource(value: unknown): value is TrialSnapshotV2["provenance"]["source"] {
-  return value === "model" || value === "synthetic" || value === "microphone" || value === "file";
 }
 
 function isKnownLesson(
